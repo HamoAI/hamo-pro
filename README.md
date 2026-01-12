@@ -1,0 +1,200 @@
+# Hamo Pro 🧠
+
+AI Therapy Avatar Management Platform for Psychology Therapists
+
+## Overview
+
+Hamo Pro is a professional application designed for psychology therapists to create and manage AI-powered therapy avatars. Therapists can configure personalized AI instances for each client, share access via QR codes, and monitor therapeutic conversations in real-time.
+
+## Features
+
+### 🤖 AI Avatar Creation
+- Create custom AI avatars with specific therapeutic approaches
+- Define psychology theory/school of thought
+- Set methodology and core principles
+- Multiple avatars per therapist account
+
+### 👤 Client Instance Management
+- Initialize AI avatar instances for individual clients
+- Comprehensive client profiles including:
+  - Demographics (name, sex, age)
+  - Emotion patterns
+  - Personality characteristics
+  - Cognitive features and beliefs
+  - Therapy goals
+  - Therapeutic principles
+- QR code generation for client invitation
+
+### 📊 Monitoring Dashboard
+- Real-time analytics per client:
+  - Total chat sessions
+  - Average session duration
+  - Session frequency patterns
+- Detailed conversation viewer:
+  - Full transcript access
+  - Timestamp information
+  - Word-by-word conversation history
+  - Searchable and filterable
+
+### 🔐 Authentication System
+- User sign up with professional credentials
+- Secure sign in/sign out
+- Account deletion with confirmation
+- Per-user data isolation
+
+## Tech Stack
+
+- **Frontend Framework**: React 18
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS
+- **Icons**: Lucide React
+- **State Management**: React Hooks (useState)
+
+## Installation
+
+### Prerequisites
+- Node.js 16+ and npm
+
+### Setup Steps
+
+1. **Clone the repository**
+```bash
+git clone https://github.com/YOUR_USERNAME/hamo-pro.git
+cd hamo-pro
+```
+
+2. **Install dependencies**
+```bash
+npm install
+```
+
+3. **Run development server**
+```bash
+npm run dev
+```
+
+4. **Open in browser**
+Navigate to `http://localhost:5173`
+
+## Project Structure
+
+```
+hamo-pro/
+├── public/
+├── src/
+│   ├── App.jsx          # Main application component
+│   └── main.jsx         # Application entry point
+├── index.html           # HTML template
+├── package.json         # Dependencies and scripts
+├── vite.config.js       # Vite configuration
+└── README.md           # This file
+```
+
+## Usage Guide
+
+### For Therapists
+
+1. **Create an Account**
+   - Sign up with your full name, profession, email, and password
+   - Your data is stored separately from other therapists
+
+2. **Create AI Avatars**
+   - Navigate to the "AI Avatars" tab
+   - Click "Create Avatar"
+   - Fill in avatar details:
+     - Avatar name (e.g., "Dr. Compassion")
+     - Psychology theory (e.g., "Cognitive Behavioral Therapy")
+     - Methodology (e.g., "Solution-Focused Brief Therapy")
+     - Core principles (e.g., "Empathy, Active Listening")
+
+3. **Initialize Client Instances**
+   - Navigate to the "Client Instances" tab
+   - Click "Initialize Client"
+   - Complete the client profile:
+     - Basic demographics
+     - Psychological profile
+     - Therapy goals
+     - Therapeutic principles
+   - Assign an AI avatar to the client
+   - Generate and share the QR code with your client
+
+4. **Monitor Progress**
+   - Navigate to the "Dashboard" tab
+   - View session statistics for each client
+   - Click "View Conversations" to see detailed transcripts
+   - Track therapeutic progress over time
+
+## Development
+
+### Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+
+### Building for Production
+
+```bash
+npm run build
+```
+
+The optimized files will be in the `dist/` directory.
+
+## Security Notes
+
+⚠️ **Important**: This is a prototype application. For production use:
+
+- Implement proper backend authentication (JWT, OAuth)
+- Use secure password hashing (bcrypt, argon2)
+- Store data in a secure database (PostgreSQL, MongoDB)
+- Add HTTPS/SSL encryption
+- Implement HIPAA-compliant data handling
+- Add role-based access control (RBAC)
+- Implement session management and timeouts
+
+## Future Enhancements
+
+- [ ] Backend API integration
+- [ ] Real AI integration (OpenAI, Anthropic Claude)
+- [ ] End-to-end encryption for conversations
+- [ ] Export conversation transcripts
+- [ ] Advanced analytics and insights
+- [ ] Mobile app (React Native)
+- [ ] Multi-language support
+- [ ] Video/audio session support
+- [ ] Integration with EHR systems
+
+## Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Disclaimer
+
+This application is a prototype for demonstration purposes. It is not intended for actual therapeutic use without proper medical oversight, security implementations, and regulatory compliance (HIPAA, GDPR, etc.).
+
+## Support
+
+For questions or support, please open an issue on GitHub.
+
+## Acknowledgments
+
+- Built with React and Vite
+- Icons by Lucide
+- Styling with Tailwind CSS
+
+---
+
+**Version**: 7.0  
+**Last Updated**: January 2026  
+**Author**: Your Name  
+**Contact**: your.email@example.com
