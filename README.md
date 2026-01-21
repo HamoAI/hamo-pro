@@ -118,11 +118,12 @@ hamo-pro/
    - Assign an AI avatar to the client
    - Generate and share the QR code with your client
 
-4. **Monitor Progress**
-   - Navigate to the "Dashboard" tab
-   - View session statistics for each client
-   - Click "View Conversations" to see detailed transcripts
+4. **Monitor Client Progress**
+   - Navigate to the "Clients" tab
+   - View session statistics on each client card
+   - Click "View Chats" to see detailed conversation transcripts
    - Track therapeutic progress over time
+   - Navigate to "Dashboard" tab for analytics overview
 
 ## Development
 
