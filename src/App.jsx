@@ -108,6 +108,8 @@ const HamoPro = () => {
     }
   };
 
+  const APP_VERSION = "7.1.0";
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-teal-50 flex items-center justify-center px-4">
@@ -146,6 +148,9 @@ const HamoPro = () => {
                 <input type="password" value={authForm.password} onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })} className="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="••••••••" />
               </div>
               <button onClick={authMode === 'signin' ? handleSignIn : handleSignUp} className="w-full bg-blue-500 text-white py-3 rounded-lg font-medium hover:bg-blue-600">{authMode === 'signin' ? 'Sign In' : 'Create Account'}</button>
+            </div>
+            <div className="text-center mt-6 text-xs text-gray-400">
+              Version {APP_VERSION}
             </div>
           </div>
         </div>
@@ -323,6 +328,10 @@ const HamoPro = () => {
           </div>
         )}
       </div>
+
+      <footer className="max-w-7xl mx-auto px-6 py-4 text-center">
+        <p className="text-xs text-gray-400">Hamo Pro Version {APP_VERSION}</p>
+      </footer>
     </div>
   );
 };
