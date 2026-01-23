@@ -165,19 +165,23 @@ The optimized files will be in the `dist/` directory.
 - [ ] Video/audio session support
 - [ ] Integration with EHR systems
 
-## Contributing
-
-Contributions are welcome! Please follow these steps:
+## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## License
+## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 📞 Contact
+
+- **Project**: Hamo AI Therapy Platform
+- **Email**: chris@hamo.ai
+- **GitHub**: https://github.com/chrischengzh/hamo-pro
 
 ## Disclaimer
 
@@ -197,5 +201,4 @@ For questions or support, please open an issue on GitHub.
 
 **Version**: 7.0  
 **Last Updated**: January 2026  
-**Author**: Your Name  
-**Contact**: your.email@example.com
+**Author**: Chris Cheng
