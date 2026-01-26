@@ -1,8 +1,8 @@
 // Hamo Pro API Service
-// Integrates with Hamo-UME Backend v1.2.3
+// Integrates with Hamo-UME Backend v1.2.2
 // AWS Production Environment
 
-const API_BASE_URL = 'https://api.hamo.ai/api';
+const API_BASE_URL = 'https://hamo-ume-prod.eba-h3mu2ke8.us-east-1.elasticbeanstalk.com/api';
 
 // Token Management
 const TOKEN_KEY = 'hamo_pro_access_token';
@@ -55,7 +55,7 @@ class ApiService {
 
     try {
       console.log('🔵 Request options:', { method: options.method, headers }); // Debug log
-
+      
       const response = await fetch(url, {
         ...options,
         headers,
@@ -95,6 +95,8 @@ class ApiService {
   // Auth APIs
   async registerPro(fullName, profession, email, password) {
     try {
+      console.log('🔵 Registering Pro:', { email, fullName, profession }); // Debug
+      
       const response = await this.request('/auth/registerPro', {
         method: 'POST',
         skipAuth: true,
@@ -105,6 +107,8 @@ class ApiService {
           password: password,
         }),
       });
+
+      console.log('✅ Registration successful:', response); // Debug
 
       // Store tokens
       if (response.access_token) {
@@ -117,6 +121,13 @@ class ApiService {
         accessToken: response.access_token,
       };
     } catch (error) {
+      console.error('❌ Registration failed:', error); // Debug
+      console.error('❌ Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      
       return {
         success: false,
         error: error.message,
