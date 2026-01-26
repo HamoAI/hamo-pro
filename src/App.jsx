@@ -1,13 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Brain, BarChart3, Plus, QrCode, Eye, Clock, MessageSquare, LogOut, Trash2 } from 'lucide-react';
+import apiService from './services/api';
 
 const HamoPro = () => {
+  const APP_VERSION = "1.2.3";
+  
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authMode, setAuthMode] = useState('signin');
   const [currentUser, setCurrentUser] = useState(null);
-  const [users, setUsers] = useState([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [authForm, setAuthForm] = useState({ email: '', password: '', fullName: '', profession: '' });
+  const [authError, setAuthError] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+  
   const [activeTab, setActiveTab] = useState('avatars');
   const [avatars, setAvatars] = useState([]);
   const [clients, setClients] = useState([]);
@@ -17,6 +22,17 @@ const HamoPro = () => {
   const [showQR, setShowQR] = useState(null);
   const [avatarForm, setAvatarForm] = useState({ name: '', theory: '', methodology: '', principles: '' });
   const [clientForm, setClientForm] = useState({ name: '', sex: '', age: '', emotionPattern: '', personality: '', cognition: '', goals: '', therapyPrinciples: '', avatarId: '' });
+
+  // Check authentication on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      if (apiService.isAuthenticated()) {
+        // TODO: Fetch user profile from API
+        setIsAuthenticated(true);
+      }
+    };
+    checkAuth();
+  }, []);
 
   const generateMockConversations = () => [
     {
@@ -38,61 +54,95 @@ const HamoPro = () => {
     }
   ];
 
-  const handleSignUp = () => {
-    if (authForm.email && authForm.password && authForm.fullName && authForm.profession) {
-      if (users.find(u => u.email === authForm.email)) {
-        alert('Email already exists. Please sign in instead.');
-        return;
-      }
-      const newUser = { id: Date.now(), ...authForm, avatars: [], clients: [] };
-      setUsers([...users, newUser]);
-      setCurrentUser(newUser);
-      setIsAuthenticated(true);
-      setAuthForm({ email: '', password: '', fullName: '', profession: '' });
-    } else {
-      alert('Please fill in all fields');
+  const handleSignUp = async () => {
+    setAuthError('');
+    
+    if (!authForm.email || !authForm.password || !authForm.fullName || !authForm.profession) {
+      setAuthError('Please fill in all fields');
+      return;
     }
-  };
 
-  const handleSignIn = () => {
-    if (authForm.email && authForm.password) {
-      const user = users.find(u => u.email === authForm.email && u.password === authForm.password);
-      if (user) {
-        setCurrentUser(user);
+    setAuthLoading(true);
+
+    try {
+      const result = await apiService.registerPro(
+        authForm.fullName,
+        authForm.profession,
+        authForm.email,
+        authForm.password
+      );
+
+      if (result.success) {
+        setCurrentUser(result.user);
         setIsAuthenticated(true);
-        setAvatars(user.avatars || []);
-        setClients(user.clients || []);
         setAuthForm({ email: '', password: '', fullName: '', profession: '' });
+        setAuthError('');
       } else {
-        alert('Invalid email or password');
+        setAuthError(result.error || 'Registration failed');
       }
+    } catch (error) {
+      setAuthError('Registration failed. Please try again.');
+    } finally {
+      setAuthLoading(false);
     }
   };
 
-  const handleSignOut = () => {
-    if (currentUser) {
-      setUsers(users.map(u => u.id === currentUser.id ? { ...u, avatars, clients } : u));
+  const handleSignIn = async () => {
+    setAuthError('');
+    
+    if (!authForm.email || !authForm.password) {
+      setAuthError('Please enter email and password');
+      return;
     }
+
+    setAuthLoading(true);
+
+    try {
+      const result = await apiService.loginPro(
+        authForm.email,
+        authForm.password
+      );
+
+      if (result.success) {
+        setCurrentUser(result.user);
+        setIsAuthenticated(true);
+        setAuthForm({ email: '', password: '', fullName: '', profession: '' });
+        setAuthError('');
+        
+        // TODO: Load user's avatars and clients from API
+      } else {
+        setAuthError(result.error || 'Invalid email or password');
+      }
+    } catch (error) {
+      setAuthError('Login failed. Please try again.');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await apiService.logout();
     setIsAuthenticated(false);
     setCurrentUser(null);
     setAvatars([]);
     setClients([]);
     setActiveTab('avatars');
+    setAuthError('');
   };
 
   const handleDeleteAccount = () => {
-    if (currentUser) {
-      setUsers(users.filter(u => u.id !== currentUser.id));
-      setIsAuthenticated(false);
-      setCurrentUser(null);
-      setAvatars([]);
-      setClients([]);
-      setShowDeleteConfirm(false);
-    }
+    // TODO: Call API to delete account
+    apiService.logout();
+    setIsAuthenticated(false);
+    setCurrentUser(null);
+    setAvatars([]);
+    setClients([]);
+    setShowDeleteConfirm(false);
   };
 
   const handleCreateAvatar = () => {
     if (avatarForm.name && avatarForm.theory) {
+      // TODO: Call API to create avatar
       setAvatars([...avatars, { ...avatarForm, id: Date.now() }]);
       setAvatarForm({ name: '', theory: '', methodology: '', principles: '' });
       setShowAvatarForm(false);
@@ -101,14 +151,20 @@ const HamoPro = () => {
 
   const handleCreateClient = () => {
     if (clientForm.name && clientForm.avatarId) {
-      const newClient = { ...clientForm, id: Date.now(), sessions: Math.floor(Math.random() * 15) + 1, avgTime: Math.floor(Math.random() * 30) + 15, conversations: generateMockConversations() };
+      // TODO: Call API to create client and generate invitation
+      const newClient = { 
+        ...clientForm, 
+        id: Date.now(), 
+        sessions: 0, 
+        avgTime: 0, 
+        conversations: [],
+        invitationCode: `HAMO-${Math.random().toString(36).substring(2, 8).toUpperCase()}`
+      };
       setClients([...clients, newClient]);
       setClientForm({ name: '', sex: '', age: '', emotionPattern: '', personality: '', cognition: '', goals: '', therapyPrinciples: '', avatarId: '' });
       setShowClientForm(false);
     }
   };
-
-  const APP_VERSION = "7.1.0";
 
   if (!isAuthenticated) {
     return (
@@ -122,33 +178,86 @@ const HamoPro = () => {
             </div>
             <h1 className="text-3xl font-bold text-center text-gray-900 mb-2">Hamo Pro</h1>
             <p className="text-center text-gray-500 mb-8">AI Therapy Avatar Management</p>
+            
             <div className="flex space-x-2 mb-6">
-              <button onClick={() => setAuthMode('signin')} className={`flex-1 py-2 rounded-lg font-medium ${authMode === 'signin' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'}`}>Sign In</button>
-              <button onClick={() => setAuthMode('signup')} className={`flex-1 py-2 rounded-lg font-medium ${authMode === 'signup' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'}`}>Sign Up</button>
+              <button 
+                onClick={() => { setAuthMode('signin'); setAuthError(''); }} 
+                className={`flex-1 py-2 rounded-lg font-medium ${authMode === 'signin' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'}`}
+              >
+                Sign In
+              </button>
+              <button 
+                onClick={() => { setAuthMode('signup'); setAuthError(''); }} 
+                className={`flex-1 py-2 rounded-lg font-medium ${authMode === 'signup' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'}`}
+              >
+                Sign Up
+              </button>
             </div>
+
+            {authError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-600">{authError}</p>
+              </div>
+            )}
+
             <div className="space-y-4">
               {authMode === 'signup' && (
                 <>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                    <input type="text" value={authForm.fullName} onChange={(e) => setAuthForm({ ...authForm, fullName: e.target.value })} className="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="Dr. Jane Smith" />
+                    <input 
+                      type="text" 
+                      value={authForm.fullName} 
+                      onChange={(e) => setAuthForm({ ...authForm, fullName: e.target.value })} 
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                      placeholder="Dr. Jane Smith"
+                      disabled={authLoading}
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Profession</label>
-                    <input type="text" value={authForm.profession} onChange={(e) => setAuthForm({ ...authForm, profession: e.target.value })} className="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="Clinical Psychologist" />
+                    <input 
+                      type="text" 
+                      value={authForm.profession} 
+                      onChange={(e) => setAuthForm({ ...authForm, profession: e.target.value })} 
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                      placeholder="Clinical Psychologist"
+                      disabled={authLoading}
+                    />
                   </div>
                 </>
               )}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input type="email" value={authForm.email} onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })} className="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="your@email.com" />
+                <input 
+                  type="email" 
+                  value={authForm.email} 
+                  onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })} 
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                  placeholder="your@email.com"
+                  disabled={authLoading}
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                <input type="password" value={authForm.password} onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })} className="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="••••••••" />
+                <input 
+                  type="password" 
+                  value={authForm.password} 
+                  onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })} 
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                  placeholder="••••••••"
+                  disabled={authLoading}
+                />
               </div>
-              <button onClick={authMode === 'signin' ? handleSignIn : handleSignUp} className="w-full bg-blue-500 text-white py-3 rounded-lg font-medium hover:bg-blue-600">{authMode === 'signin' ? 'Sign In' : 'Create Account'}</button>
+              <button 
+                onClick={authMode === 'signin' ? handleSignIn : handleSignUp} 
+                className="w-full bg-blue-500 text-white py-3 rounded-lg font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={authLoading}
+              >
+                {authLoading ? 'Processing...' : (authMode === 'signin' ? 'Sign In' : 'Create Account')}
+              </button>
             </div>
+            
             <div className="text-center mt-6 text-xs text-gray-400">
               Version {APP_VERSION}
             </div>
@@ -174,7 +283,7 @@ const HamoPro = () => {
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-right">
-                <div className="flex items-center space-x-2 text-sm font-medium"><User className="w-4 h-4" /><span>{currentUser?.fullName}</span></div>
+                <div className="flex items-center space-x-2 text-sm font-medium"><User className="w-4 h-4" /><span>{currentUser?.full_name || currentUser?.fullName}</span></div>
                 <p className="text-xs text-gray-500">{currentUser?.profession}</p>
               </div>
               <button onClick={handleSignOut} className="flex items-center space-x-1 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"><LogOut className="w-4 h-4" /><span className="text-sm">Sign Out</span></button>
@@ -281,29 +390,42 @@ const HamoPro = () => {
                       <div className="flex items-center space-x-2"><Clock className="w-4 h-4" /><span>{c.avgTime} min avg</span></div>
                     </div>
                     <button onClick={() => setSelectedClient(c)} className="w-full bg-blue-50 text-blue-600 px-4 py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-blue-100"><Eye className="w-4 h-4" /><span className="text-sm">View Chats</span></button>
-                    {showQR === c.id && <div className="mt-4 bg-gray-50 rounded p-4 text-center"><div className="w-24 h-24 bg-white border mx-auto flex items-center justify-center"><QrCode className="w-12 h-12 text-gray-400" /></div><button onClick={() => setShowQR(null)} className="mt-2 text-sm text-blue-500">Close</button></div>}
+                    {showQR === c.id && (
+                      <div className="mt-4 bg-gray-50 rounded p-4 text-center">
+                        <div className="w-24 h-24 bg-white border mx-auto flex items-center justify-center mb-2">
+                          <QrCode className="w-12 h-12 text-gray-400" />
+                        </div>
+                        <p className="text-xs text-gray-600 font-mono mb-2">{c.invitationCode || 'HAMO-XXXXX'}</p>
+                        <p className="text-xs text-gray-500 mb-2">Invitation Code</p>
+                        <button onClick={() => setShowQR(null)} className="text-sm text-blue-500">Close</button>
+                      </div>
+                    )}
                   </div>
                 );
               })}
             </div>
-
+            
             {selectedClient && (
               <div className="bg-white rounded-xl shadow-md p-6 mt-4">
                 <div className="flex justify-between mb-6">
                   <h3 className="text-lg font-semibold">Conversations - {selectedClient.name}</h3>
                   <button onClick={() => setSelectedClient(null)} className="text-gray-500 hover:text-gray-700">Close</button>
                 </div>
-                {selectedClient.conversations.map((conv, i) => (
-                  <div key={i} className="border-l-4 border-blue-500 pl-4 mb-6">
-                    <p className="text-sm font-medium text-gray-500 mb-3">{conv.date}</p>
-                    {conv.messages.map((msg, j) => (
-                      <div key={j} className={`p-3 rounded-lg mb-2 ${msg.sender === 'client' ? 'bg-gray-100' : 'bg-blue-50'}`}>
-                        <div className="flex justify-between mb-1"><span className="text-xs font-medium">{msg.sender === 'client' ? 'Client' : 'Avatar'}</span><span className="text-xs text-gray-400">{msg.time}</span></div>
-                        <p className="text-sm">{msg.text}</p>
-                      </div>
-                    ))}
-                  </div>
-                ))}
+                {selectedClient.conversations && selectedClient.conversations.length > 0 ? (
+                  selectedClient.conversations.map((conv, i) => (
+                    <div key={i} className="border-l-4 border-blue-500 pl-4 mb-6">
+                      <p className="text-sm font-medium text-gray-500 mb-3">{conv.date}</p>
+                      {conv.messages.map((msg, j) => (
+                        <div key={j} className={`p-3 rounded-lg mb-2 ${msg.sender === 'client' ? 'bg-gray-100' : 'bg-blue-50'}`}>
+                          <div className="flex justify-between mb-1"><span className="text-xs font-medium">{msg.sender === 'client' ? 'Client' : 'Avatar'}</span><span className="text-xs text-gray-400">{msg.time}</span></div>
+                          <p className="text-sm">{msg.text}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-gray-500">No conversations yet</div>
+                )}
               </div>
             )}
           </div>
