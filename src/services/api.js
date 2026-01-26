@@ -1,8 +1,8 @@
 // Hamo Pro API Service
-// Integrates with Hamo-UME Backend v1.2.2
+// Integrates with Hamo-UME Backend v1.2.3
 // AWS Production Environment
 
-const API_BASE_URL = 'http://hamo-ume-prod.eba-h3mu2ke8.us-east-1.elasticbeanstalk.com/api';
+const API_BASE_URL = 'https://api.hamo.ai/api';
 
 // Token Management
 const TOKEN_KEY = 'hamo_pro_access_token';
@@ -55,7 +55,7 @@ class ApiService {
 
     try {
       console.log('🔵 Request options:', { method: options.method, headers }); // Debug log
-      
+
       const response = await fetch(url, {
         ...options,
         headers,
