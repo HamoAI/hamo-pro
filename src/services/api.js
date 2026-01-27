@@ -1,5 +1,5 @@
-// Hamo Pro API Service v1.2.4
-// Integrates with Hamo-UME Backend v1.2.4
+// Hamo Pro API Service v1.2.5
+// Integrates with Hamo-UME Backend v1.2.5
 // Production: https://api.hamo.ai/api
 // AWS Deployment with Custom Domain and HTTPS
 
@@ -83,7 +83,17 @@ class ApiService {
       console.log('🔵 Response data:', data); // Debug log
 
       if (!response.ok) {
-        throw new Error(data.detail || data.message || 'Request failed');
+        // Handle FastAPI validation errors (detail is an array)
+        let errorMessage = 'Request failed';
+        if (Array.isArray(data.detail)) {
+          errorMessage = data.detail.map(err => `${err.loc?.join('.')}: ${err.msg}`).join(', ');
+          console.error('🔴 Validation errors:', data.detail);
+        } else if (data.detail) {
+          errorMessage = data.detail;
+        } else if (data.message) {
+          errorMessage = data.message;
+        }
+        throw new Error(errorMessage);
       }
 
       return data;
@@ -206,11 +216,14 @@ class ApiService {
   // This code is used to link a Pro's Avatar with a Client
   async generateInvitationCode(avatarId) {
     try {
+      const requestBody = {
+        avatar_id: String(avatarId),
+      };
+      console.log('🔵 Generating invitation code with:', requestBody);
+
       const response = await this.request('/pro/invitation/generate', {
         method: 'POST',
-        body: JSON.stringify({
-          avatar_id: String(avatarId),
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       return {
