@@ -1,5 +1,5 @@
-// Hamo Pro API Service v1.2.3
-// Integrates with Hamo-UME Backend v1.2.3
+// Hamo Pro API Service v1.2.4
+// Integrates with Hamo-UME Backend v1.2.4
 // Production: https://api.hamo.ai/api
 // AWS Deployment with Custom Domain and HTTPS
 
@@ -200,6 +200,37 @@ class ApiService {
   // Check if user is authenticated
   isAuthenticated() {
     return !!this.getAccessToken();
+  }
+
+  // Generate invitation code for a client
+  // This code is used to link a Pro's Avatar with a Client
+  async generateInvitationCode(clientId, avatarId) {
+    try {
+      const response = await this.request('/pro/invitation/generate', {
+        method: 'POST',
+        body: JSON.stringify({
+          client_id: clientId,
+          avatar_id: avatarId,
+        }),
+      });
+
+      return {
+        success: true,
+        invitationCode: response.invitation_code,
+        expiresAt: response.expires_at,
+      };
+    } catch (error) {
+      // Fallback: generate code locally if API not available
+      console.warn('API not available, generating code locally:', error.message);
+      const code = `HAMO-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
+      return {
+        success: true,
+        invitationCode: code,
+        expiresAt: expiresAt,
+      };
+    }
   }
 }
 

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { User, Brain, BarChart3, Plus, QrCode, Eye, Clock, MessageSquare, LogOut, Trash2 } from 'lucide-react';
+import { User, Brain, BarChart3, Plus, Ticket, Eye, Clock, MessageSquare, LogOut, Trash2, Download } from 'lucide-react';
 import apiService from './services/api';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.2.3";
+  const APP_VERSION = "1.2.4";
   
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authMode, setAuthMode] = useState('signin');
@@ -19,7 +19,9 @@ const HamoPro = () => {
   const [showAvatarForm, setShowAvatarForm] = useState(false);
   const [showClientForm, setShowClientForm] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
-  const [showQR, setShowQR] = useState(null);
+  const [showInvitationCard, setShowInvitationCard] = useState(null);
+  const [invitationCode, setInvitationCode] = useState('');
+  const [invitationLoading, setInvitationLoading] = useState(false);
   const [avatarForm, setAvatarForm] = useState({ name: '', theory: '', methodology: '', principles: '' });
   const [clientForm, setClientForm] = useState({ name: '', sex: '', age: '', emotionPattern: '', personality: '', cognition: '', goals: '', therapyPrinciples: '', avatarId: '' });
 
@@ -152,18 +154,116 @@ const HamoPro = () => {
   const handleCreateClient = () => {
     if (clientForm.name && clientForm.avatarId) {
       // TODO: Call API to create client and generate invitation
-      const newClient = { 
-        ...clientForm, 
-        id: Date.now(), 
-        sessions: 0, 
-        avgTime: 0, 
-        conversations: [],
-        invitationCode: `HAMO-${Math.random().toString(36).substring(2, 8).toUpperCase()}`
+      const newClient = {
+        ...clientForm,
+        id: Date.now(),
+        sessions: 0,
+        avgTime: 0,
+        conversations: []
       };
       setClients([...clients, newClient]);
       setClientForm({ name: '', sex: '', age: '', emotionPattern: '', personality: '', cognition: '', goals: '', therapyPrinciples: '', avatarId: '' });
       setShowClientForm(false);
     }
+  };
+
+  // Generate new invitation code for a client
+  const handleGenerateInvitation = async (client) => {
+    setInvitationLoading(true);
+    try {
+      const result = await apiService.generateInvitationCode(client.id, client.avatarId);
+      if (result.success) {
+        setInvitationCode(result.invitationCode);
+        setShowInvitationCard(client);
+      }
+    } catch (error) {
+      console.error('Failed to generate invitation code:', error);
+    } finally {
+      setInvitationLoading(false);
+    }
+  };
+
+  // Save invitation card as image to local device
+  const handleSaveInvitationCard = () => {
+    const card = document.getElementById('invitation-card-content');
+    if (!card) return;
+
+    // Create canvas and draw the card
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Set canvas size
+    canvas.width = 400;
+    canvas.height = 500;
+
+    // Draw gradient background
+    const gradient = ctx.createLinearGradient(0, 0, 400, 500);
+    gradient.addColorStop(0, '#3B82F6');
+    gradient.addColorStop(1, '#14B8A6');
+    ctx.fillStyle = gradient;
+    ctx.roundRect(0, 0, 400, 500, 20);
+    ctx.fill();
+
+    // Draw white card background
+    ctx.fillStyle = '#FFFFFF';
+    ctx.roundRect(10, 10, 380, 480, 16);
+    ctx.fill();
+
+    // Draw title
+    ctx.fillStyle = '#1F2937';
+    ctx.font = 'bold 24px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Invitation Code', 200, 60);
+
+    // Draw Hamo Pro badge
+    ctx.fillStyle = '#3B82F6';
+    ctx.font = '14px system-ui, sans-serif';
+    ctx.fillText('Hamo Pro', 200, 90);
+
+    // Draw invitation code
+    ctx.fillStyle = '#1F2937';
+    ctx.font = 'bold 36px monospace';
+    ctx.fillText(invitationCode, 200, 180);
+
+    // Draw validity notice
+    ctx.fillStyle = '#F97316';
+    ctx.font = '16px system-ui, sans-serif';
+    ctx.fillText('Valid for 24 hours', 200, 230);
+
+    // Draw divider line
+    ctx.strokeStyle = '#E5E7EB';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(40, 270);
+    ctx.lineTo(360, 270);
+    ctx.stroke();
+
+    // Draw client info
+    const avatar = avatars.find(a => a.id === parseInt(showInvitationCard.avatarId));
+    ctx.fillStyle = '#6B7280';
+    ctx.font = '14px system-ui, sans-serif';
+    ctx.fillText('Client', 200, 310);
+    ctx.fillStyle = '#1F2937';
+    ctx.font = 'bold 18px system-ui, sans-serif';
+    ctx.fillText(showInvitationCard.name, 200, 340);
+
+    ctx.fillStyle = '#6B7280';
+    ctx.font = '14px system-ui, sans-serif';
+    ctx.fillText('AI Avatar', 200, 390);
+    ctx.fillStyle = '#1F2937';
+    ctx.font = 'bold 18px system-ui, sans-serif';
+    ctx.fillText(avatar?.name || 'Unknown', 200, 420);
+
+    // Draw footer
+    ctx.fillStyle = '#9CA3AF';
+    ctx.font = '12px system-ui, sans-serif';
+    ctx.fillText('Download Hamo Client App to connect', 200, 470);
+
+    // Download the image
+    const link = document.createElement('a');
+    link.download = `hamo-invitation-${invitationCode}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
   };
 
   if (!isAuthenticated) {
@@ -306,6 +406,62 @@ const HamoPro = () => {
         </div>
       )}
 
+      {showInvitationCard && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+          <div className="bg-gradient-to-br from-blue-500 to-teal-500 rounded-2xl p-1 shadow-2xl">
+            <div id="invitation-card-content" className="bg-white rounded-2xl p-8 w-80">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-teal-500 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <Ticket className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-1">Invitation Code</h3>
+                <p className="text-sm text-blue-500 mb-6">Hamo Pro</p>
+
+                <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                  <p className="text-3xl font-bold font-mono text-gray-900 tracking-wider">{invitationCode}</p>
+                </div>
+
+                <div className="flex items-center justify-center space-x-2 text-orange-500 mb-6">
+                  <Clock className="w-4 h-4" />
+                  <span className="text-sm font-medium">24小时内有效</span>
+                </div>
+
+                <div className="border-t border-gray-200 pt-4 mb-6">
+                  <div className="mb-3">
+                    <p className="text-xs text-gray-500">Client</p>
+                    <p className="font-semibold text-gray-900">{showInvitationCard.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">AI Avatar</p>
+                    <p className="font-semibold text-gray-900">
+                      {avatars.find(a => a.id === parseInt(showInvitationCard.avatarId))?.name || 'Unknown'}
+                    </p>
+                  </div>
+                </div>
+
+                <p className="text-xs text-gray-400 mb-6">Download Hamo Client App to connect</p>
+              </div>
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={handleSaveInvitationCard}
+                  className="flex-1 bg-blue-500 text-white px-4 py-3 rounded-lg font-medium hover:bg-blue-600 flex items-center justify-center space-x-2"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Save</span>
+                </button>
+                <button
+                  onClick={() => setShowInvitationCard(null)}
+                  className="flex-1 bg-gray-200 text-gray-700 px-4 py-3 rounded-lg font-medium hover:bg-gray-300"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex space-x-2 bg-white rounded-lg p-1 shadow-sm">
           <button onClick={() => setActiveTab('avatars')} className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3 rounded-md ${activeTab === 'avatars' ? 'bg-blue-500 text-white' : 'text-gray-600'}`}><Brain className="w-5 h-5" /><span>AI Avatars</span></button>
@@ -382,7 +538,14 @@ const HamoPro = () => {
                   <div key={c.id} className="bg-white rounded-xl shadow-md p-6">
                     <div className="flex justify-between mb-4">
                       <div><h3 className="font-semibold">{c.name}</h3><p className="text-sm text-gray-500">{c.sex}, {c.age} years</p></div>
-                      <button onClick={() => setShowQR(c.id)} className="text-blue-500"><QrCode className="w-5 h-5" /></button>
+                      <button
+                        onClick={() => handleGenerateInvitation(c)}
+                        disabled={invitationLoading}
+                        className="flex flex-col items-center text-blue-500 hover:text-blue-600 disabled:opacity-50"
+                      >
+                        <Ticket className="w-5 h-5" />
+                        <span className="text-xs mt-1">邀请码</span>
+                      </button>
                     </div>
                     <p className="text-sm mb-3"><span className="font-medium">Avatar:</span> {avatar?.name}</p>
                     <div className="flex items-center justify-between text-sm text-gray-600 mb-3">
@@ -390,16 +553,6 @@ const HamoPro = () => {
                       <div className="flex items-center space-x-2"><Clock className="w-4 h-4" /><span>{c.avgTime} min avg</span></div>
                     </div>
                     <button onClick={() => setSelectedClient(c)} className="w-full bg-blue-50 text-blue-600 px-4 py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-blue-100"><Eye className="w-4 h-4" /><span className="text-sm">View Chats</span></button>
-                    {showQR === c.id && (
-                      <div className="mt-4 bg-gray-50 rounded p-4 text-center">
-                        <div className="w-24 h-24 bg-white border mx-auto flex items-center justify-center mb-2">
-                          <QrCode className="w-12 h-12 text-gray-400" />
-                        </div>
-                        <p className="text-xs text-gray-600 font-mono mb-2">{c.invitationCode || 'HAMO-XXXXX'}</p>
-                        <p className="text-xs text-gray-500 mb-2">Invitation Code</p>
-                        <button onClick={() => setShowQR(null)} className="text-sm text-blue-500">Close</button>
-                      </div>
-                    )}
                   </div>
                 );
               })}
