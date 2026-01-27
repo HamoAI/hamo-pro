@@ -214,9 +214,10 @@ class ApiService {
 
   // Generate invitation code for an avatar
   // This code is used to link a Pro's Avatar with a Client
-  async generateInvitationCode(avatarId) {
+  async generateInvitationCode(clientId, avatarId) {
     try {
       const requestBody = {
+        client_id: String(clientId),
         avatar_id: String(avatarId),
       };
       console.log('🔵 Generating invitation code with:', requestBody);
@@ -241,6 +242,7 @@ class ApiService {
         success: true,
         invitationCode: code,
         expiresAt: expiresAt,
+        fallback: true,
       };
     }
   }
