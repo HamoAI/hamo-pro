@@ -218,8 +218,10 @@ class ApiService {
     try {
       const requestBody = {
         name: avatarData.name,
-        persona: avatarData.persona || '',
-        greeting: avatarData.greeting || '',
+        theory: avatarData.theory || '',
+        methodology: avatarData.methodology || '',
+        principles: avatarData.principles || '',
+        description: avatarData.description || '',
       };
       console.log('🔵 Creating avatar with:', requestBody);
 
@@ -233,10 +235,12 @@ class ApiService {
       return {
         success: true,
         avatar: {
-          id: response.id || response.avatar_id,
+          id: response.id,
           name: response.name,
-          persona: response.persona,
-          greeting: response.greeting,
+          theory: response.theory,
+          methodology: response.methodology,
+          principles: response.principles,
+          description: response.description,
         },
       };
     } catch (error) {

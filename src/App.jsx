@@ -147,8 +147,10 @@ const HamoPro = () => {
       // Call API to create avatar and get backend-generated ID
       const result = await apiService.createAvatar({
         name: avatarForm.name,
-        persona: `${avatarForm.theory}\n${avatarForm.methodology}\n${avatarForm.principles}`,
-        greeting: '',
+        theory: avatarForm.theory,
+        methodology: avatarForm.methodology,
+        principles: avatarForm.principles,
+        description: '',
       });
 
       if (result.success) {
