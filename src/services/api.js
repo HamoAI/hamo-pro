@@ -223,7 +223,7 @@ class ApiService {
       };
       console.log('🔵 Creating avatar with:', requestBody);
 
-      const response = await this.request('/pro/avatar/create', {
+      const response = await this.request('/avatars', {
         method: 'POST',
         body: JSON.stringify(requestBody),
       });
