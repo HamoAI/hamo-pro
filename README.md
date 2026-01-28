@@ -2,7 +2,7 @@
 
 AI Therapy Avatar Management Platform for Psychology Therapists
 
-!! The code was written entirely by AI!!
+## !! The code was written entirely by AI!!
 
 ## Overview
 
