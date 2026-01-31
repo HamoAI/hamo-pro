@@ -1,5 +1,5 @@
-// Hamo Pro API Service v1.3.1
-// Integrates with Hamo-UME Backend v1.3.1
+// Hamo Pro API Service v1.3.2
+// Integrates with Hamo-UME Backend v1.3.2
 // Production: https://api.hamo.ai/api
 // AWS Deployment with Custom Domain and HTTPS
 
@@ -312,6 +312,7 @@ class ApiService {
           goals: client.goals,
           therapyPrinciples: client.therapy_principles || client.therapyPrinciples,
           avatarId: client.avatar_id || client.avatarId,
+          connectedAt: client.connected_at || client.connectedAt,
           sessions: client.sessions || 0,
           avgTime: client.avg_time || client.avgTime || 0,
           conversations: client.conversations || [],

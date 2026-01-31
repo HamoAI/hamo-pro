@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { User, Brain, BarChart3, Plus, Ticket, Eye, Clock, MessageSquare, LogOut, Trash2, Download } from 'lucide-react';
+import { User, Brain, BarChart3, Plus, Ticket, Eye, Clock, MessageSquare, LogOut, Trash2, Download, CheckCircle, Calendar } from 'lucide-react';
 import apiService from './services/api';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.3.1";
+  const APP_VERSION = "1.3.2";
   
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authMode, setAuthMode] = useState('signin');
@@ -578,21 +578,31 @@ const HamoPro = () => {
             )}
             <div className="grid grid-cols-2 gap-4">
               {clients.map(c => {
-                const avatar = avatars.find(a => a.id === parseInt(c.avatarId));
+                const avatar = avatars.find(a => a.id === parseInt(c.avatarId) || a.id === c.avatarId);
+                const isConnected = c.connectedAt || c.connected_at;
+                const connectionDate = isConnected ? new Date(isConnected).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' }) : null;
                 return (
                   <div key={c.id} className="bg-white rounded-xl shadow-md p-6">
                     <div className="flex justify-between mb-4">
                       <div><h3 className="font-semibold">{c.name}</h3><p className="text-sm text-gray-500">{c.sex}, {c.age} years</p></div>
-                      <button
-                        onClick={() => handleGenerateInvitation(c)}
-                        disabled={invitationLoading}
-                        className="flex flex-col items-center text-blue-500 hover:text-blue-600 disabled:opacity-50"
-                      >
-                        <Ticket className="w-5 h-5" />
-                        <span className="text-xs mt-1">邀请码</span>
-                      </button>
+                      {isConnected ? (
+                        <div className="flex flex-col items-center text-green-500">
+                          <Calendar className="w-5 h-5" />
+                          <span className="text-xs mt-1">{connectionDate}</span>
+                          <span className="text-xs text-green-600 font-medium">已连接</span>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleGenerateInvitation(c)}
+                          disabled={invitationLoading}
+                          className="flex flex-col items-center text-blue-500 hover:text-blue-600 disabled:opacity-50"
+                        >
+                          <Ticket className="w-5 h-5" />
+                          <span className="text-xs mt-1">邀请码</span>
+                        </button>
+                      )}
                     </div>
-                    <p className="text-sm mb-3"><span className="font-medium">Avatar:</span> {avatar?.name}</p>
+                    <p className="text-sm mb-3"><span className="font-medium">Avatar:</span> {avatar?.name || '未分配'}</p>
                     <div className="flex items-center justify-between text-sm text-gray-600 mb-3">
                       <div className="flex items-center space-x-2"><MessageSquare className="w-4 h-4" /><span>{c.sessions} sessions</span></div>
                       <div className="flex items-center space-x-2"><Clock className="w-4 h-4" /><span>{c.avgTime} min avg</span></div>
