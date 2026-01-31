@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { User, Brain, BarChart3, Plus, Ticket, Eye, Clock, MessageSquare, LogOut, Trash2, Download, CheckCircle, Calendar } from 'lucide-react';
+import { User, Brain, BarChart3, Plus, Ticket, Eye, Clock, MessageSquare, LogOut, Trash2, Download, CheckCircle, Calendar, Sparkles } from 'lucide-react';
 import apiService from './services/api';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.3.2";
+  const APP_VERSION = "1.3.3";
   
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authMode, setAuthMode] = useState('signin');
@@ -19,6 +19,9 @@ const HamoPro = () => {
   const [showAvatarForm, setShowAvatarForm] = useState(false);
   const [showClientForm, setShowClientForm] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
+  const [selectedMindClient, setSelectedMindClient] = useState(null);
+  const [mindData, setMindData] = useState(null);
+  const [mindLoading, setMindLoading] = useState(false);
   const [showInvitationCard, setShowInvitationCard] = useState(null);
   const [invitationCode, setInvitationCode] = useState('');
   const [invitationLoading, setInvitationLoading] = useState(false);
@@ -225,6 +228,27 @@ const HamoPro = () => {
       console.error('Failed to generate invitation code:', error);
     } finally {
       setInvitationLoading(false);
+    }
+  };
+
+  // Fetch and display AI Mind for a client
+  const handleViewMind = async (client) => {
+    setMindLoading(true);
+    setSelectedMindClient(client);
+    setMindData(null);
+
+    try {
+      const result = await apiService.getMind(client.id, client.avatarId);
+      if (result.success) {
+        setMindData(result.mind);
+      } else {
+        setMindData({ error: result.error || 'Failed to load AI Mind data' });
+      }
+    } catch (error) {
+      console.error('Failed to fetch AI Mind:', error);
+      setMindData({ error: 'Failed to load AI Mind data' });
+    } finally {
+      setMindLoading(false);
     }
   };
 
@@ -607,12 +631,66 @@ const HamoPro = () => {
                       <div className="flex items-center space-x-2"><MessageSquare className="w-4 h-4" /><span>{c.sessions} sessions</span></div>
                       <div className="flex items-center space-x-2"><Clock className="w-4 h-4" /><span>{c.avgTime} min avg</span></div>
                     </div>
-                    <button onClick={() => setSelectedClient(c)} className="w-full bg-blue-50 text-blue-600 px-4 py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-blue-100"><Eye className="w-4 h-4" /><span className="text-sm">View Chats</span></button>
+                    <div className="flex space-x-2">
+                      <button onClick={() => handleViewMind(c)} className="flex-1 bg-purple-50 text-purple-600 px-3 py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-purple-100"><Sparkles className="w-4 h-4" /><span className="text-sm">AI Mind</span></button>
+                      <button onClick={() => setSelectedClient(c)} className="flex-1 bg-blue-50 text-blue-600 px-3 py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-blue-100"><Eye className="w-4 h-4" /><span className="text-sm">View Chats</span></button>
+                    </div>
                   </div>
                 );
               })}
             </div>
             
+            {selectedMindClient && (
+              <div className="bg-white rounded-xl shadow-md p-6 mt-4">
+                <div className="flex justify-between mb-6">
+                  <h3 className="text-lg font-semibold flex items-center space-x-2">
+                    <Sparkles className="w-5 h-5 text-purple-500" />
+                    <span>AI Mind - {selectedMindClient.name}</span>
+                  </h3>
+                  <button onClick={() => { setSelectedMindClient(null); setMindData(null); }} className="text-gray-500 hover:text-gray-700">Close</button>
+                </div>
+                {mindLoading ? (
+                  <div className="text-center py-8 text-gray-500">Loading AI Mind data...</div>
+                ) : mindData?.error ? (
+                  <div className="text-center py-8 text-red-500">{mindData.error}</div>
+                ) : mindData ? (
+                  <div className="space-y-4">
+                    {mindData.summary && (
+                      <div className="bg-purple-50 rounded-lg p-4">
+                        <h4 className="font-medium text-purple-700 mb-2">Summary</h4>
+                        <p className="text-sm text-gray-700">{mindData.summary}</p>
+                      </div>
+                    )}
+                    {mindData.emotions && (
+                      <div className="bg-blue-50 rounded-lg p-4">
+                        <h4 className="font-medium text-blue-700 mb-2">Emotional State</h4>
+                        <p className="text-sm text-gray-700">{typeof mindData.emotions === 'object' ? JSON.stringify(mindData.emotions, null, 2) : mindData.emotions}</p>
+                      </div>
+                    )}
+                    {mindData.insights && (
+                      <div className="bg-teal-50 rounded-lg p-4">
+                        <h4 className="font-medium text-teal-700 mb-2">Insights</h4>
+                        <p className="text-sm text-gray-700">{typeof mindData.insights === 'object' ? JSON.stringify(mindData.insights, null, 2) : mindData.insights}</p>
+                      </div>
+                    )}
+                    {mindData.patterns && (
+                      <div className="bg-orange-50 rounded-lg p-4">
+                        <h4 className="font-medium text-orange-700 mb-2">Patterns</h4>
+                        <p className="text-sm text-gray-700">{typeof mindData.patterns === 'object' ? JSON.stringify(mindData.patterns, null, 2) : mindData.patterns}</p>
+                      </div>
+                    )}
+                    {!mindData.summary && !mindData.emotions && !mindData.insights && !mindData.patterns && (
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <pre className="text-sm text-gray-700 whitespace-pre-wrap">{JSON.stringify(mindData, null, 2)}</pre>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">No AI Mind data available</div>
+                )}
+              </div>
+            )}
+
             {selectedClient && (
               <div className="bg-white rounded-xl shadow-md p-6 mt-4">
                 <div className="flex justify-between mb-6">

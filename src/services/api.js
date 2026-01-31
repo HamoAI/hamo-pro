@@ -1,5 +1,5 @@
-// Hamo Pro API Service v1.3.2
-// Integrates with Hamo-UME Backend v1.3.2
+// Hamo Pro API Service v1.3.3
+// Integrates with Hamo-UME Backend v1.3.3
 // Production: https://api.hamo.ai/api
 // AWS Deployment with Custom Domain and HTTPS
 
@@ -359,6 +359,30 @@ class ApiService {
         invitationCode: code,
         expiresAt: expiresAt,
         fallback: true,
+      };
+    }
+  }
+
+  // Get AI Mind data for a specific user and avatar
+  async getMind(userId, avatarId) {
+    try {
+      console.log('🔵 Fetching AI Mind for user:', userId, 'avatar:', avatarId);
+      const response = await this.request(`/mind/${userId}/${avatarId}`, {
+        method: 'GET',
+      });
+
+      console.log('✅ AI Mind fetched:', response);
+
+      return {
+        success: true,
+        mind: response,
+      };
+    } catch (error) {
+      console.error('❌ Failed to fetch AI Mind:', error.message);
+      return {
+        success: false,
+        error: error.message,
+        mind: null,
       };
     }
   }
