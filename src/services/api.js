@@ -1,5 +1,5 @@
-// Hamo Pro API Service v1.3.3
-// Integrates with Hamo-UME Backend v1.3.3
+// Hamo Pro API Service v1.3.4
+// Integrates with Hamo-UME Backend v1.3.4
 // Production: https://api.hamo.ai/api
 // AWS Deployment with Custom Domain and HTTPS
 
@@ -383,6 +383,33 @@ class ApiService {
         success: false,
         error: error.message,
         mind: null,
+      };
+    }
+  }
+
+  // Submit supervision feedback for a specific AI Mind section
+  async submitSupervision(userId, avatarId, section, feedback) {
+    try {
+      console.log('🔵 Submitting supervision for section:', section);
+      const response = await this.request(`/mind/${userId}/${avatarId}/supervise`, {
+        method: 'POST',
+        body: JSON.stringify({
+          section: section,
+          feedback: feedback,
+        }),
+      });
+
+      console.log('✅ Supervision submitted:', response);
+
+      return {
+        success: true,
+        response: response,
+      };
+    } catch (error) {
+      console.error('❌ Failed to submit supervision:', error.message);
+      return {
+        success: false,
+        error: error.message,
       };
     }
   }

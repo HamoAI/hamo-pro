@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { User, Brain, BarChart3, Plus, Ticket, Eye, Clock, MessageSquare, LogOut, Trash2, Download, CheckCircle, Calendar, Sparkles } from 'lucide-react';
+import { User, Brain, BarChart3, Plus, Ticket, Eye, Clock, MessageSquare, LogOut, Trash2, Download, CheckCircle, Calendar, Sparkles, Send } from 'lucide-react';
 import apiService from './services/api';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.3.3";
+  const APP_VERSION = "1.3.4";
   
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authMode, setAuthMode] = useState('signin');
@@ -22,6 +22,13 @@ const HamoPro = () => {
   const [selectedMindClient, setSelectedMindClient] = useState(null);
   const [mindData, setMindData] = useState(null);
   const [mindLoading, setMindLoading] = useState(false);
+  const [supervisionInputs, setSupervisionInputs] = useState({
+    personality: '',
+    emotion_pattern: '',
+    cognition_beliefs: '',
+    relationship_manipulations: ''
+  });
+  const [supervisionLoading, setSupervisionLoading] = useState({});
   const [showInvitationCard, setShowInvitationCard] = useState(null);
   const [invitationCode, setInvitationCode] = useState('');
   const [invitationLoading, setInvitationLoading] = useState(false);
@@ -236,6 +243,13 @@ const HamoPro = () => {
     setMindLoading(true);
     setSelectedMindClient(client);
     setMindData(null);
+    // Reset supervision inputs when viewing a new client
+    setSupervisionInputs({
+      personality: '',
+      emotion_pattern: '',
+      cognition_beliefs: '',
+      relationship_manipulations: ''
+    });
 
     try {
       const result = await apiService.getMind(client.id, client.avatarId);
@@ -249,6 +263,37 @@ const HamoPro = () => {
       setMindData({ error: 'Failed to load AI Mind data' });
     } finally {
       setMindLoading(false);
+    }
+  };
+
+  // Handle supervision submission for a specific section
+  const handleSupervise = async (section) => {
+    const feedback = supervisionInputs[section];
+    if (!feedback.trim() || !selectedMindClient) return;
+
+    setSupervisionLoading(prev => ({ ...prev, [section]: true }));
+
+    try {
+      const result = await apiService.submitSupervision(
+        selectedMindClient.id,
+        selectedMindClient.avatarId,
+        section,
+        feedback
+      );
+
+      if (result.success) {
+        // Clear the input after successful submission
+        setSupervisionInputs(prev => ({ ...prev, [section]: '' }));
+        console.log('✅ Supervision submitted for', section);
+        // Optionally refresh mind data
+        // handleViewMind(selectedMindClient);
+      } else {
+        console.error('Failed to submit supervision:', result.error);
+      }
+    } catch (error) {
+      console.error('Failed to submit supervision:', error);
+    } finally {
+      setSupervisionLoading(prev => ({ ...prev, [section]: false }));
     }
   };
 
@@ -673,6 +718,23 @@ const HamoPro = () => {
                           <div className="text-center"><div className="text-lg font-bold text-purple-600">{mindData.personality.neuroticism || 0}</div><div className="text-xs text-gray-500">Neuroticism</div></div>
                         </div>
                         {mindData.personality.description && <p className="text-sm text-gray-600 mt-2">{mindData.personality.description}</p>}
+                        <div className="flex mt-3 pt-3 border-t border-purple-200">
+                          <input
+                            type="text"
+                            value={supervisionInputs.personality}
+                            onChange={(e) => setSupervisionInputs(prev => ({ ...prev, personality: e.target.value }))}
+                            placeholder="Enter supervision feedback..."
+                            className="flex-1 px-3 py-2 text-sm border border-purple-200 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-purple-400"
+                          />
+                          <button
+                            onClick={() => handleSupervise('personality')}
+                            disabled={!supervisionInputs.personality.trim() || supervisionLoading.personality}
+                            className="px-4 py-2 bg-purple-500 text-white text-sm font-medium rounded-r-lg hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                          >
+                            <Send className="w-4 h-4" />
+                            <span>{supervisionLoading.personality ? '...' : 'Supervise'}</span>
+                          </button>
+                        </div>
                       </div>
                     )}
 
@@ -705,6 +767,23 @@ const HamoPro = () => {
                           </div>
                         )}
                         {mindData.emotion_pattern.description && <p className="text-sm text-gray-600 mt-2">{mindData.emotion_pattern.description}</p>}
+                        <div className="flex mt-3 pt-3 border-t border-blue-200">
+                          <input
+                            type="text"
+                            value={supervisionInputs.emotion_pattern}
+                            onChange={(e) => setSupervisionInputs(prev => ({ ...prev, emotion_pattern: e.target.value }))}
+                            placeholder="Enter supervision feedback..."
+                            className="flex-1 px-3 py-2 text-sm border border-blue-200 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
+                          />
+                          <button
+                            onClick={() => handleSupervise('emotion_pattern')}
+                            disabled={!supervisionInputs.emotion_pattern.trim() || supervisionLoading.emotion_pattern}
+                            className="px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-r-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                          >
+                            <Send className="w-4 h-4" />
+                            <span>{supervisionLoading.emotion_pattern ? '...' : 'Supervise'}</span>
+                          </button>
+                        </div>
                       </div>
                     )}
 
@@ -734,6 +813,23 @@ const HamoPro = () => {
                           {mindData.cognition_beliefs.self_perception && <div><div className="text-xs text-teal-600 font-medium">Self Perception</div><div className="text-sm text-gray-700">{mindData.cognition_beliefs.self_perception}</div></div>}
                           {mindData.cognition_beliefs.world_perception && <div><div className="text-xs text-teal-600 font-medium">World Perception</div><div className="text-sm text-gray-700">{mindData.cognition_beliefs.world_perception}</div></div>}
                           {mindData.cognition_beliefs.future_perception && <div><div className="text-xs text-teal-600 font-medium">Future Perception</div><div className="text-sm text-gray-700">{mindData.cognition_beliefs.future_perception}</div></div>}
+                        </div>
+                        <div className="flex mt-3 pt-3 border-t border-teal-200">
+                          <input
+                            type="text"
+                            value={supervisionInputs.cognition_beliefs}
+                            onChange={(e) => setSupervisionInputs(prev => ({ ...prev, cognition_beliefs: e.target.value }))}
+                            placeholder="Enter supervision feedback..."
+                            className="flex-1 px-3 py-2 text-sm border border-teal-200 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-teal-400"
+                          />
+                          <button
+                            onClick={() => handleSupervise('cognition_beliefs')}
+                            disabled={!supervisionInputs.cognition_beliefs.trim() || supervisionLoading.cognition_beliefs}
+                            className="px-4 py-2 bg-teal-500 text-white text-sm font-medium rounded-r-lg hover:bg-teal-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                          >
+                            <Send className="w-4 h-4" />
+                            <span>{supervisionLoading.cognition_beliefs ? '...' : 'Supervise'}</span>
+                          </button>
                         </div>
                       </div>
                     )}
@@ -773,6 +869,23 @@ const HamoPro = () => {
                           {mindData.relationship_manipulations.intimacy_comfort !== undefined && (
                             <div><span className="text-xs text-orange-600 font-medium">Intimacy Comfort: </span><span className="text-sm font-bold text-orange-700">{mindData.relationship_manipulations.intimacy_comfort}/10</span></div>
                           )}
+                        </div>
+                        <div className="flex mt-3 pt-3 border-t border-orange-200">
+                          <input
+                            type="text"
+                            value={supervisionInputs.relationship_manipulations}
+                            onChange={(e) => setSupervisionInputs(prev => ({ ...prev, relationship_manipulations: e.target.value }))}
+                            placeholder="Enter supervision feedback..."
+                            className="flex-1 px-3 py-2 text-sm border border-orange-200 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-orange-400"
+                          />
+                          <button
+                            onClick={() => handleSupervise('relationship_manipulations')}
+                            disabled={!supervisionInputs.relationship_manipulations.trim() || supervisionLoading.relationship_manipulations}
+                            className="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-r-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                          >
+                            <Send className="w-4 h-4" />
+                            <span>{supervisionLoading.relationship_manipulations ? '...' : 'Supervise'}</span>
+                          </button>
                         </div>
                       </div>
                     )}
