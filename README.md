@@ -25,7 +25,24 @@ Hamo Pro is a professional application designed for psychology therapists to cre
   - Cognitive features and beliefs
   - Therapy goals
   - Therapeutic principles
-- QR code generation for client invitation
+- Invitation code generation for client connection
+- Connection status display (Connected/Pending) with connection date
+
+### 🧠 AI Mind Profile
+- View AI-generated psychological profiles for each client
+- Personality assessment using Big Five (OCEAN) model:
+  - Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism
+- Emotion pattern analysis:
+  - Dominant emotions, triggers, coping mechanisms
+  - Emotional stability scoring
+- Cognition & beliefs tracking:
+  - Core beliefs and cognitive distortions
+  - Self, world, and future perceptions
+- Relationship pattern analysis:
+  - Attachment style identification
+  - Communication style and conflict resolution patterns
+  - Trust level and intimacy comfort scoring
+- Confidence score and last updated timestamp
 
 ### 📊 Monitoring Dashboard
 - Real-time analytics per client:
@@ -85,7 +102,9 @@ hamo-pro/
 ├── public/
 ├── src/
 │   ├── App.jsx          # Main application component
-│   └── main.jsx         # Application entry point
+│   ├── main.jsx         # Application entry point
+│   └── services/
+│       └── api.js       # API service for backend integration
 ├── index.html           # HTML template
 ├── package.json         # Dependencies and scripts
 ├── vite.config.js       # Vite configuration
@@ -123,6 +142,8 @@ hamo-pro/
 4. **Monitor Client Progress**
    - Navigate to the "Clients" tab
    - View session statistics on each client card
+   - Check connection status (Connected with date / Pending invitation)
+   - Click "AI Mind" to view AI-generated psychological profile
    - Click "View Chats" to see detailed conversation transcripts
    - Track therapeutic progress over time
    - Navigate to "Dashboard" tab for analytics overview
@@ -155,9 +176,26 @@ The optimized files will be in the `dist/` directory.
 - Add role-based access control (RBAC)
 - Implement session management and timeouts
 
+## API Integration
+
+Hamo Pro integrates with the Hamo-UME backend API:
+
+- **Base URL**: `https://api.hamo.ai/api`
+- **Authentication**: JWT tokens with refresh mechanism
+- **Endpoints**:
+  - `POST /auth/registerPro` - Register new therapist
+  - `POST /auth/loginPro` - Login therapist
+  - `POST /auth/refreshPro` - Refresh access token
+  - `GET /avatars` - List all avatars
+  - `POST /avatars` - Create new avatar
+  - `GET /clients` - List all clients
+  - `POST /pro/invitation/generate` - Generate invitation code
+  - `GET /mind/{user_id}/{avatar_id}` - Get AI Mind profile
+
 ## Future Enhancements
 
-- [ ] Backend API integration
+- [x] Backend API integration
+- [x] AI Mind psychological profiling
 - [ ] Real AI integration (OpenAI, Anthropic Claude)
 - [ ] End-to-end encryption for conversations
 - [ ] Export conversation transcripts
@@ -201,6 +239,6 @@ For questions or support, please open an issue on GitHub.
 
 ---
 
-**Version**: 7.0  
-**Last Updated**: January 2026  
+**Version**: 1.3.3
+**Last Updated**: January 2026
 **Author**: Chris Cheng
