@@ -3,7 +3,7 @@ import { User, Brain, BarChart3, Plus, Ticket, Eye, Clock, MessageSquare, LogOut
 import apiService from './services/api';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.3.5";
+  const APP_VERSION = "1.3.6";
   
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authMode, setAuthMode] = useState('signin');
@@ -205,28 +205,59 @@ const HamoPro = () => {
     }
   };
 
-  const handleCreateClient = () => {
+  const handleCreateClient = async () => {
     if (clientForm.name && clientForm.avatarId) {
-      // TODO: Call API to create client and generate invitation
-      const newClient = {
-        ...clientForm,
-        id: Date.now(),
-        sessions: 0,
-        avgTime: 0,
-        conversations: []
-      };
-      setClients([...clients, newClient]);
+      // Call API to create AI Mind (client profile)
+      const result = await apiService.createMind({
+        avatarId: clientForm.avatarId,
+        name: clientForm.name,
+        sex: clientForm.sex,
+        age: clientForm.age,
+        emotionPattern: clientForm.emotionPattern,
+        personality: clientForm.personality,
+        cognition: clientForm.cognition,
+        goals: clientForm.goals,
+        therapyPrinciples: clientForm.therapyPrinciples,
+      });
+
+      if (result.success) {
+        // Use backend-generated mind as client
+        setClients([...clients, {
+          id: result.mind.id,
+          name: result.mind.name,
+          sex: result.mind.sex,
+          age: result.mind.age,
+          avatarId: result.mind.avatar_id,
+          connectedAt: result.mind.connected_at,
+          sessions: 0,
+          avgTime: 0,
+          conversations: []
+        }]);
+        console.log('✅ AI Mind created with ID:', result.mind.id);
+      } else {
+        // Fallback to local state if API fails
+        console.warn('⚠️ API failed, using local state:', result.error);
+        const newClient = {
+          ...clientForm,
+          id: Date.now(),
+          sessions: 0,
+          avgTime: 0,
+          conversations: []
+        };
+        setClients([...clients, newClient]);
+      }
+
       setClientForm({ name: '', sex: '', age: '', emotionPattern: '', personality: '', cognition: '', goals: '', therapyPrinciples: '', avatarId: '' });
       setShowClientForm(false);
     }
   };
 
-  // Generate new invitation code for a client
-  // Only avatarId is needed - client will register using the invitation code
+  // Generate new invitation code for a client (AI Mind)
+  // mindId is used to link the invitation to the specific AI Mind
   const handleGenerateInvitation = async (client) => {
     setInvitationLoading(true);
     try {
-      const result = await apiService.generateInvitationCode(client.avatarId);
+      const result = await apiService.generateInvitationCode(client.id);
       if (result.success) {
         setInvitationCode(result.invitationCode);
         setShowInvitationCard(client);

@@ -1,5 +1,5 @@
-// Hamo Pro API Service v1.3.4
-// Integrates with Hamo-UME Backend v1.3.4
+// Hamo Pro API Service v1.3.6
+// Integrates with Hamo-UME Backend v1.3.6
 // Production: https://api.hamo.ai/api
 // AWS Deployment with Custom Domain and HTTPS
 
@@ -286,10 +286,11 @@ class ApiService {
     }
   }
 
-  // Get all clients for the current Pro user
+  // Get all clients (AI Minds) for the current Pro user
+  // Returns both connected and pending (not yet bound) clients
   async getClients() {
     try {
-      console.log('🔵 Fetching clients...');
+      console.log('🔵 Fetching clients (AI Minds)...');
       const response = await this.request('/clients', {
         method: 'GET',
       });
@@ -306,13 +307,9 @@ class ApiService {
           name: client.name || client.nickname,
           sex: client.sex || client.gender,
           age: client.age,
-          emotionPattern: client.emotion_pattern || client.emotionPattern,
-          personality: client.personality,
-          cognition: client.cognition,
-          goals: client.goals,
-          therapyPrinciples: client.therapy_principles || client.therapyPrinciples,
           avatarId: client.avatar_id || client.avatarId,
           connectedAt: client.connected_at || client.connectedAt,
+          userId: client.user_id || client.userId,
           sessions: client.sessions || 0,
           avgTime: client.avg_time || client.avgTime || 0,
           conversations: client.conversations || [],
@@ -328,13 +325,70 @@ class ApiService {
     }
   }
 
-  // Generate invitation code for an avatar
-  // This code is used to link a Pro's Avatar with a Client
-  // Note: client_id is not needed - the invitation code will be used by the client to register
-  async generateInvitationCode(avatarId) {
+  // Create AI Mind (client profile) for an avatar
+  // This is called when Pro initializes a client
+  async createMind(data) {
     try {
       const requestBody = {
-        avatar_id: String(avatarId),
+        avatar_id: String(data.avatarId),
+        name: data.name,
+        sex: data.sex || '',
+        age: data.age ? parseInt(data.age) : null,
+        personality: {
+          primary_traits: data.personality ? data.personality.split(',').map(t => t.trim()) : [],
+          description: data.personality || '',
+        },
+        emotion_pattern: {
+          dominant_emotions: [],
+          triggers: data.emotionPattern ? data.emotionPattern.split(',').map(t => t.trim()) : [],
+          coping_mechanisms: [],
+          description: data.emotionPattern || '',
+        },
+        cognition_beliefs: {
+          core_beliefs: data.cognition ? data.cognition.split(',').map(t => t.trim()) : [],
+          cognitive_distortions: [],
+          thinking_patterns: [],
+          self_perception: '',
+          world_perception: '',
+          future_perception: '',
+        },
+        relationship_manipulations: {
+          attachment_style: 'secure',
+          relationship_patterns: [],
+          communication_style: '',
+          conflict_resolution: '',
+        },
+        goals: data.goals || '',
+        therapy_principles: data.therapyPrinciples || '',
+      };
+      console.log('🔵 Creating AI Mind with:', requestBody);
+
+      const response = await this.request('/mind', {
+        method: 'POST',
+        body: JSON.stringify(requestBody),
+      });
+
+      console.log('✅ AI Mind created:', response);
+
+      return {
+        success: true,
+        mind: response,
+      };
+    } catch (error) {
+      console.error('❌ Failed to create AI Mind:', error.message);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+
+  // Generate invitation code for an AI Mind
+  // This code is used to link a Client with a specific AI Mind
+  async generateInvitationCode(mindId) {
+    try {
+      const requestBody = {
+        mind_id: String(mindId),
       };
       console.log('🔵 Generating invitation code with:', requestBody);
 
