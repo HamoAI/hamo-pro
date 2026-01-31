@@ -3,7 +3,7 @@ import { User, Brain, BarChart3, Plus, Ticket, Eye, Clock, MessageSquare, LogOut
 import apiService from './services/api';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.3.4";
+  const APP_VERSION = "1.3.5";
   
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authMode, setAuthMode] = useState('signin');
@@ -240,6 +240,9 @@ const HamoPro = () => {
 
   // Fetch and display AI Mind for a client
   const handleViewMind = async (client) => {
+    // Close View Chats panel if open
+    setSelectedClient(null);
+
     setMindLoading(true);
     setSelectedMindClient(client);
     setMindData(null);
@@ -264,6 +267,15 @@ const HamoPro = () => {
     } finally {
       setMindLoading(false);
     }
+  };
+
+  // View chats for a client (close AI Mind if open)
+  const handleViewChats = (client) => {
+    // Close AI Mind panel if open
+    setSelectedMindClient(null);
+    setMindData(null);
+
+    setSelectedClient(client);
   };
 
   // Handle supervision submission for a specific section
@@ -678,7 +690,7 @@ const HamoPro = () => {
                     </div>
                     <div className="flex space-x-2">
                       <button onClick={() => handleViewMind(c)} className="flex-1 bg-purple-50 text-purple-600 px-3 py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-purple-100"><Sparkles className="w-4 h-4" /><span className="text-sm">AI Mind</span></button>
-                      <button onClick={() => setSelectedClient(c)} className="flex-1 bg-blue-50 text-blue-600 px-3 py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-blue-100"><Eye className="w-4 h-4" /><span className="text-sm">View Chats</span></button>
+                      <button onClick={() => handleViewChats(c)} className="flex-1 bg-blue-50 text-blue-600 px-3 py-2 rounded-lg flex items-center justify-center space-x-2 hover:bg-blue-100"><Eye className="w-4 h-4" /><span className="text-sm">View Chats</span></button>
                     </div>
                   </div>
                 );
