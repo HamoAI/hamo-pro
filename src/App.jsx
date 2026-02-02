@@ -498,7 +498,7 @@ const HamoPro = () => {
     ctx.stroke();
 
     // Draw client info
-    const avatar = avatars.find(a => a.id === parseInt(showInvitationCard.avatarId));
+    const avatar = avatars.find(a => String(a.id) === String(showInvitationCard.avatarId) || String(a.id) === String(showInvitationCard.avatar_id));
     ctx.fillStyle = '#6B7280';
     ctx.font = '14px system-ui, sans-serif';
     ctx.fillText('Client', 200, 310);
@@ -693,7 +693,7 @@ const HamoPro = () => {
                   <div>
                     <p className="text-xs text-gray-500">AI Avatar</p>
                     <p className="font-semibold text-gray-900">
-                      {avatars.find(a => a.id === parseInt(showInvitationCard.avatarId))?.name || 'Unknown'}
+                      {avatars.find(a => String(a.id) === String(showInvitationCard.avatarId) || String(a.id) === String(showInvitationCard.avatar_id))?.name || 'Unknown'}
                     </p>
                   </div>
                 </div>
