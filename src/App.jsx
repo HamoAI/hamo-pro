@@ -28,19 +28,6 @@ const HamoPro = () => {
     'Acceptance and Commitment Therapy'
   ];
 
-  const specializationOptions = [
-    'NPD Therapist',
-    'Depression Psychologist',
-    'Family Relation Therapist',
-    'Child Therapist',
-    'Anxiety Specialist',
-    'Couples Counseling',
-    'Trauma Specialist',
-    'Addiction Therapist',
-    'OCD Specialist',
-    'Stress Management'
-  ];
-  
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authMode, setAuthMode] = useState('signin');
   const [currentUser, setCurrentUser] = useState(null);
@@ -78,8 +65,6 @@ const HamoPro = () => {
     about: '',
     experienceYears: 0,
     experienceMonths: 0,
-    specializations: [],
-    customSpecialization: ''
   });
   const [clientForm, setClientForm] = useState({ name: '', sex: '', age: '', emotionPattern: '', personality: '', cognition: '', goals: '', therapyPrinciples: '', avatarId: '' });
 
@@ -229,22 +214,15 @@ const HamoPro = () => {
     const specialty = avatarForm.specialty === 'custom' ? avatarForm.customSpecialty : avatarForm.specialty;
     const approaches = [...avatarForm.therapeuticApproaches];
     if (avatarForm.customApproach) approaches.push(avatarForm.customApproach);
-    const specs = [...avatarForm.specializations];
-    if (avatarForm.customSpecialization) specs.push(avatarForm.customSpecialization);
 
     if (!avatarForm.name || !specialty || approaches.length === 0 || !avatarForm.about ||
-        (avatarForm.experienceYears === 0 && avatarForm.experienceMonths === 0) || specs.length === 0) {
+        (avatarForm.experienceYears === 0 && avatarForm.experienceMonths === 0)) {
       alert('Please fill in all required fields');
       return;
     }
 
     if (approaches.length > 3) {
       alert('Maximum 3 therapeutic approaches allowed');
-      return;
-    }
-
-    if (specs.length > 3) {
-      alert('Maximum 3 specializations allowed');
       return;
     }
 
@@ -261,7 +239,6 @@ const HamoPro = () => {
       about: avatarForm.about,
       experience_years: avatarForm.experienceYears,
       experience_months: avatarForm.experienceMonths,
-      specializations: specs,
     });
 
     if (result.success) {
@@ -274,7 +251,6 @@ const HamoPro = () => {
         about: avatarForm.about,
         experienceYears: avatarForm.experienceYears,
         experienceMonths: avatarForm.experienceMonths,
-        specializations: specs,
       }]);
       console.log('✅ Avatar created with backend ID:', result.avatar.id);
     } else {
@@ -288,7 +264,6 @@ const HamoPro = () => {
         about: avatarForm.about,
         experienceYears: avatarForm.experienceYears,
         experienceMonths: avatarForm.experienceMonths,
-        specializations: specs,
       }]);
     }
 
@@ -301,8 +276,6 @@ const HamoPro = () => {
       about: '',
       experienceYears: 0,
       experienceMonths: 0,
-      specializations: [],
-      customSpecialization: ''
     });
     setShowAvatarForm(false);
   };
@@ -813,29 +786,6 @@ const HamoPro = () => {
                     </div>
                   </div>
 
-                  {/* Specializations - Multi Select (1-3) */}
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Specializations <span className="text-red-500">*</span> <span className="text-gray-400 text-xs">(Select 1-3)</span></label>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {specializationOptions.map(opt => (
-                        <button
-                          key={opt}
-                          type="button"
-                          onClick={() => {
-                            if (avatarForm.specializations.includes(opt)) {
-                              setAvatarForm({ ...avatarForm, specializations: avatarForm.specializations.filter(s => s !== opt) });
-                            } else if (avatarForm.specializations.length < 3) {
-                              setAvatarForm({ ...avatarForm, specializations: [...avatarForm.specializations, opt] });
-                            }
-                          }}
-                          className={`px-3 py-1 text-sm rounded-full border ${avatarForm.specializations.includes(opt) ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'}`}
-                        >
-                          {opt}
-                        </button>
-                      ))}
-                    </div>
-                    <input type="text" value={avatarForm.customSpecialization} onChange={(e) => setAvatarForm({ ...avatarForm, customSpecialization: e.target.value })} className="w-full px-4 py-2 border rounded-lg" placeholder="Or add custom specialization" />
-                  </div>
                 </div>
                 <div className="flex space-x-3 mt-4">
                   <button onClick={handleCreateAvatar} className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600">Create</button>
@@ -886,14 +836,6 @@ const HamoPro = () => {
                         )}
                       </div>
 
-                      {/* Specializations Tags */}
-                      {a.specializations && a.specializations.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mt-2">
-                          {a.specializations.map((s, i) => (
-                            <span key={i} className="px-2.5 py-1 bg-purple-100 text-purple-600 text-xs rounded-full">{s}</span>
-                          ))}
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -961,17 +903,6 @@ const HamoPro = () => {
                       </div>
                     )}
 
-                    {/* Specializations */}
-                    {selectedAvatar.specializations && selectedAvatar.specializations.length > 0 && (
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-500 mb-2">Specializations</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {selectedAvatar.specializations.map((s, i) => (
-                            <span key={i} className="px-3 py-1.5 bg-purple-100 text-purple-700 text-sm rounded-full font-medium">{s}</span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
                   </div>
 
                   {/* Footer */}
