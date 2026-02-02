@@ -1,5 +1,5 @@
-// Hamo Pro API Service v1.3.6
-// Integrates with Hamo-UME Backend v1.3.6
+// Hamo Pro API Service v1.3.7
+// Integrates with Hamo-UME Backend v1.3.7
 // Production: https://api.hamo.ai/api
 // AWS Deployment with Custom Domain and HTTPS
 
@@ -218,10 +218,12 @@ class ApiService {
     try {
       const requestBody = {
         name: avatarData.name,
-        theory: avatarData.theory || '',
-        methodology: avatarData.methodology || '',
-        principles: avatarData.principles || '',
-        description: avatarData.description || '',
+        specialty: avatarData.specialty || '',
+        therapeutic_approaches: avatarData.therapeutic_approaches || [],
+        about: avatarData.about || '',
+        experience_years: avatarData.experience_years || 0,
+        experience_months: avatarData.experience_months || 0,
+        specializations: avatarData.specializations || [],
       };
       console.log('🔵 Creating avatar with:', requestBody);
 
@@ -237,10 +239,12 @@ class ApiService {
         avatar: {
           id: response.id,
           name: response.name,
-          theory: response.theory,
-          methodology: response.methodology,
-          principles: response.principles,
-          description: response.description,
+          specialty: response.specialty,
+          therapeuticApproaches: response.therapeutic_approaches,
+          about: response.about,
+          experienceYears: response.experience_years,
+          experienceMonths: response.experience_months,
+          specializations: response.specializations,
         },
       };
     } catch (error) {
@@ -270,10 +274,16 @@ class ApiService {
         avatars: avatars.map(avatar => ({
           id: avatar.id,
           name: avatar.name,
+          specialty: avatar.specialty,
+          therapeuticApproaches: avatar.therapeutic_approaches || avatar.therapeuticApproaches,
+          about: avatar.about,
+          experienceYears: avatar.experience_years || avatar.experienceYears,
+          experienceMonths: avatar.experience_months || avatar.experienceMonths,
+          specializations: avatar.specializations,
+          // Legacy fields for backward compatibility
           theory: avatar.theory,
           methodology: avatar.methodology,
           principles: avatar.principles,
-          description: avatar.description,
         })),
       };
     } catch (error) {

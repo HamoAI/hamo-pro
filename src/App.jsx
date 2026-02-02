@@ -3,7 +3,43 @@ import { User, Brain, BarChart3, Plus, Ticket, Eye, Clock, MessageSquare, LogOut
 import apiService from './services/api';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.3.6";
+  const APP_VERSION = "1.3.7";
+
+  // Avatar form options
+  const specialtyOptions = [
+    'Depression & Anxiety',
+    'NPD & Personality Disorders',
+    'Family & Couples Therapy',
+    'Child & Adolescent Therapy',
+    'Stress & Burnout',
+    'PTSD & Trauma',
+    'Substance Abuse & Addiction',
+    'OCD & Anxiety Disorders'
+  ];
+
+  const therapeuticApproachOptions = [
+    'Cognitive Behavioral Therapy',
+    'Dialectical Behaviour Therapy',
+    'Family Systems Therapy',
+    'Play Therapy & Child Psychology',
+    'Mindfulness-Based Therapy',
+    'Trauma-Focused Therapy',
+    'Addiction Recovery Therapy',
+    'Acceptance and Commitment Therapy'
+  ];
+
+  const specializationOptions = [
+    'NPD Therapist',
+    'Depression Psychologist',
+    'Family Relation Therapist',
+    'Child Therapist',
+    'Anxiety Specialist',
+    'Couples Counseling',
+    'Trauma Specialist',
+    'Addiction Therapist',
+    'OCD Specialist',
+    'Stress Management'
+  ];
   
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authMode, setAuthMode] = useState('signin');
@@ -32,7 +68,18 @@ const HamoPro = () => {
   const [showInvitationCard, setShowInvitationCard] = useState(null);
   const [invitationCode, setInvitationCode] = useState('');
   const [invitationLoading, setInvitationLoading] = useState(false);
-  const [avatarForm, setAvatarForm] = useState({ name: '', theory: '', methodology: '', principles: '' });
+  const [avatarForm, setAvatarForm] = useState({
+    name: '',
+    specialty: '',
+    customSpecialty: '',
+    therapeuticApproaches: [],
+    customApproach: '',
+    about: '',
+    experienceYears: 0,
+    experienceMonths: 0,
+    specializations: [],
+    customSpecialization: ''
+  });
   const [clientForm, setClientForm] = useState({ name: '', sex: '', age: '', emotionPattern: '', personality: '', cognition: '', goals: '', therapyPrinciples: '', avatarId: '' });
 
   // Load avatars and clients from backend
@@ -177,32 +224,86 @@ const HamoPro = () => {
   };
 
   const handleCreateAvatar = async () => {
-    if (avatarForm.name && avatarForm.theory) {
-      // Call API to create avatar and get backend-generated ID
-      const result = await apiService.createAvatar({
-        name: avatarForm.name,
-        theory: avatarForm.theory,
-        methodology: avatarForm.methodology,
-        principles: avatarForm.principles,
-        description: '',
-      });
+    // Validate required fields
+    const specialty = avatarForm.specialty === 'custom' ? avatarForm.customSpecialty : avatarForm.specialty;
+    const approaches = [...avatarForm.therapeuticApproaches];
+    if (avatarForm.customApproach) approaches.push(avatarForm.customApproach);
+    const specs = [...avatarForm.specializations];
+    if (avatarForm.customSpecialization) specs.push(avatarForm.customSpecialization);
 
-      if (result.success) {
-        // Use backend-generated avatar ID
-        setAvatars([...avatars, {
-          ...avatarForm,
-          id: result.avatar.id,
-        }]);
-        console.log('✅ Avatar created with backend ID:', result.avatar.id);
-      } else {
-        // Fallback to local ID if API fails
-        console.warn('⚠️ API failed, using local ID:', result.error);
-        setAvatars([...avatars, { ...avatarForm, id: Date.now() }]);
-      }
-
-      setAvatarForm({ name: '', theory: '', methodology: '', principles: '' });
-      setShowAvatarForm(false);
+    if (!avatarForm.name || !specialty || approaches.length === 0 || !avatarForm.about ||
+        (avatarForm.experienceYears === 0 && avatarForm.experienceMonths === 0) || specs.length === 0) {
+      alert('Please fill in all required fields');
+      return;
     }
+
+    if (approaches.length > 3) {
+      alert('Maximum 3 therapeutic approaches allowed');
+      return;
+    }
+
+    if (specs.length > 3) {
+      alert('Maximum 3 specializations allowed');
+      return;
+    }
+
+    if (avatarForm.about.length > 280) {
+      alert('About section must be 280 characters or less');
+      return;
+    }
+
+    // Call API to create avatar and get backend-generated ID
+    const result = await apiService.createAvatar({
+      name: avatarForm.name,
+      specialty: specialty,
+      therapeutic_approaches: approaches,
+      about: avatarForm.about,
+      experience_years: avatarForm.experienceYears,
+      experience_months: avatarForm.experienceMonths,
+      specializations: specs,
+    });
+
+    if (result.success) {
+      // Use backend-generated avatar ID
+      setAvatars([...avatars, {
+        id: result.avatar.id,
+        name: avatarForm.name,
+        specialty: specialty,
+        therapeuticApproaches: approaches,
+        about: avatarForm.about,
+        experienceYears: avatarForm.experienceYears,
+        experienceMonths: avatarForm.experienceMonths,
+        specializations: specs,
+      }]);
+      console.log('✅ Avatar created with backend ID:', result.avatar.id);
+    } else {
+      // Fallback to local ID if API fails
+      console.warn('⚠️ API failed, using local ID:', result.error);
+      setAvatars([...avatars, {
+        id: Date.now(),
+        name: avatarForm.name,
+        specialty: specialty,
+        therapeuticApproaches: approaches,
+        about: avatarForm.about,
+        experienceYears: avatarForm.experienceYears,
+        experienceMonths: avatarForm.experienceMonths,
+        specializations: specs,
+      }]);
+    }
+
+    setAvatarForm({
+      name: '',
+      specialty: '',
+      customSpecialty: '',
+      therapeuticApproaches: [],
+      customApproach: '',
+      about: '',
+      experienceYears: 0,
+      experienceMonths: 0,
+      specializations: [],
+      customSpecialization: ''
+    });
+    setShowAvatarForm(false);
   };
 
   const handleCreateClient = async () => {
@@ -637,15 +738,107 @@ const HamoPro = () => {
             {showAvatarForm && (
               <div className="bg-white rounded-xl shadow-md p-6 space-y-4">
                 <h3 className="text-lg font-semibold">Create New AI Avatar</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div><label className="block text-sm font-medium mb-1">Avatar Name</label><input type="text" value={avatarForm.name} onChange={(e) => setAvatarForm({ ...avatarForm, name: e.target.value })} className="w-full px-4 py-2 border rounded-lg" placeholder="e.g., Dr. Compassion" /></div>
-                  <div><label className="block text-sm font-medium mb-1">Theory</label><input type="text" value={avatarForm.theory} onChange={(e) => setAvatarForm({ ...avatarForm, theory: e.target.value })} className="w-full px-4 py-2 border rounded-lg" placeholder="e.g., Cognitive Behavioral Therapy" /></div>
-                  <div><label className="block text-sm font-medium mb-1">Methodology</label><input type="text" value={avatarForm.methodology} onChange={(e) => setAvatarForm({ ...avatarForm, methodology: e.target.value })} className="w-full px-4 py-2 border rounded-lg" placeholder="e.g., Solution-Focused Brief Therapy" /></div>
-                  <div><label className="block text-sm font-medium mb-1">Principles</label><input type="text" value={avatarForm.principles} onChange={(e) => setAvatarForm({ ...avatarForm, principles: e.target.value })} className="w-full px-4 py-2 border rounded-lg" placeholder="e.g., Empathy, Active Listening, Non-judgment" /></div>
+                <div className="space-y-4">
+                  {/* Avatar Name */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Avatar Name <span className="text-red-500">*</span></label>
+                    <input type="text" value={avatarForm.name} onChange={(e) => setAvatarForm({ ...avatarForm, name: e.target.value })} className="w-full px-4 py-2 border rounded-lg" placeholder="e.g., Dr. Emily Chen" />
+                  </div>
+
+                  {/* Specialty - Single Select */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Specialty <span className="text-red-500">*</span></label>
+                    <select value={avatarForm.specialty} onChange={(e) => setAvatarForm({ ...avatarForm, specialty: e.target.value })} className="w-full px-4 py-2 border rounded-lg">
+                      <option value="">Select Specialty</option>
+                      {specialtyOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                      <option value="custom">Other (Custom)</option>
+                    </select>
+                    {avatarForm.specialty === 'custom' && (
+                      <input type="text" value={avatarForm.customSpecialty} onChange={(e) => setAvatarForm({ ...avatarForm, customSpecialty: e.target.value })} className="w-full px-4 py-2 border rounded-lg mt-2" placeholder="Enter custom specialty" />
+                    )}
+                  </div>
+
+                  {/* Therapeutic Approach - Multi Select (1-3) */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Therapeutic Approach <span className="text-red-500">*</span> <span className="text-gray-400 text-xs">(Select 1-3)</span></label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {therapeuticApproachOptions.map(opt => (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => {
+                            if (avatarForm.therapeuticApproaches.includes(opt)) {
+                              setAvatarForm({ ...avatarForm, therapeuticApproaches: avatarForm.therapeuticApproaches.filter(a => a !== opt) });
+                            } else if (avatarForm.therapeuticApproaches.length < 3) {
+                              setAvatarForm({ ...avatarForm, therapeuticApproaches: [...avatarForm.therapeuticApproaches, opt] });
+                            }
+                          }}
+                          className={`px-3 py-1 text-sm rounded-full border ${avatarForm.therapeuticApproaches.includes(opt) ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'}`}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                    <input type="text" value={avatarForm.customApproach} onChange={(e) => setAvatarForm({ ...avatarForm, customApproach: e.target.value })} className="w-full px-4 py-2 border rounded-lg" placeholder="Or add custom approach" />
+                  </div>
+
+                  {/* About */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">About <span className="text-red-500">*</span></label>
+                    <textarea
+                      value={avatarForm.about}
+                      onChange={(e) => setAvatarForm({ ...avatarForm, about: e.target.value.slice(0, 280) })}
+                      className="w-full px-4 py-2 border rounded-lg"
+                      rows="3"
+                      placeholder="Describe the avatar's expertise and approach..."
+                    />
+                    <p className="text-xs text-gray-400 mt-1">{avatarForm.about.length}/280 characters</p>
+                  </div>
+
+                  {/* Experience */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Experience <span className="text-red-500">*</span></label>
+                    <div className="flex space-x-4">
+                      <div className="flex-1">
+                        <select value={avatarForm.experienceYears} onChange={(e) => setAvatarForm({ ...avatarForm, experienceYears: parseInt(e.target.value) })} className="w-full px-4 py-2 border rounded-lg">
+                          {[...Array(51)].map((_, i) => <option key={i} value={i}>{i} {i === 1 ? 'year' : 'years'}</option>)}
+                        </select>
+                      </div>
+                      <div className="flex-1">
+                        <select value={avatarForm.experienceMonths} onChange={(e) => setAvatarForm({ ...avatarForm, experienceMonths: parseInt(e.target.value) })} className="w-full px-4 py-2 border rounded-lg">
+                          {[...Array(12)].map((_, i) => <option key={i} value={i}>{i} {i === 1 ? 'month' : 'months'}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Specializations - Multi Select (1-3) */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Specializations <span className="text-red-500">*</span> <span className="text-gray-400 text-xs">(Select 1-3)</span></label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {specializationOptions.map(opt => (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => {
+                            if (avatarForm.specializations.includes(opt)) {
+                              setAvatarForm({ ...avatarForm, specializations: avatarForm.specializations.filter(s => s !== opt) });
+                            } else if (avatarForm.specializations.length < 3) {
+                              setAvatarForm({ ...avatarForm, specializations: [...avatarForm.specializations, opt] });
+                            }
+                          }}
+                          className={`px-3 py-1 text-sm rounded-full border ${avatarForm.specializations.includes(opt) ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'}`}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                    <input type="text" value={avatarForm.customSpecialization} onChange={(e) => setAvatarForm({ ...avatarForm, customSpecialization: e.target.value })} className="w-full px-4 py-2 border rounded-lg" placeholder="Or add custom specialization" />
+                  </div>
                 </div>
-                <div className="flex space-x-3">
-                  <button onClick={handleCreateAvatar} className="bg-blue-500 text-white px-6 py-2 rounded-lg">Create</button>
-                  <button onClick={() => setShowAvatarForm(false)} className="bg-gray-200 px-6 py-2 rounded-lg">Cancel</button>
+                <div className="flex space-x-3 mt-4">
+                  <button onClick={handleCreateAvatar} className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600">Create</button>
+                  <button onClick={() => setShowAvatarForm(false)} className="bg-gray-200 px-6 py-2 rounded-lg hover:bg-gray-300">Cancel</button>
                 </div>
               </div>
             )}
@@ -653,8 +846,20 @@ const HamoPro = () => {
               {avatars.map(a => (
                 <div key={a.id} className="bg-white rounded-xl shadow-md p-6">
                   <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-teal-400 rounded-full flex items-center justify-center mb-4"><Brain className="w-6 h-6 text-white" /></div>
-                  <h3 className="text-lg font-semibold mb-2">{a.name}</h3>
-                  <p className="text-sm text-gray-600"><span className="font-medium">Theory:</span> {a.theory}</p>
+                  <h3 className="text-lg font-semibold mb-1">{a.name}</h3>
+                  <p className="text-sm text-blue-600 mb-2">{a.specialty || a.theory}</p>
+                  {a.therapeuticApproaches && <p className="text-xs text-gray-500 mb-1">{a.therapeuticApproaches.join(', ')}</p>}
+                  {(a.experienceYears !== undefined || a.experienceMonths !== undefined) && (
+                    <p className="text-xs text-gray-400">{a.experienceYears || 0}y {a.experienceMonths || 0}m experience</p>
+                  )}
+                  {a.specializations && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {a.specializations.slice(0, 2).map((s, i) => (
+                        <span key={i} className="px-2 py-0.5 bg-purple-100 text-purple-600 text-xs rounded-full">{s}</span>
+                      ))}
+                      {a.specializations.length > 2 && <span className="text-xs text-gray-400">+{a.specializations.length - 2}</span>}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
