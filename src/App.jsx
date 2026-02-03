@@ -3,7 +3,7 @@ import { User, Brain, BarChart3, Plus, Ticket, Eye, Clock, MessageSquare, LogOut
 import apiService from './services/api';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.3.7";
+  const APP_VERSION = "1.3.8";
 
   // Avatar form options
   const specialtyOptions = [
@@ -710,32 +710,66 @@ const HamoPro = () => {
               <button onClick={() => setShowAvatarForm(!showAvatarForm)} className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-lg"><Plus className="w-5 h-5" /><span>Create Avatar</span></button>
             </div>
             {showAvatarForm && (
-              <div className="bg-white rounded-xl shadow-md p-6 space-y-4">
-                <h3 className="text-lg font-semibold">Create New AI Avatar</h3>
+              <div className="bg-white rounded-xl shadow-md p-6">
+                <h3 className="text-lg font-semibold mb-5">Create New AI Avatar</h3>
+
                 <div className="space-y-4">
-                  {/* Avatar Name */}
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Avatar Name <span className="text-red-500">*</span></label>
-                    <input type="text" value={avatarForm.name} onChange={(e) => setAvatarForm({ ...avatarForm, name: e.target.value })} className="w-full px-4 py-2 border rounded-lg" placeholder="e.g., Dr. Emily Chen" />
+                  {/* Section 1: Basic Identity - Blue tint */}
+                  <div className="bg-blue-50/70 rounded-xl p-4 space-y-4">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                        <User className="w-3.5 h-3.5 text-white" />
+                      </div>
+                      <span className="text-sm font-semibold text-blue-700">Basic Identity</span>
+                    </div>
+
+                    {/* Avatar Name */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Avatar Name <span className="text-red-500">*</span></label>
+                      <input
+                        type="text"
+                        value={avatarForm.name}
+                        onChange={(e) => setAvatarForm({ ...avatarForm, name: e.target.value })}
+                        className="w-full px-4 py-2.5 border border-blue-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all"
+                        placeholder="e.g., Dr. Emily Chen"
+                      />
+                    </div>
+
+                    {/* Specialty */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Specialty <span className="text-red-500">*</span></label>
+                      <select
+                        value={avatarForm.specialty}
+                        onChange={(e) => setAvatarForm({ ...avatarForm, specialty: e.target.value })}
+                        className="w-full px-4 py-2.5 border border-blue-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all"
+                      >
+                        <option value="">Select Specialty</option>
+                        {specialtyOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                        <option value="custom">Other (Custom)</option>
+                      </select>
+                      {avatarForm.specialty === 'custom' && (
+                        <input
+                          type="text"
+                          value={avatarForm.customSpecialty}
+                          onChange={(e) => setAvatarForm({ ...avatarForm, customSpecialty: e.target.value })}
+                          className="w-full px-4 py-2.5 border border-blue-200 rounded-lg bg-white mt-2 focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all"
+                          placeholder="Enter custom specialty"
+                        />
+                      )}
+                    </div>
                   </div>
 
-                  {/* Specialty - Single Select */}
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Specialty <span className="text-red-500">*</span></label>
-                    <select value={avatarForm.specialty} onChange={(e) => setAvatarForm({ ...avatarForm, specialty: e.target.value })} className="w-full px-4 py-2 border rounded-lg">
-                      <option value="">Select Specialty</option>
-                      {specialtyOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                      <option value="custom">Other (Custom)</option>
-                    </select>
-                    {avatarForm.specialty === 'custom' && (
-                      <input type="text" value={avatarForm.customSpecialty} onChange={(e) => setAvatarForm({ ...avatarForm, customSpecialty: e.target.value })} className="w-full px-4 py-2 border rounded-lg mt-2" placeholder="Enter custom specialty" />
-                    )}
-                  </div>
+                  {/* Section 2: Therapeutic Approach - Teal tint */}
+                  <div className="bg-teal-50/70 rounded-xl p-4">
+                    <div className="flex items-center space-x-2 mb-3">
+                      <div className="w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center">
+                        <Brain className="w-3.5 h-3.5 text-white" />
+                      </div>
+                      <span className="text-sm font-semibold text-teal-700">Therapeutic Approach</span>
+                      <span className="text-xs text-teal-500 ml-1">(Select 1-3)</span>
+                    </div>
 
-                  {/* Therapeutic Approach - Multi Select (1-3) */}
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Therapeutic Approach <span className="text-red-500">*</span> <span className="text-gray-400 text-xs">(Select 1-3)</span></label>
-                    <div className="flex flex-wrap gap-2 mb-2">
+                    <div className="flex flex-wrap gap-2 mb-3">
                       {therapeuticApproachOptions.map(opt => (
                         <button
                           key={opt}
@@ -747,49 +781,78 @@ const HamoPro = () => {
                               setAvatarForm({ ...avatarForm, therapeuticApproaches: [...avatarForm.therapeuticApproaches, opt] });
                             }
                           }}
-                          className={`px-3 py-1 text-sm rounded-full border ${avatarForm.therapeuticApproaches.includes(opt) ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'}`}
+                          className={`px-3 py-1.5 text-sm rounded-full border transition-all ${avatarForm.therapeuticApproaches.includes(opt) ? 'bg-teal-500 text-white border-teal-500 shadow-sm' : 'bg-white text-gray-600 border-teal-200 hover:border-teal-400 hover:bg-teal-50'}`}
                         >
                           {opt}
                         </button>
                       ))}
                     </div>
-                    <input type="text" value={avatarForm.customApproach} onChange={(e) => setAvatarForm({ ...avatarForm, customApproach: e.target.value })} className="w-full px-4 py-2 border rounded-lg" placeholder="Or add custom approach" />
+                    <input
+                      type="text"
+                      value={avatarForm.customApproach}
+                      onChange={(e) => setAvatarForm({ ...avatarForm, customApproach: e.target.value })}
+                      className="w-full px-4 py-2.5 border border-teal-200 rounded-lg bg-white focus:ring-2 focus:ring-teal-300 focus:border-teal-300 transition-all"
+                      placeholder="Or add custom approach"
+                    />
                   </div>
 
-                  {/* About */}
-                  <div>
-                    <label className="block text-sm font-medium mb-1">About <span className="text-red-500">*</span></label>
+                  {/* Section 3: About - Purple tint */}
+                  <div className="bg-purple-50/70 rounded-xl p-4">
+                    <div className="flex items-center space-x-2 mb-3">
+                      <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
+                        <MessageSquare className="w-3.5 h-3.5 text-white" />
+                      </div>
+                      <span className="text-sm font-semibold text-purple-700">About</span>
+                    </div>
+
                     <textarea
                       value={avatarForm.about}
                       onChange={(e) => setAvatarForm({ ...avatarForm, about: e.target.value.slice(0, 280) })}
-                      className="w-full px-4 py-2 border rounded-lg"
+                      className="w-full px-4 py-2.5 border border-purple-200 rounded-lg bg-white focus:ring-2 focus:ring-purple-300 focus:border-purple-300 transition-all resize-none"
                       rows="3"
                       placeholder="Describe the avatar's expertise and approach..."
                     />
-                    <p className="text-xs text-gray-400 mt-1">{avatarForm.about.length}/280 characters</p>
+                    <p className="text-xs text-purple-400 mt-1.5">{avatarForm.about.length}/280 characters</p>
                   </div>
 
-                  {/* Experience */}
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Experience <span className="text-red-500">*</span></label>
+                  {/* Section 4: Experience - Amber tint */}
+                  <div className="bg-amber-50/70 rounded-xl p-4">
+                    <div className="flex items-center space-x-2 mb-3">
+                      <div className="w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center">
+                        <Briefcase className="w-3.5 h-3.5 text-white" />
+                      </div>
+                      <span className="text-sm font-semibold text-amber-700">Experience</span>
+                    </div>
+
                     <div className="flex space-x-4">
                       <div className="flex-1">
-                        <select value={avatarForm.experienceYears} onChange={(e) => setAvatarForm({ ...avatarForm, experienceYears: parseInt(e.target.value) })} className="w-full px-4 py-2 border rounded-lg">
+                        <label className="block text-xs text-amber-600 mb-1">Years</label>
+                        <select
+                          value={avatarForm.experienceYears}
+                          onChange={(e) => setAvatarForm({ ...avatarForm, experienceYears: parseInt(e.target.value) })}
+                          className="w-full px-4 py-2.5 border border-amber-200 rounded-lg bg-white focus:ring-2 focus:ring-amber-300 focus:border-amber-300 transition-all"
+                        >
                           {[...Array(51)].map((_, i) => <option key={i} value={i}>{i} {i === 1 ? 'year' : 'years'}</option>)}
                         </select>
                       </div>
                       <div className="flex-1">
-                        <select value={avatarForm.experienceMonths} onChange={(e) => setAvatarForm({ ...avatarForm, experienceMonths: parseInt(e.target.value) })} className="w-full px-4 py-2 border rounded-lg">
+                        <label className="block text-xs text-amber-600 mb-1">Months</label>
+                        <select
+                          value={avatarForm.experienceMonths}
+                          onChange={(e) => setAvatarForm({ ...avatarForm, experienceMonths: parseInt(e.target.value) })}
+                          className="w-full px-4 py-2.5 border border-amber-200 rounded-lg bg-white focus:ring-2 focus:ring-amber-300 focus:border-amber-300 transition-all"
+                        >
                           {[...Array(12)].map((_, i) => <option key={i} value={i}>{i} {i === 1 ? 'month' : 'months'}</option>)}
                         </select>
                       </div>
                     </div>
                   </div>
-
                 </div>
-                <div className="flex space-x-3 mt-4">
-                  <button onClick={handleCreateAvatar} className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600">Create</button>
-                  <button onClick={() => setShowAvatarForm(false)} className="bg-gray-200 px-6 py-2 rounded-lg hover:bg-gray-300">Cancel</button>
+
+                {/* Action Buttons */}
+                <div className="flex space-x-3 mt-6 pt-4 border-t border-gray-100">
+                  <button onClick={handleCreateAvatar} className="flex-1 bg-gradient-to-r from-blue-500 to-teal-500 text-white px-6 py-2.5 rounded-lg font-medium hover:from-blue-600 hover:to-teal-600 transition-all shadow-sm">Create Avatar</button>
+                  <button onClick={() => setShowAvatarForm(false)} className="px-6 py-2.5 bg-gray-100 text-gray-600 rounded-lg font-medium hover:bg-gray-200 transition-all">Cancel</button>
                 </div>
               </div>
             )}
