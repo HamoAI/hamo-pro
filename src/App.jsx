@@ -3,7 +3,7 @@ import { User, Brain, BarChart3, Plus, Ticket, Eye, Clock, MessageSquare, LogOut
 import apiService from './services/api';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.3.10";
+  const APP_VERSION = "1.4.0";
 
   // Contributors list
   const contributors = ['Chris Cheng', 'Anthropic Claude', 'Kerwin Du', 'Amy Chan'];
@@ -1068,50 +1068,121 @@ const HamoPro = () => {
             </div>
             
             {selectedMindClient && (
-              <div className="bg-white rounded-xl shadow-md p-6 mt-4">
-                <div className="flex justify-between mb-6">
-                  <h3 className="text-lg font-semibold flex items-center space-x-2">
-                    <Sparkles className="w-5 h-5 text-purple-500" />
-                    <span>AI Mind - {selectedMindClient.name}</span>
-                  </h3>
-                  <button onClick={() => { setSelectedMindClient(null); setMindData(null); }} className="text-gray-500 hover:text-gray-700">Close</button>
+              <div className="bg-white rounded-xl shadow-lg mt-4 overflow-hidden">
+                {/* Header with gradient */}
+                <div className="bg-gradient-to-r from-purple-500 to-indigo-600 px-6 py-4">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                        <Sparkles className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-white flex items-center space-x-2">
+                          <span>AI Mind</span>
+                        </h3>
+                        <p className="text-purple-100 text-sm">Psychological Profile Analysis</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => { setSelectedMindClient(null); setMindData(null); }}
+                      className="text-white/80 hover:text-white hover:bg-white/20 p-1 rounded-full transition-colors"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
+
                 {mindLoading ? (
-                  <div className="text-center py-8 text-gray-500">Loading AI Mind data...</div>
+                  <div className="text-center py-12 text-gray-500">
+                    <div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-3"></div>
+                    <p>Loading AI Mind data...</p>
+                  </div>
                 ) : mindData?.error ? (
-                  <div className="text-center py-8 text-red-500">{mindData.error}</div>
+                  <div className="text-center py-12 text-red-500">{mindData.error}</div>
                 ) : mindData ? (
-                  <div className="space-y-4">
+                  <div className="p-6 space-y-5">
+                    {/* Client Info Card */}
+                    <div className="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-4 border border-gray-100">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-14 h-14 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                            {mindData.name?.charAt(0) || '?'}
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-900 text-lg">{mindData.name || selectedMindClient.name}</h4>
+                            <div className="flex items-center space-x-3 text-sm text-gray-500 mt-1">
+                              {mindData.sex && <span className="capitalize">{mindData.sex}</span>}
+                              {mindData.age && <span>• {mindData.age} years old</span>}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          {mindData.avatar_name && (
+                            <div className="flex items-center space-x-2 text-sm">
+                              <Brain className="w-4 h-4 text-purple-500" />
+                              <span className="text-gray-600">{mindData.avatar_name}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center space-x-4 mt-2 text-xs text-gray-400">
+                            {mindData.sessions !== undefined && (
+                              <span className="flex items-center space-x-1">
+                                <MessageSquare className="w-3 h-3" />
+                                <span>{mindData.sessions} sessions</span>
+                              </span>
+                            )}
+                            {mindData.avg_time !== undefined && (
+                              <span className="flex items-center space-x-1">
+                                <Clock className="w-3 h-3" />
+                                <span>{mindData.avg_time} min avg</span>
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Personality Section */}
                     {mindData.personality && (
-                      <div className="bg-purple-50 rounded-lg p-4">
-                        <h4 className="font-medium text-purple-700 mb-3">Personality</h4>
+                      <div className="bg-purple-50/70 rounded-xl p-4 border border-purple-100">
+                        <div className="flex items-center space-x-2 mb-4">
+                          <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
+                            <User className="w-4 h-4 text-white" />
+                          </div>
+                          <h4 className="font-semibold text-purple-800">Personality Traits</h4>
+                        </div>
+
                         {mindData.personality.primary_traits?.length > 0 && (
-                          <div className="mb-2">
-                            <span className="text-xs text-purple-600 font-medium">Primary Traits: </span>
-                            <span className="text-sm text-gray-700">{mindData.personality.primary_traits.join(', ')}</span>
+                          <div className="mb-4">
+                            <span className="text-xs font-medium text-purple-600 uppercase tracking-wide">Primary Traits</span>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {mindData.personality.primary_traits.map((trait, idx) => (
+                                <span key={idx} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                                  {trait}
+                                </span>
+                              ))}
+                            </div>
                           </div>
                         )}
-                        <div className="grid grid-cols-5 gap-2 mt-2">
-                          <div className="text-center"><div className="text-lg font-bold text-purple-600">{mindData.personality.openness || 0}</div><div className="text-xs text-gray-500">Openness</div></div>
-                          <div className="text-center"><div className="text-lg font-bold text-purple-600">{mindData.personality.conscientiousness || 0}</div><div className="text-xs text-gray-500">Conscient.</div></div>
-                          <div className="text-center"><div className="text-lg font-bold text-purple-600">{mindData.personality.extraversion || 0}</div><div className="text-xs text-gray-500">Extraversion</div></div>
-                          <div className="text-center"><div className="text-lg font-bold text-purple-600">{mindData.personality.agreeableness || 0}</div><div className="text-xs text-gray-500">Agreeable.</div></div>
-                          <div className="text-center"><div className="text-lg font-bold text-purple-600">{mindData.personality.neuroticism || 0}</div><div className="text-xs text-gray-500">Neuroticism</div></div>
-                        </div>
-                        {mindData.personality.description && <p className="text-sm text-gray-600 mt-2">{mindData.personality.description}</p>}
-                        <div className="flex mt-3 pt-3 border-t border-purple-200">
+
+                        {mindData.personality.description && (
+                          <p className="text-sm text-gray-600 bg-white/60 rounded-lg p-3 italic">
+                            "{mindData.personality.description}"
+                          </p>
+                        )}
+
+                        {/* Supervision Input */}
+                        <div className="flex mt-4 pt-3 border-t border-purple-200">
                           <input
                             type="text"
                             value={supervisionInputs.personality}
                             onChange={(e) => setSupervisionInputs(prev => ({ ...prev, personality: e.target.value }))}
                             placeholder="Enter supervision feedback..."
-                            className="flex-1 px-3 py-2 text-sm border border-purple-200 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-purple-400"
+                            className="flex-1 px-3 py-2 text-sm border border-purple-200 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white"
                           />
                           <button
                             onClick={() => handleSupervise('personality')}
                             disabled={!supervisionInputs.personality.trim() || supervisionLoading.personality}
-                            className="px-4 py-2 bg-purple-500 text-white text-sm font-medium rounded-r-lg hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                            className="px-4 py-2 bg-purple-500 text-white text-sm font-medium rounded-r-lg hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1 transition-colors"
                           >
                             <Send className="w-4 h-4" />
                             <span>{supervisionLoading.personality ? '...' : 'Supervise'}</span>
@@ -1122,45 +1193,74 @@ const HamoPro = () => {
 
                     {/* Emotion Pattern Section */}
                     {mindData.emotion_pattern && (
-                      <div className="bg-blue-50 rounded-lg p-4">
-                        <h4 className="font-medium text-blue-700 mb-3">Emotion Pattern</h4>
-                        {mindData.emotion_pattern.dominant_emotions?.length > 0 && (
-                          <div className="mb-2">
-                            <span className="text-xs text-blue-600 font-medium">Dominant Emotions: </span>
-                            <span className="text-sm text-gray-700">{mindData.emotion_pattern.dominant_emotions.join(', ')}</span>
+                      <div className="bg-blue-50/70 rounded-xl p-4 border border-blue-100">
+                        <div className="flex items-center space-x-2 mb-4">
+                          <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                            <span className="text-white text-lg">💭</span>
                           </div>
+                          <h4 className="font-semibold text-blue-800">Emotion Pattern</h4>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                          {mindData.emotion_pattern.dominant_emotions?.length > 0 && (
+                            <div className="bg-white/60 rounded-lg p-3">
+                              <span className="text-xs font-medium text-blue-600 uppercase tracking-wide">Dominant Emotions</span>
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {mindData.emotion_pattern.dominant_emotions.map((emotion, idx) => (
+                                  <span key={idx} className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">
+                                    {emotion}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {mindData.emotion_pattern.triggers?.length > 0 && (
+                            <div className="bg-white/60 rounded-lg p-3">
+                              <span className="text-xs font-medium text-blue-600 uppercase tracking-wide">Triggers</span>
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {mindData.emotion_pattern.triggers.map((trigger, idx) => (
+                                  <span key={idx} className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-xs">
+                                    {trigger}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {mindData.emotion_pattern.coping_mechanisms?.length > 0 && (
+                            <div className="bg-white/60 rounded-lg p-3">
+                              <span className="text-xs font-medium text-blue-600 uppercase tracking-wide">Coping Mechanisms</span>
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {mindData.emotion_pattern.coping_mechanisms.map((mechanism, idx) => (
+                                  <span key={idx} className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs">
+                                    {mechanism}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {mindData.emotion_pattern.description && (
+                          <p className="text-sm text-gray-600 bg-white/60 rounded-lg p-3 italic">
+                            "{mindData.emotion_pattern.description}"
+                          </p>
                         )}
-                        {mindData.emotion_pattern.triggers?.length > 0 && (
-                          <div className="mb-2">
-                            <span className="text-xs text-blue-600 font-medium">Triggers: </span>
-                            <span className="text-sm text-gray-700">{mindData.emotion_pattern.triggers.join(', ')}</span>
-                          </div>
-                        )}
-                        {mindData.emotion_pattern.coping_mechanisms?.length > 0 && (
-                          <div className="mb-2">
-                            <span className="text-xs text-blue-600 font-medium">Coping Mechanisms: </span>
-                            <span className="text-sm text-gray-700">{mindData.emotion_pattern.coping_mechanisms.join(', ')}</span>
-                          </div>
-                        )}
-                        {mindData.emotion_pattern.emotional_stability !== undefined && (
-                          <div className="mb-2">
-                            <span className="text-xs text-blue-600 font-medium">Emotional Stability: </span>
-                            <span className="text-sm font-bold text-blue-700">{mindData.emotion_pattern.emotional_stability}/10</span>
-                          </div>
-                        )}
-                        {mindData.emotion_pattern.description && <p className="text-sm text-gray-600 mt-2">{mindData.emotion_pattern.description}</p>}
-                        <div className="flex mt-3 pt-3 border-t border-blue-200">
+
+                        {/* Supervision Input */}
+                        <div className="flex mt-4 pt-3 border-t border-blue-200">
                           <input
                             type="text"
                             value={supervisionInputs.emotion_pattern}
                             onChange={(e) => setSupervisionInputs(prev => ({ ...prev, emotion_pattern: e.target.value }))}
                             placeholder="Enter supervision feedback..."
-                            className="flex-1 px-3 py-2 text-sm border border-blue-200 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
+                            className="flex-1 px-3 py-2 text-sm border border-blue-200 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
                           />
                           <button
                             onClick={() => handleSupervise('emotion_pattern')}
                             disabled={!supervisionInputs.emotion_pattern.trim() || supervisionLoading.emotion_pattern}
-                            className="px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-r-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                            className="px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-r-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1 transition-colors"
                           >
                             <Send className="w-4 h-4" />
                             <span>{supervisionLoading.emotion_pattern ? '...' : 'Supervise'}</span>
@@ -1171,43 +1271,93 @@ const HamoPro = () => {
 
                     {/* Cognition & Beliefs Section */}
                     {mindData.cognition_beliefs && (
-                      <div className="bg-teal-50 rounded-lg p-4">
-                        <h4 className="font-medium text-teal-700 mb-3">Cognition & Beliefs</h4>
-                        {mindData.cognition_beliefs.core_beliefs?.length > 0 && (
-                          <div className="mb-2">
-                            <span className="text-xs text-teal-600 font-medium">Core Beliefs: </span>
-                            <span className="text-sm text-gray-700">{mindData.cognition_beliefs.core_beliefs.join(', ')}</span>
+                      <div className="bg-teal-50/70 rounded-xl p-4 border border-teal-100">
+                        <div className="flex items-center space-x-2 mb-4">
+                          <div className="w-8 h-8 bg-teal-500 rounded-lg flex items-center justify-center">
+                            <span className="text-white text-lg">🧠</span>
                           </div>
-                        )}
-                        {mindData.cognition_beliefs.cognitive_distortions?.length > 0 && (
-                          <div className="mb-2">
-                            <span className="text-xs text-teal-600 font-medium">Cognitive Distortions: </span>
-                            <span className="text-sm text-gray-700">{mindData.cognition_beliefs.cognitive_distortions.join(', ')}</span>
-                          </div>
-                        )}
-                        {mindData.cognition_beliefs.thinking_patterns?.length > 0 && (
-                          <div className="mb-2">
-                            <span className="text-xs text-teal-600 font-medium">Thinking Patterns: </span>
-                            <span className="text-sm text-gray-700">{mindData.cognition_beliefs.thinking_patterns.join(', ')}</span>
-                          </div>
-                        )}
-                        <div className="grid grid-cols-3 gap-2 mt-2">
-                          {mindData.cognition_beliefs.self_perception && <div><div className="text-xs text-teal-600 font-medium">Self Perception</div><div className="text-sm text-gray-700">{mindData.cognition_beliefs.self_perception}</div></div>}
-                          {mindData.cognition_beliefs.world_perception && <div><div className="text-xs text-teal-600 font-medium">World Perception</div><div className="text-sm text-gray-700">{mindData.cognition_beliefs.world_perception}</div></div>}
-                          {mindData.cognition_beliefs.future_perception && <div><div className="text-xs text-teal-600 font-medium">Future Perception</div><div className="text-sm text-gray-700">{mindData.cognition_beliefs.future_perception}</div></div>}
+                          <h4 className="font-semibold text-teal-800">Cognition & Beliefs</h4>
                         </div>
-                        <div className="flex mt-3 pt-3 border-t border-teal-200">
+
+                        <div className="space-y-3 mb-4">
+                          {mindData.cognition_beliefs.core_beliefs?.length > 0 && (
+                            <div className="bg-white/60 rounded-lg p-3">
+                              <span className="text-xs font-medium text-teal-600 uppercase tracking-wide">Core Beliefs</span>
+                              <div className="mt-2 space-y-1">
+                                {mindData.cognition_beliefs.core_beliefs.map((belief, idx) => (
+                                  <div key={idx} className="flex items-start space-x-2">
+                                    <span className="text-teal-400 mt-1">•</span>
+                                    <span className="text-sm text-gray-700">{belief}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {mindData.cognition_beliefs.cognitive_distortions?.length > 0 && (
+                            <div className="bg-white/60 rounded-lg p-3">
+                              <span className="text-xs font-medium text-teal-600 uppercase tracking-wide">Cognitive Distortions</span>
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                {mindData.cognition_beliefs.cognitive_distortions.map((distortion, idx) => (
+                                  <span key={idx} className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium">
+                                    {distortion}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {mindData.cognition_beliefs.thinking_patterns?.length > 0 && (
+                            <div className="bg-white/60 rounded-lg p-3">
+                              <span className="text-xs font-medium text-teal-600 uppercase tracking-wide">Thinking Patterns</span>
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                {mindData.cognition_beliefs.thinking_patterns.map((pattern, idx) => (
+                                  <span key={idx} className="px-2 py-1 bg-teal-100 text-teal-700 rounded text-xs">
+                                    {pattern}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Perception Grid */}
+                        {(mindData.cognition_beliefs.self_perception || mindData.cognition_beliefs.world_perception || mindData.cognition_beliefs.future_perception) && (
+                          <div className="grid grid-cols-3 gap-3 mb-3">
+                            {mindData.cognition_beliefs.self_perception && (
+                              <div className="bg-white/60 rounded-lg p-3 text-center">
+                                <div className="text-xs font-medium text-teal-600 uppercase tracking-wide mb-1">Self</div>
+                                <div className="text-sm text-gray-700">{mindData.cognition_beliefs.self_perception}</div>
+                              </div>
+                            )}
+                            {mindData.cognition_beliefs.world_perception && (
+                              <div className="bg-white/60 rounded-lg p-3 text-center">
+                                <div className="text-xs font-medium text-teal-600 uppercase tracking-wide mb-1">World</div>
+                                <div className="text-sm text-gray-700">{mindData.cognition_beliefs.world_perception}</div>
+                              </div>
+                            )}
+                            {mindData.cognition_beliefs.future_perception && (
+                              <div className="bg-white/60 rounded-lg p-3 text-center">
+                                <div className="text-xs font-medium text-teal-600 uppercase tracking-wide mb-1">Future</div>
+                                <div className="text-sm text-gray-700">{mindData.cognition_beliefs.future_perception}</div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Supervision Input */}
+                        <div className="flex mt-4 pt-3 border-t border-teal-200">
                           <input
                             type="text"
                             value={supervisionInputs.cognition_beliefs}
                             onChange={(e) => setSupervisionInputs(prev => ({ ...prev, cognition_beliefs: e.target.value }))}
                             placeholder="Enter supervision feedback..."
-                            className="flex-1 px-3 py-2 text-sm border border-teal-200 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-teal-400"
+                            className="flex-1 px-3 py-2 text-sm border border-teal-200 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-teal-400 bg-white"
                           />
                           <button
                             onClick={() => handleSupervise('cognition_beliefs')}
                             disabled={!supervisionInputs.cognition_beliefs.trim() || supervisionLoading.cognition_beliefs}
-                            className="px-4 py-2 bg-teal-500 text-white text-sm font-medium rounded-r-lg hover:bg-teal-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                            className="px-4 py-2 bg-teal-500 text-white text-sm font-medium rounded-r-lg hover:bg-teal-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1 transition-colors"
                           >
                             <Send className="w-4 h-4" />
                             <span>{supervisionLoading.cognition_beliefs ? '...' : 'Supervise'}</span>
@@ -1216,54 +1366,69 @@ const HamoPro = () => {
                       </div>
                     )}
 
-                    {/* Relationship & Manipulations Section */}
+                    {/* Relationship Patterns Section */}
                     {mindData.relationship_manipulations && (
-                      <div className="bg-orange-50 rounded-lg p-4">
-                        <h4 className="font-medium text-orange-700 mb-3">Relationship Patterns</h4>
-                        {mindData.relationship_manipulations.attachment_style && (
-                          <div className="mb-2">
-                            <span className="text-xs text-orange-600 font-medium">Attachment Style: </span>
-                            <span className="text-sm font-semibold text-orange-700 capitalize">{mindData.relationship_manipulations.attachment_style}</span>
+                      <div className="bg-orange-50/70 rounded-xl p-4 border border-orange-100">
+                        <div className="flex items-center space-x-2 mb-4">
+                          <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                            <span className="text-white text-lg">🤝</span>
                           </div>
-                        )}
-                        {mindData.relationship_manipulations.relationship_patterns?.length > 0 && (
-                          <div className="mb-2">
-                            <span className="text-xs text-orange-600 font-medium">Relationship Patterns: </span>
-                            <span className="text-sm text-gray-700">{mindData.relationship_manipulations.relationship_patterns.join(', ')}</span>
-                          </div>
-                        )}
-                        {mindData.relationship_manipulations.communication_style && (
-                          <div className="mb-2">
-                            <span className="text-xs text-orange-600 font-medium">Communication Style: </span>
-                            <span className="text-sm text-gray-700">{mindData.relationship_manipulations.communication_style}</span>
-                          </div>
-                        )}
-                        {mindData.relationship_manipulations.conflict_resolution && (
-                          <div className="mb-2">
-                            <span className="text-xs text-orange-600 font-medium">Conflict Resolution: </span>
-                            <span className="text-sm text-gray-700">{mindData.relationship_manipulations.conflict_resolution}</span>
-                          </div>
-                        )}
-                        <div className="flex space-x-4 mt-2">
-                          {mindData.relationship_manipulations.trust_level !== undefined && (
-                            <div><span className="text-xs text-orange-600 font-medium">Trust Level: </span><span className="text-sm font-bold text-orange-700">{mindData.relationship_manipulations.trust_level}/10</span></div>
+                          <h4 className="font-semibold text-orange-800">Relationship Patterns</h4>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                          {mindData.relationship_manipulations.attachment_style && (
+                            <div className="bg-white/60 rounded-lg p-3">
+                              <span className="text-xs font-medium text-orange-600 uppercase tracking-wide">Attachment Style</span>
+                              <div className="mt-1">
+                                <span className="px-3 py-1 bg-orange-200 text-orange-800 rounded-full text-sm font-semibold capitalize">
+                                  {mindData.relationship_manipulations.attachment_style}
+                                </span>
+                              </div>
+                            </div>
                           )}
-                          {mindData.relationship_manipulations.intimacy_comfort !== undefined && (
-                            <div><span className="text-xs text-orange-600 font-medium">Intimacy Comfort: </span><span className="text-sm font-bold text-orange-700">{mindData.relationship_manipulations.intimacy_comfort}/10</span></div>
+
+                          {mindData.relationship_manipulations.communication_style && (
+                            <div className="bg-white/60 rounded-lg p-3">
+                              <span className="text-xs font-medium text-orange-600 uppercase tracking-wide">Communication Style</span>
+                              <div className="text-sm text-gray-700 mt-1">{mindData.relationship_manipulations.communication_style}</div>
+                            </div>
                           )}
                         </div>
-                        <div className="flex mt-3 pt-3 border-t border-orange-200">
+
+                        {mindData.relationship_manipulations.relationship_patterns?.length > 0 && (
+                          <div className="bg-white/60 rounded-lg p-3 mb-4">
+                            <span className="text-xs font-medium text-orange-600 uppercase tracking-wide">Relationship Patterns</span>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {mindData.relationship_manipulations.relationship_patterns.map((pattern, idx) => (
+                                <span key={idx} className="px-2 py-1 bg-orange-100 text-orange-700 rounded text-xs">
+                                  {pattern}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {mindData.relationship_manipulations.conflict_resolution && (
+                          <div className="bg-white/60 rounded-lg p-3 mb-3">
+                            <span className="text-xs font-medium text-orange-600 uppercase tracking-wide">Conflict Resolution</span>
+                            <div className="text-sm text-gray-700 mt-1">{mindData.relationship_manipulations.conflict_resolution}</div>
+                          </div>
+                        )}
+
+                        {/* Supervision Input */}
+                        <div className="flex mt-4 pt-3 border-t border-orange-200">
                           <input
                             type="text"
                             value={supervisionInputs.relationship_manipulations}
                             onChange={(e) => setSupervisionInputs(prev => ({ ...prev, relationship_manipulations: e.target.value }))}
                             placeholder="Enter supervision feedback..."
-                            className="flex-1 px-3 py-2 text-sm border border-orange-200 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-orange-400"
+                            className="flex-1 px-3 py-2 text-sm border border-orange-200 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white"
                           />
                           <button
                             onClick={() => handleSupervise('relationship_manipulations')}
                             disabled={!supervisionInputs.relationship_manipulations.trim() || supervisionLoading.relationship_manipulations}
-                            className="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-r-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                            className="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-r-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1 transition-colors"
                           >
                             <Send className="w-4 h-4" />
                             <span>{supervisionLoading.relationship_manipulations ? '...' : 'Supervise'}</span>
@@ -1272,14 +1437,60 @@ const HamoPro = () => {
                       </div>
                     )}
 
+                    {/* Goals & Therapy Principles Section */}
+                    {(mindData.goals || mindData.therapy_principles) && (
+                      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-100">
+                        <div className="flex items-center space-x-2 mb-4">
+                          <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center">
+                            <Star className="w-4 h-4 text-white" />
+                          </div>
+                          <h4 className="font-semibold text-indigo-800">Goals & Principles</h4>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {mindData.goals && (
+                            <div className="bg-white/60 rounded-lg p-3">
+                              <span className="text-xs font-medium text-indigo-600 uppercase tracking-wide">Therapy Goals</span>
+                              <p className="text-sm text-gray-700 mt-2">{mindData.goals}</p>
+                            </div>
+                          )}
+
+                          {mindData.therapy_principles && (
+                            <div className="bg-white/60 rounded-lg p-3">
+                              <span className="text-xs font-medium text-indigo-600 uppercase tracking-wide">Therapy Principles</span>
+                              <p className="text-sm text-gray-700 mt-2">{mindData.therapy_principles}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Footer with metadata */}
-                    <div className="flex justify-between items-center text-xs text-gray-400 pt-2 border-t">
-                      {mindData.last_updated && <span>Last Updated: {new Date(mindData.last_updated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>}
-                      {mindData.confidence_score !== undefined && <span>Confidence: {Math.round(mindData.confidence_score * 100)}%</span>}
+                    <div className="flex justify-between items-center text-xs text-gray-400 pt-3 border-t border-gray-100">
+                      <div className="flex items-center space-x-4">
+                        {mindData.connected_at && (
+                          <span className="flex items-center space-x-1">
+                            <Calendar className="w-3 h-3" />
+                            <span>Connected: {new Date(mindData.connected_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                          </span>
+                        )}
+                        {mindData.created_at && (
+                          <span className="flex items-center space-x-1">
+                            <Clock className="w-3 h-3" />
+                            <span>Created: {new Date(mindData.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                          </span>
+                        )}
+                      </div>
+                      {mindData.invitation_code && (
+                        <span className="flex items-center space-x-1 text-purple-400">
+                          <Ticket className="w-3 h-3" />
+                          <span>{mindData.invitation_code}</span>
+                        </span>
+                      )}
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-gray-500">No AI Mind data available</div>
+                  <div className="text-center py-12 text-gray-500">No AI Mind data available</div>
                 )}
               </div>
             )}
