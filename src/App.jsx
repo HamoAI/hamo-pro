@@ -3,7 +3,7 @@ import { User, Brain, BarChart3, Plus, Ticket, Eye, Clock, MessageSquare, LogOut
 import apiService from './services/api';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.4.0";
+  const APP_VERSION = "1.4.1";
 
   // Contributors list
   const contributors = ['Chris Cheng', 'Anthropic Claude', 'Kerwin Du', 'Amy Chan'];
@@ -1069,9 +1069,10 @@ const HamoPro = () => {
             </div>
             
             {selectedMindClient && (
-              <div className="bg-white rounded-xl shadow-lg mt-4 overflow-hidden">
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4" onClick={() => { setSelectedMindClient(null); setMindData(null); setExpandedMindSection(null); }}>
+                <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                 {/* Header with gradient */}
-                <div className="bg-gradient-to-r from-purple-500 to-indigo-600 px-6 py-4">
+                <div className="bg-gradient-to-r from-purple-500 to-indigo-600 px-6 py-4 rounded-t-2xl">
                   <div className="flex justify-between items-start">
                     <div className="flex items-center space-x-3">
                       <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
@@ -1591,6 +1592,7 @@ const HamoPro = () => {
                 ) : (
                   <div className="text-center py-12 text-gray-500">No AI Mind data available</div>
                 )}
+                </div>
               </div>
             )}
 
