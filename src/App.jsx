@@ -1325,16 +1325,16 @@ const HamoPro = () => {
                         >
                           <div className="px-5 py-4 flex items-center justify-between">
                             <div>
-                              <h4 className="text-gray-900 font-bold text-lg">Cognition & Beliefs</h4>
+                              <h4 className="text-white font-bold text-lg">Cognition & Beliefs</h4>
                               {mindData.cognition_beliefs.core_beliefs?.length > 0 && (
                                 <div className="flex flex-wrap gap-2 mt-2">
                                   {mindData.cognition_beliefs.core_beliefs.slice(0, 2).map((belief, idx) => (
-                                    <span key={idx} className="px-2 py-0.5 bg-black/10 text-gray-800 rounded-full text-xs border border-black/20 truncate max-w-[150px]">
+                                    <span key={idx} className="px-2 py-0.5 bg-white/20 text-white/90 rounded-full text-xs border border-white/30 truncate max-w-[150px]">
                                       {belief}
                                     </span>
                                   ))}
                                   {mindData.cognition_beliefs.core_beliefs.length > 2 && (
-                                    <span className="px-2 py-0.5 text-gray-700 text-xs">+{mindData.cognition_beliefs.core_beliefs.length - 2}</span>
+                                    <span className="px-2 py-0.5 text-white/70 text-xs">+{mindData.cognition_beliefs.core_beliefs.length - 2}</span>
                                   )}
                                 </div>
                               )}
