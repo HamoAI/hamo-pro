@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Brain, BarChart3, Plus, Ticket, Eye, Clock, MessageSquare, LogOut, Trash2, Download, CheckCircle, Calendar, Sparkles, Send, Star, X, Briefcase } from 'lucide-react';
+import { User, Brain, BarChart3, Plus, Ticket, Eye, Clock, MessageSquare, LogOut, Trash2, Download, CheckCircle, Calendar, Sparkles, Send, Star, X, Briefcase, ChevronRight } from 'lucide-react';
 import apiService from './services/api';
 
 const HamoPro = () => {
@@ -66,6 +66,7 @@ const HamoPro = () => {
     relationship_manipulations: ''
   });
   const [supervisionLoading, setSupervisionLoading] = useState({});
+  const [expandedMindSection, setExpandedMindSection] = useState(null);
   const [showInvitationCard, setShowInvitationCard] = useState(null);
   const [invitationCode, setInvitationCode] = useState('');
   const [invitationLoading, setInvitationLoading] = useState(false);
@@ -1141,329 +1142,427 @@ const HamoPro = () => {
                       </div>
                     </div>
 
-                    {/* Personality Section */}
-                    {mindData.personality && (
-                      <div className="bg-purple-50/70 rounded-xl p-4 border border-purple-100">
-                        <div className="flex items-center space-x-2 mb-4">
-                          <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
-                            <User className="w-4 h-4 text-white" />
-                          </div>
-                          <h4 className="font-semibold text-purple-800">Personality Traits</h4>
-                        </div>
-
-                        {mindData.personality.primary_traits?.length > 0 && (
-                          <div className="mb-4">
-                            <span className="text-xs font-medium text-purple-600 uppercase tracking-wide">Primary Traits</span>
-                            <div className="flex flex-wrap gap-2 mt-2">
-                              {mindData.personality.primary_traits.map((trait, idx) => (
-                                <span key={idx} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
-                                  {trait}
-                                </span>
-                              ))}
+                    {/* Collapsible Mind Sections */}
+                    <div className="space-y-3">
+                      {/* Personality Section */}
+                      {mindData.personality && (
+                        <div
+                          className={`bg-purple-500 rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 ${expandedMindSection === 'personality' ? 'ring-2 ring-purple-300' : ''}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setExpandedMindSection(expandedMindSection === 'personality' ? null : 'personality');
+                          }}
+                        >
+                          <div className="px-5 py-4 flex items-center justify-between">
+                            <div>
+                              <h4 className="text-white font-bold text-lg">Personality Traits</h4>
+                              {mindData.personality.primary_traits?.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                  {mindData.personality.primary_traits.slice(0, 3).map((trait, idx) => (
+                                    <span key={idx} className="px-2 py-0.5 bg-white/20 text-white/90 rounded-full text-xs border border-white/30">
+                                      {trait}
+                                    </span>
+                                  ))}
+                                  {mindData.personality.primary_traits.length > 3 && (
+                                    <span className="px-2 py-0.5 text-white/70 text-xs">+{mindData.personality.primary_traits.length - 3}</span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                            <div className={`w-10 h-10 bg-black rounded-full flex items-center justify-center transition-transform duration-300 ${expandedMindSection === 'personality' ? 'rotate-90' : ''}`}>
+                              <ChevronRight className="w-5 h-5 text-white" />
                             </div>
                           </div>
-                        )}
 
-                        {mindData.personality.description && (
-                          <p className="text-sm text-gray-600 bg-white/60 rounded-lg p-3 italic">
-                            "{mindData.personality.description}"
-                          </p>
-                        )}
-
-                        {/* Supervision Input */}
-                        <div className="flex mt-4 pt-3 border-t border-purple-200">
-                          <input
-                            type="text"
-                            value={supervisionInputs.personality}
-                            onChange={(e) => setSupervisionInputs(prev => ({ ...prev, personality: e.target.value }))}
-                            placeholder="Enter supervision feedback..."
-                            className="flex-1 px-3 py-2 text-sm border border-purple-200 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white"
-                          />
-                          <button
-                            onClick={() => handleSupervise('personality')}
-                            disabled={!supervisionInputs.personality.trim() || supervisionLoading.personality}
-                            className="px-4 py-2 bg-purple-500 text-white text-sm font-medium rounded-r-lg hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1 transition-colors"
-                          >
-                            <Send className="w-4 h-4" />
-                            <span>{supervisionLoading.personality ? '...' : 'Supervise'}</span>
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Emotion Pattern Section */}
-                    {mindData.emotion_pattern && (
-                      <div className="bg-blue-50/70 rounded-xl p-4 border border-blue-100">
-                        <div className="flex items-center space-x-2 mb-4">
-                          <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                            <span className="text-white text-lg">💭</span>
-                          </div>
-                          <h4 className="font-semibold text-blue-800">Emotion Pattern</h4>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                          {mindData.emotion_pattern.dominant_emotions?.length > 0 && (
-                            <div className="bg-white/60 rounded-lg p-3">
-                              <span className="text-xs font-medium text-blue-600 uppercase tracking-wide">Dominant Emotions</span>
-                              <div className="flex flex-wrap gap-1 mt-2">
-                                {mindData.emotion_pattern.dominant_emotions.map((emotion, idx) => (
-                                  <span key={idx} className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">
-                                    {emotion}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {mindData.emotion_pattern.triggers?.length > 0 && (
-                            <div className="bg-white/60 rounded-lg p-3">
-                              <span className="text-xs font-medium text-blue-600 uppercase tracking-wide">Triggers</span>
-                              <div className="flex flex-wrap gap-1 mt-2">
-                                {mindData.emotion_pattern.triggers.map((trigger, idx) => (
-                                  <span key={idx} className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-xs">
-                                    {trigger}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {mindData.emotion_pattern.coping_mechanisms?.length > 0 && (
-                            <div className="bg-white/60 rounded-lg p-3">
-                              <span className="text-xs font-medium text-blue-600 uppercase tracking-wide">Coping Mechanisms</span>
-                              <div className="flex flex-wrap gap-1 mt-2">
-                                {mindData.emotion_pattern.coping_mechanisms.map((mechanism, idx) => (
-                                  <span key={idx} className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs">
-                                    {mechanism}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {mindData.emotion_pattern.description && (
-                          <p className="text-sm text-gray-600 bg-white/60 rounded-lg p-3 italic">
-                            "{mindData.emotion_pattern.description}"
-                          </p>
-                        )}
-
-                        {/* Supervision Input */}
-                        <div className="flex mt-4 pt-3 border-t border-blue-200">
-                          <input
-                            type="text"
-                            value={supervisionInputs.emotion_pattern}
-                            onChange={(e) => setSupervisionInputs(prev => ({ ...prev, emotion_pattern: e.target.value }))}
-                            placeholder="Enter supervision feedback..."
-                            className="flex-1 px-3 py-2 text-sm border border-blue-200 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
-                          />
-                          <button
-                            onClick={() => handleSupervise('emotion_pattern')}
-                            disabled={!supervisionInputs.emotion_pattern.trim() || supervisionLoading.emotion_pattern}
-                            className="px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-r-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1 transition-colors"
-                          >
-                            <Send className="w-4 h-4" />
-                            <span>{supervisionLoading.emotion_pattern ? '...' : 'Supervise'}</span>
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Cognition & Beliefs Section */}
-                    {mindData.cognition_beliefs && (
-                      <div className="bg-teal-50/70 rounded-xl p-4 border border-teal-100">
-                        <div className="flex items-center space-x-2 mb-4">
-                          <div className="w-8 h-8 bg-teal-500 rounded-lg flex items-center justify-center">
-                            <span className="text-white text-lg">🧠</span>
-                          </div>
-                          <h4 className="font-semibold text-teal-800">Cognition & Beliefs</h4>
-                        </div>
-
-                        <div className="space-y-3 mb-4">
-                          {mindData.cognition_beliefs.core_beliefs?.length > 0 && (
-                            <div className="bg-white/60 rounded-lg p-3">
-                              <span className="text-xs font-medium text-teal-600 uppercase tracking-wide">Core Beliefs</span>
-                              <div className="mt-2 space-y-1">
-                                {mindData.cognition_beliefs.core_beliefs.map((belief, idx) => (
-                                  <div key={idx} className="flex items-start space-x-2">
-                                    <span className="text-teal-400 mt-1">•</span>
-                                    <span className="text-sm text-gray-700">{belief}</span>
+                          {expandedMindSection === 'personality' && (
+                            <div className="bg-white mx-2 mb-2 rounded-xl p-4" onClick={(e) => e.stopPropagation()}>
+                              {mindData.personality.primary_traits?.length > 0 && (
+                                <div className="mb-4">
+                                  <span className="text-xs font-medium text-purple-600 uppercase tracking-wide">All Traits</span>
+                                  <div className="flex flex-wrap gap-2 mt-2">
+                                    {mindData.personality.primary_traits.map((trait, idx) => (
+                                      <span key={idx} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                                        {trait}
+                                      </span>
+                                    ))}
                                   </div>
-                                ))}
+                                </div>
+                              )}
+                              {mindData.personality.description && (
+                                <p className="text-sm text-gray-600 bg-purple-50 rounded-lg p-3 italic mb-4">
+                                  "{mindData.personality.description}"
+                                </p>
+                              )}
+                              <div className="flex pt-3 border-t border-purple-100">
+                                <input
+                                  type="text"
+                                  value={supervisionInputs.personality}
+                                  onChange={(e) => setSupervisionInputs(prev => ({ ...prev, personality: e.target.value }))}
+                                  placeholder="Enter supervision feedback..."
+                                  className="flex-1 px-3 py-2 text-sm border border-purple-200 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleSupervise('personality'); }}
+                                  disabled={!supervisionInputs.personality.trim() || supervisionLoading.personality}
+                                  className="px-4 py-2 bg-purple-500 text-white text-sm font-medium rounded-r-lg hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                                >
+                                  <Send className="w-4 h-4" />
+                                  <span>{supervisionLoading.personality ? '...' : 'Supervise'}</span>
+                                </button>
                               </div>
                             </div>
                           )}
+                        </div>
+                      )}
 
-                          {mindData.cognition_beliefs.cognitive_distortions?.length > 0 && (
-                            <div className="bg-white/60 rounded-lg p-3">
-                              <span className="text-xs font-medium text-teal-600 uppercase tracking-wide">Cognitive Distortions</span>
+                      {/* Emotion Pattern Section */}
+                      {mindData.emotion_pattern && (
+                        <div
+                          className={`bg-emerald-500 rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 ${expandedMindSection === 'emotion_pattern' ? 'ring-2 ring-emerald-300' : ''}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setExpandedMindSection(expandedMindSection === 'emotion_pattern' ? null : 'emotion_pattern');
+                          }}
+                        >
+                          <div className="px-5 py-4 flex items-center justify-between">
+                            <div>
+                              <h4 className="text-white font-bold text-lg">Emotion Pattern</h4>
+                              {mindData.emotion_pattern.dominant_emotions?.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                  {mindData.emotion_pattern.dominant_emotions.slice(0, 3).map((emotion, idx) => (
+                                    <span key={idx} className="px-2 py-0.5 bg-white/20 text-white/90 rounded-full text-xs border border-white/30">
+                                      {emotion}
+                                    </span>
+                                  ))}
+                                  {mindData.emotion_pattern.dominant_emotions.length > 3 && (
+                                    <span className="px-2 py-0.5 text-white/70 text-xs">+{mindData.emotion_pattern.dominant_emotions.length - 3}</span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                            <div className={`w-10 h-10 bg-black rounded-full flex items-center justify-center transition-transform duration-300 ${expandedMindSection === 'emotion_pattern' ? 'rotate-90' : ''}`}>
+                              <ChevronRight className="w-5 h-5 text-white" />
+                            </div>
+                          </div>
+
+                          {expandedMindSection === 'emotion_pattern' && (
+                            <div className="bg-white mx-2 mb-2 rounded-xl p-4" onClick={(e) => e.stopPropagation()}>
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                {mindData.emotion_pattern.dominant_emotions?.length > 0 && (
+                                  <div className="bg-emerald-50 rounded-lg p-3">
+                                    <span className="text-xs font-medium text-emerald-600 uppercase tracking-wide">Dominant Emotions</span>
+                                    <div className="flex flex-wrap gap-1 mt-2">
+                                      {mindData.emotion_pattern.dominant_emotions.map((emotion, idx) => (
+                                        <span key={idx} className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-xs">
+                                          {emotion}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                {mindData.emotion_pattern.triggers?.length > 0 && (
+                                  <div className="bg-amber-50 rounded-lg p-3">
+                                    <span className="text-xs font-medium text-amber-600 uppercase tracking-wide">Triggers</span>
+                                    <div className="flex flex-wrap gap-1 mt-2">
+                                      {mindData.emotion_pattern.triggers.map((trigger, idx) => (
+                                        <span key={idx} className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-xs">
+                                          {trigger}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                {mindData.emotion_pattern.coping_mechanisms?.length > 0 && (
+                                  <div className="bg-green-50 rounded-lg p-3">
+                                    <span className="text-xs font-medium text-green-600 uppercase tracking-wide">Coping Mechanisms</span>
+                                    <div className="flex flex-wrap gap-1 mt-2">
+                                      {mindData.emotion_pattern.coping_mechanisms.map((mechanism, idx) => (
+                                        <span key={idx} className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs">
+                                          {mechanism}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                              {mindData.emotion_pattern.description && (
+                                <p className="text-sm text-gray-600 bg-emerald-50 rounded-lg p-3 italic mb-4">
+                                  "{mindData.emotion_pattern.description}"
+                                </p>
+                              )}
+                              <div className="flex pt-3 border-t border-emerald-100">
+                                <input
+                                  type="text"
+                                  value={supervisionInputs.emotion_pattern}
+                                  onChange={(e) => setSupervisionInputs(prev => ({ ...prev, emotion_pattern: e.target.value }))}
+                                  placeholder="Enter supervision feedback..."
+                                  className="flex-1 px-3 py-2 text-sm border border-emerald-200 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleSupervise('emotion_pattern'); }}
+                                  disabled={!supervisionInputs.emotion_pattern.trim() || supervisionLoading.emotion_pattern}
+                                  className="px-4 py-2 bg-emerald-500 text-white text-sm font-medium rounded-r-lg hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                                >
+                                  <Send className="w-4 h-4" />
+                                  <span>{supervisionLoading.emotion_pattern ? '...' : 'Supervise'}</span>
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Cognition & Beliefs Section */}
+                      {mindData.cognition_beliefs && (
+                        <div
+                          className={`bg-amber-400 rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 ${expandedMindSection === 'cognition_beliefs' ? 'ring-2 ring-amber-300' : ''}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setExpandedMindSection(expandedMindSection === 'cognition_beliefs' ? null : 'cognition_beliefs');
+                          }}
+                        >
+                          <div className="px-5 py-4 flex items-center justify-between">
+                            <div>
+                              <h4 className="text-gray-900 font-bold text-lg">Cognition & Beliefs</h4>
+                              {mindData.cognition_beliefs.core_beliefs?.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                  {mindData.cognition_beliefs.core_beliefs.slice(0, 2).map((belief, idx) => (
+                                    <span key={idx} className="px-2 py-0.5 bg-black/10 text-gray-800 rounded-full text-xs border border-black/20 truncate max-w-[150px]">
+                                      {belief}
+                                    </span>
+                                  ))}
+                                  {mindData.cognition_beliefs.core_beliefs.length > 2 && (
+                                    <span className="px-2 py-0.5 text-gray-700 text-xs">+{mindData.cognition_beliefs.core_beliefs.length - 2}</span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                            <div className={`w-10 h-10 bg-black rounded-full flex items-center justify-center transition-transform duration-300 ${expandedMindSection === 'cognition_beliefs' ? 'rotate-90' : ''}`}>
+                              <ChevronRight className="w-5 h-5 text-white" />
+                            </div>
+                          </div>
+
+                          {expandedMindSection === 'cognition_beliefs' && (
+                            <div className="bg-white mx-2 mb-2 rounded-xl p-4" onClick={(e) => e.stopPropagation()}>
+                              <div className="space-y-3 mb-4">
+                                {mindData.cognition_beliefs.core_beliefs?.length > 0 && (
+                                  <div className="bg-amber-50 rounded-lg p-3">
+                                    <span className="text-xs font-medium text-amber-700 uppercase tracking-wide">Core Beliefs</span>
+                                    <div className="mt-2 space-y-1">
+                                      {mindData.cognition_beliefs.core_beliefs.map((belief, idx) => (
+                                        <div key={idx} className="flex items-start space-x-2">
+                                          <span className="text-amber-500 mt-1">•</span>
+                                          <span className="text-sm text-gray-700">{belief}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                {mindData.cognition_beliefs.cognitive_distortions?.length > 0 && (
+                                  <div className="bg-red-50 rounded-lg p-3">
+                                    <span className="text-xs font-medium text-red-600 uppercase tracking-wide">Cognitive Distortions</span>
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                      {mindData.cognition_beliefs.cognitive_distortions.map((distortion, idx) => (
+                                        <span key={idx} className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium">
+                                          {distortion}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                {mindData.cognition_beliefs.thinking_patterns?.length > 0 && (
+                                  <div className="bg-amber-50 rounded-lg p-3">
+                                    <span className="text-xs font-medium text-amber-700 uppercase tracking-wide">Thinking Patterns</span>
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                      {mindData.cognition_beliefs.thinking_patterns.map((pattern, idx) => (
+                                        <span key={idx} className="px-2 py-1 bg-amber-100 text-amber-700 rounded text-xs">
+                                          {pattern}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                              {(mindData.cognition_beliefs.self_perception || mindData.cognition_beliefs.world_perception || mindData.cognition_beliefs.future_perception) && (
+                                <div className="grid grid-cols-3 gap-3 mb-4">
+                                  {mindData.cognition_beliefs.self_perception && (
+                                    <div className="bg-gray-50 rounded-lg p-3 text-center">
+                                      <div className="text-xs font-medium text-gray-600 uppercase tracking-wide mb-1">Self</div>
+                                      <div className="text-sm text-gray-700">{mindData.cognition_beliefs.self_perception}</div>
+                                    </div>
+                                  )}
+                                  {mindData.cognition_beliefs.world_perception && (
+                                    <div className="bg-gray-50 rounded-lg p-3 text-center">
+                                      <div className="text-xs font-medium text-gray-600 uppercase tracking-wide mb-1">World</div>
+                                      <div className="text-sm text-gray-700">{mindData.cognition_beliefs.world_perception}</div>
+                                    </div>
+                                  )}
+                                  {mindData.cognition_beliefs.future_perception && (
+                                    <div className="bg-gray-50 rounded-lg p-3 text-center">
+                                      <div className="text-xs font-medium text-gray-600 uppercase tracking-wide mb-1">Future</div>
+                                      <div className="text-sm text-gray-700">{mindData.cognition_beliefs.future_perception}</div>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                              <div className="flex pt-3 border-t border-amber-100">
+                                <input
+                                  type="text"
+                                  value={supervisionInputs.cognition_beliefs}
+                                  onChange={(e) => setSupervisionInputs(prev => ({ ...prev, cognition_beliefs: e.target.value }))}
+                                  placeholder="Enter supervision feedback..."
+                                  className="flex-1 px-3 py-2 text-sm border border-amber-200 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleSupervise('cognition_beliefs'); }}
+                                  disabled={!supervisionInputs.cognition_beliefs.trim() || supervisionLoading.cognition_beliefs}
+                                  className="px-4 py-2 bg-amber-500 text-white text-sm font-medium rounded-r-lg hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                                >
+                                  <Send className="w-4 h-4" />
+                                  <span>{supervisionLoading.cognition_beliefs ? '...' : 'Supervise'}</span>
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Relationship Patterns Section */}
+                      {mindData.relationship_manipulations && (
+                        <div
+                          className={`bg-blue-500 rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 ${expandedMindSection === 'relationship_manipulations' ? 'ring-2 ring-blue-300' : ''}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setExpandedMindSection(expandedMindSection === 'relationship_manipulations' ? null : 'relationship_manipulations');
+                          }}
+                        >
+                          <div className="px-5 py-4 flex items-center justify-between">
+                            <div>
+                              <h4 className="text-white font-bold text-lg">Relationship Patterns</h4>
                               <div className="flex flex-wrap gap-2 mt-2">
-                                {mindData.cognition_beliefs.cognitive_distortions.map((distortion, idx) => (
-                                  <span key={idx} className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium">
-                                    {distortion}
+                                {mindData.relationship_manipulations.attachment_style && (
+                                  <span className="px-2 py-0.5 bg-white/20 text-white/90 rounded-full text-xs border border-white/30 capitalize">
+                                    {mindData.relationship_manipulations.attachment_style}
                                   </span>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {mindData.cognition_beliefs.thinking_patterns?.length > 0 && (
-                            <div className="bg-white/60 rounded-lg p-3">
-                              <span className="text-xs font-medium text-teal-600 uppercase tracking-wide">Thinking Patterns</span>
-                              <div className="flex flex-wrap gap-2 mt-2">
-                                {mindData.cognition_beliefs.thinking_patterns.map((pattern, idx) => (
-                                  <span key={idx} className="px-2 py-1 bg-teal-100 text-teal-700 rounded text-xs">
+                                )}
+                                {mindData.relationship_manipulations.relationship_patterns?.slice(0, 2).map((pattern, idx) => (
+                                  <span key={idx} className="px-2 py-0.5 bg-white/20 text-white/90 rounded-full text-xs border border-white/30">
                                     {pattern}
                                   </span>
                                 ))}
                               </div>
                             </div>
-                          )}
-                        </div>
-
-                        {/* Perception Grid */}
-                        {(mindData.cognition_beliefs.self_perception || mindData.cognition_beliefs.world_perception || mindData.cognition_beliefs.future_perception) && (
-                          <div className="grid grid-cols-3 gap-3 mb-3">
-                            {mindData.cognition_beliefs.self_perception && (
-                              <div className="bg-white/60 rounded-lg p-3 text-center">
-                                <div className="text-xs font-medium text-teal-600 uppercase tracking-wide mb-1">Self</div>
-                                <div className="text-sm text-gray-700">{mindData.cognition_beliefs.self_perception}</div>
-                              </div>
-                            )}
-                            {mindData.cognition_beliefs.world_perception && (
-                              <div className="bg-white/60 rounded-lg p-3 text-center">
-                                <div className="text-xs font-medium text-teal-600 uppercase tracking-wide mb-1">World</div>
-                                <div className="text-sm text-gray-700">{mindData.cognition_beliefs.world_perception}</div>
-                              </div>
-                            )}
-                            {mindData.cognition_beliefs.future_perception && (
-                              <div className="bg-white/60 rounded-lg p-3 text-center">
-                                <div className="text-xs font-medium text-teal-600 uppercase tracking-wide mb-1">Future</div>
-                                <div className="text-sm text-gray-700">{mindData.cognition_beliefs.future_perception}</div>
-                              </div>
-                            )}
+                            <div className={`w-10 h-10 bg-black rounded-full flex items-center justify-center transition-transform duration-300 ${expandedMindSection === 'relationship_manipulations' ? 'rotate-90' : ''}`}>
+                              <ChevronRight className="w-5 h-5 text-white" />
+                            </div>
                           </div>
-                        )}
 
-                        {/* Supervision Input */}
-                        <div className="flex mt-4 pt-3 border-t border-teal-200">
-                          <input
-                            type="text"
-                            value={supervisionInputs.cognition_beliefs}
-                            onChange={(e) => setSupervisionInputs(prev => ({ ...prev, cognition_beliefs: e.target.value }))}
-                            placeholder="Enter supervision feedback..."
-                            className="flex-1 px-3 py-2 text-sm border border-teal-200 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-teal-400 bg-white"
-                          />
-                          <button
-                            onClick={() => handleSupervise('cognition_beliefs')}
-                            disabled={!supervisionInputs.cognition_beliefs.trim() || supervisionLoading.cognition_beliefs}
-                            className="px-4 py-2 bg-teal-500 text-white text-sm font-medium rounded-r-lg hover:bg-teal-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1 transition-colors"
-                          >
-                            <Send className="w-4 h-4" />
-                            <span>{supervisionLoading.cognition_beliefs ? '...' : 'Supervise'}</span>
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Relationship Patterns Section */}
-                    {mindData.relationship_manipulations && (
-                      <div className="bg-orange-50/70 rounded-xl p-4 border border-orange-100">
-                        <div className="flex items-center space-x-2 mb-4">
-                          <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
-                            <span className="text-white text-lg">🤝</span>
-                          </div>
-                          <h4 className="font-semibold text-orange-800">Relationship Patterns</h4>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                          {mindData.relationship_manipulations.attachment_style && (
-                            <div className="bg-white/60 rounded-lg p-3">
-                              <span className="text-xs font-medium text-orange-600 uppercase tracking-wide">Attachment Style</span>
-                              <div className="mt-1">
-                                <span className="px-3 py-1 bg-orange-200 text-orange-800 rounded-full text-sm font-semibold capitalize">
-                                  {mindData.relationship_manipulations.attachment_style}
-                                </span>
+                          {expandedMindSection === 'relationship_manipulations' && (
+                            <div className="bg-white mx-2 mb-2 rounded-xl p-4" onClick={(e) => e.stopPropagation()}>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                {mindData.relationship_manipulations.attachment_style && (
+                                  <div className="bg-blue-50 rounded-lg p-3">
+                                    <span className="text-xs font-medium text-blue-600 uppercase tracking-wide">Attachment Style</span>
+                                    <div className="mt-1">
+                                      <span className="px-3 py-1 bg-blue-200 text-blue-800 rounded-full text-sm font-semibold capitalize">
+                                        {mindData.relationship_manipulations.attachment_style}
+                                      </span>
+                                    </div>
+                                  </div>
+                                )}
+                                {mindData.relationship_manipulations.communication_style && (
+                                  <div className="bg-blue-50 rounded-lg p-3">
+                                    <span className="text-xs font-medium text-blue-600 uppercase tracking-wide">Communication Style</span>
+                                    <div className="text-sm text-gray-700 mt-1">{mindData.relationship_manipulations.communication_style}</div>
+                                  </div>
+                                )}
+                              </div>
+                              {mindData.relationship_manipulations.relationship_patterns?.length > 0 && (
+                                <div className="bg-blue-50 rounded-lg p-3 mb-4">
+                                  <span className="text-xs font-medium text-blue-600 uppercase tracking-wide">Relationship Patterns</span>
+                                  <div className="flex flex-wrap gap-2 mt-2">
+                                    {mindData.relationship_manipulations.relationship_patterns.map((pattern, idx) => (
+                                      <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">
+                                        {pattern}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {mindData.relationship_manipulations.conflict_resolution && (
+                                <div className="bg-gray-50 rounded-lg p-3 mb-4">
+                                  <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">Conflict Resolution</span>
+                                  <div className="text-sm text-gray-700 mt-1">{mindData.relationship_manipulations.conflict_resolution}</div>
+                                </div>
+                              )}
+                              <div className="flex pt-3 border-t border-blue-100">
+                                <input
+                                  type="text"
+                                  value={supervisionInputs.relationship_manipulations}
+                                  onChange={(e) => setSupervisionInputs(prev => ({ ...prev, relationship_manipulations: e.target.value }))}
+                                  placeholder="Enter supervision feedback..."
+                                  className="flex-1 px-3 py-2 text-sm border border-blue-200 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleSupervise('relationship_manipulations'); }}
+                                  disabled={!supervisionInputs.relationship_manipulations.trim() || supervisionLoading.relationship_manipulations}
+                                  className="px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-r-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                                >
+                                  <Send className="w-4 h-4" />
+                                  <span>{supervisionLoading.relationship_manipulations ? '...' : 'Supervise'}</span>
+                                </button>
                               </div>
                             </div>
                           )}
+                        </div>
+                      )}
 
-                          {mindData.relationship_manipulations.communication_style && (
-                            <div className="bg-white/60 rounded-lg p-3">
-                              <span className="text-xs font-medium text-orange-600 uppercase tracking-wide">Communication Style</span>
-                              <div className="text-sm text-gray-700 mt-1">{mindData.relationship_manipulations.communication_style}</div>
+                      {/* Goals & Therapy Principles Section */}
+                      {(mindData.goals || mindData.therapy_principles) && (
+                        <div
+                          className={`bg-green-400 rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 ${expandedMindSection === 'goals' ? 'ring-2 ring-green-300' : ''}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setExpandedMindSection(expandedMindSection === 'goals' ? null : 'goals');
+                          }}
+                        >
+                          <div className="px-5 py-4 flex items-center justify-between">
+                            <div>
+                              <h4 className="text-gray-900 font-bold text-lg">Goals & Principles</h4>
+                              <p className="text-gray-700 text-sm mt-1 line-clamp-1">
+                                {mindData.goals || mindData.therapy_principles}
+                              </p>
+                            </div>
+                            <div className={`w-10 h-10 bg-black rounded-full flex items-center justify-center transition-transform duration-300 ${expandedMindSection === 'goals' ? 'rotate-90' : ''}`}>
+                              <ChevronRight className="w-5 h-5 text-white" />
+                            </div>
+                          </div>
+
+                          {expandedMindSection === 'goals' && (
+                            <div className="bg-white mx-2 mb-2 rounded-xl p-4" onClick={(e) => e.stopPropagation()}>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {mindData.goals && (
+                                  <div className="bg-green-50 rounded-lg p-3">
+                                    <span className="text-xs font-medium text-green-700 uppercase tracking-wide">Therapy Goals</span>
+                                    <p className="text-sm text-gray-700 mt-2">{mindData.goals}</p>
+                                  </div>
+                                )}
+                                {mindData.therapy_principles && (
+                                  <div className="bg-green-50 rounded-lg p-3">
+                                    <span className="text-xs font-medium text-green-700 uppercase tracking-wide">Therapy Principles</span>
+                                    <p className="text-sm text-gray-700 mt-2">{mindData.therapy_principles}</p>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           )}
                         </div>
-
-                        {mindData.relationship_manipulations.relationship_patterns?.length > 0 && (
-                          <div className="bg-white/60 rounded-lg p-3 mb-4">
-                            <span className="text-xs font-medium text-orange-600 uppercase tracking-wide">Relationship Patterns</span>
-                            <div className="flex flex-wrap gap-2 mt-2">
-                              {mindData.relationship_manipulations.relationship_patterns.map((pattern, idx) => (
-                                <span key={idx} className="px-2 py-1 bg-orange-100 text-orange-700 rounded text-xs">
-                                  {pattern}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {mindData.relationship_manipulations.conflict_resolution && (
-                          <div className="bg-white/60 rounded-lg p-3 mb-3">
-                            <span className="text-xs font-medium text-orange-600 uppercase tracking-wide">Conflict Resolution</span>
-                            <div className="text-sm text-gray-700 mt-1">{mindData.relationship_manipulations.conflict_resolution}</div>
-                          </div>
-                        )}
-
-                        {/* Supervision Input */}
-                        <div className="flex mt-4 pt-3 border-t border-orange-200">
-                          <input
-                            type="text"
-                            value={supervisionInputs.relationship_manipulations}
-                            onChange={(e) => setSupervisionInputs(prev => ({ ...prev, relationship_manipulations: e.target.value }))}
-                            placeholder="Enter supervision feedback..."
-                            className="flex-1 px-3 py-2 text-sm border border-orange-200 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white"
-                          />
-                          <button
-                            onClick={() => handleSupervise('relationship_manipulations')}
-                            disabled={!supervisionInputs.relationship_manipulations.trim() || supervisionLoading.relationship_manipulations}
-                            className="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-r-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1 transition-colors"
-                          >
-                            <Send className="w-4 h-4" />
-                            <span>{supervisionLoading.relationship_manipulations ? '...' : 'Supervise'}</span>
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Goals & Therapy Principles Section */}
-                    {(mindData.goals || mindData.therapy_principles) && (
-                      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-100">
-                        <div className="flex items-center space-x-2 mb-4">
-                          <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center">
-                            <Star className="w-4 h-4 text-white" />
-                          </div>
-                          <h4 className="font-semibold text-indigo-800">Goals & Principles</h4>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {mindData.goals && (
-                            <div className="bg-white/60 rounded-lg p-3">
-                              <span className="text-xs font-medium text-indigo-600 uppercase tracking-wide">Therapy Goals</span>
-                              <p className="text-sm text-gray-700 mt-2">{mindData.goals}</p>
-                            </div>
-                          )}
-
-                          {mindData.therapy_principles && (
-                            <div className="bg-white/60 rounded-lg p-3">
-                              <span className="text-xs font-medium text-indigo-600 uppercase tracking-wide">Therapy Principles</span>
-                              <p className="text-sm text-gray-700 mt-2">{mindData.therapy_principles}</p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
 
                     {/* Footer with metadata */}
                     <div className="flex justify-between items-center text-xs text-gray-400 pt-3 border-t border-gray-100">
