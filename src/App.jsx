@@ -1674,14 +1674,16 @@ const HamoPro = () => {
             </div>
           </div>
         )}
+
+        {/* Version number at the bottom of scrollable content */}
+        <div className="text-center py-6">
+          <p className="text-xs text-gray-400">Hamo Pro Version {APP_VERSION}</p>
+        </div>
       </div>
 
       {/* Fixed Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40">
-        <div className="text-center py-2">
-          <p className="text-xs text-gray-400">Hamo Pro Version {APP_VERSION}</p>
-        </div>
-        <div className="max-w-7xl mx-auto flex justify-around items-center pb-6">
+        <div className="max-w-7xl mx-auto flex justify-around items-center py-3 pb-6">
           <button
             onClick={() => setActiveTab('avatars')}
             className={`flex flex-col items-center justify-center py-2 px-6 ${activeTab === 'avatars' ? 'text-blue-500' : 'text-gray-400'}`}
