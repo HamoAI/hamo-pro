@@ -493,10 +493,10 @@ class ApiService {
   }
 
   // Submit supervision feedback for a specific AI Mind section
-  async submitSupervision(userId, avatarId, section, feedback) {
+  async submitSupervision(mindId, section, feedback) {
     try {
-      console.log('🔵 Submitting supervision for section:', section);
-      const response = await this.request(`/mind/${userId}/${avatarId}/supervise`, {
+      console.log('🔵 Submitting supervision for mind:', mindId, 'section:', section);
+      const response = await this.request(`/mind/${mindId}/supervise`, {
         method: 'POST',
         body: JSON.stringify({
           section: section,

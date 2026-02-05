@@ -590,7 +590,6 @@ const HamoPro = () => {
     try {
       const result = await apiService.submitSupervision(
         selectedMindClient.id,
-        selectedMindClient.avatarId,
         section,
         feedback
       );
