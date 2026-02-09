@@ -1,5 +1,7 @@
 # Hamo Pro 🧠
 
+> **Every Therapist Avatar has a Real AI Mind**
+
 AI Therapy Avatar Management Platform for Psychology Therapists
 
 ## !! The code was written entirely by AI!!
@@ -239,6 +241,6 @@ For questions or support, please open an issue on GitHub.
 
 ---
 
-**Version**: 1.3.3
-**Last Updated**: January 2026
+**Version**: 1.4.6
+**Last Updated**: February 2026
 **Author**: Chris Cheng
