@@ -3,7 +3,34 @@ import { User, Brain, BarChart3, Plus, Ticket, Eye, Clock, MessageSquare, LogOut
 import apiService from './services/api';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.4.5";
+  const APP_VERSION = "1.4.6";
+
+  // Hamo Logo SVG Component (Light theme, no text)
+  const HamoLogo = ({ size = 40, className = "" }) => (
+    <svg width={size} height={size} viewBox="0 0 512 512" className={className}>
+      <defs>
+        <mask id="hamo-smile-mask">
+          <rect x="0" y="0" width="512" height="512" fill="white"/>
+          <rect x="226" y="375" width="8" height="80" fill="black"/>
+          <rect x="280" y="375" width="8" height="80" fill="black"/>
+        </mask>
+      </defs>
+      {/* H: eyes (dot 1,2) */}
+      <circle cx="192" cy="125" r="40" fill="#002D72"/>
+      <circle cx="320" cy="125" r="40" fill="#002D72"/>
+      {/* A: nose dot */}
+      <circle cx="256" cy="205" r="12" fill="#002D72"/>
+      {/* H: ear dots (dot 3,4) + A: dash */}
+      <circle cx="88" cy="260" r="22" fill="#002D72"/>
+      <rect x="130" y="236" width="252" height="48" rx="14" fill="#002D72"/>
+      <circle cx="424" cy="260" r="22" fill="#002D72"/>
+      {/* M: 2 dashes */}
+      <rect x="152" y="318" width="96" height="40" rx="12" fill="#3572C6"/>
+      <rect x="264" y="318" width="96" height="40" rx="12" fill="#3572C6"/>
+      {/* O: 3-segment smile */}
+      <path d="M172,394 Q256,456 340,394 Z" fill="#74B3E8" mask="url(#hamo-smile-mask)"/>
+    </svg>
+  );
 
   // Contributors list
   const contributors = ['Chris Cheng', 'Anthropic Claude', 'Kerwin Du', 'Amy Chan'];
@@ -699,12 +726,10 @@ const HamoPro = () => {
         <div className="max-w-md w-full">
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <div className="flex items-center justify-center mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-teal-500 rounded-xl flex items-center justify-center">
-                <Brain className="w-10 h-10 text-white" />
-              </div>
+              <HamoLogo size={72} />
             </div>
             <h1 className="text-3xl font-bold text-center text-gray-900 mb-2">Hamo Pro</h1>
-            <p className="text-center text-gray-500 mb-8">AI Therapy Avatar Management</p>
+            <p className="text-center text-gray-500 mb-8 text-sm">Hamo AI Avatar & AI Mind System for Therapist</p>
             
             <div className="flex space-x-2 mb-6">
               <button 
@@ -803,12 +828,10 @@ const HamoPro = () => {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-teal-500 rounded-lg flex items-center justify-center">
-                <Brain className="w-6 h-6 text-white" />
-              </div>
+              <HamoLogo size={40} />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Hamo Pro</h1>
-                <p className="text-sm text-gray-500">AI Therapy Avatar Management</p>
+                <p className="text-sm text-gray-500">Hamo AI Avatar & AI Mind System for Therapist</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
