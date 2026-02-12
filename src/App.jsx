@@ -613,31 +613,28 @@ const HamoPro = () => {
     setCurrentPsvs(null);
 
     try {
-      // Fetch sessions for this mind
-      const sessionsResult = await apiService.getSessions(client.id);
+      // Fetch sessions and PSVS profile in parallel
+      // PSVS API is not affected by pro_visible - Pro can always see the 3 core indicators
+      const [sessionsResult, psvsResult] = await Promise.all([
+        apiService.getSessions(client.id),
+        apiService.getPsvsProfile(client.id)
+      ]);
+
       console.log('🔵 Sessions result:', sessionsResult);
+      console.log('🔵 PSVS result:', psvsResult);
+
+      // Set PSVS from the dedicated API (always available regardless of pro_visible)
+      if (psvsResult.success && psvsResult.psvs?.current_position) {
+        const pos = psvsResult.psvs.current_position;
+        setCurrentPsvs({
+          stress_level: pos.stress_level,
+          energy_state: pos.energy_state,
+          distance_from_center: pos.distance_from_center || pos.distance,
+          messageId: null
+        });
+      }
 
       if (sessionsResult.success && sessionsResult.sessions.length > 0) {
-        // Sort sessions by date (newest first) to find latest PSVS
-        const sortedSessions = [...sessionsResult.sessions].sort((a, b) =>
-          new Date(b.started_at || b.created_at) - new Date(a.started_at || a.created_at)
-        );
-
-        // Try to get PSVS from the latest session that has it
-        let latestPsvs = null;
-        for (const session of sortedSessions) {
-          // Check various possible PSVS fields in session data
-          const sessionPsvs = session.current_psvs_position ||
-                             session.psvs_position ||
-                             session.initial_psvs_position ||
-                             session.psvs;
-          if (sessionPsvs) {
-            latestPsvs = sessionPsvs;
-            console.log('🔵 Found PSVS in session:', latestPsvs);
-            break;
-          }
-        }
-
         // Fetch messages for each session
         const conversationsWithMessages = await Promise.all(
           sessionsResult.sessions.map(async (session) => {
@@ -658,16 +655,13 @@ const HamoPro = () => {
                 minute: '2-digit'
               }),
               messages,
-              proVisible,
-              // Store session's PSVS for fallback
-              sessionPsvs: session.current_psvs_position || session.psvs_position || session.initial_psvs_position || session.psvs
+              proVisible
             };
           })
         );
         setConversationsData(conversationsWithMessages);
 
-        // Set initial PSVS from the latest CLIENT message that has psvs_snapshot
-        // Only use messages from role="user" (Client), not "assistant" (Avatar)
+        // If we have visible messages, update PSVS from the latest CLIENT message
         const allClientMessages = conversationsWithMessages
           .flatMap(conv => conv.messages || [])
           .filter(msg => msg.role === 'user');
@@ -675,26 +669,8 @@ const HamoPro = () => {
 
         if (latestClientWithPsvs?.psvs_snapshot) {
           setCurrentPsvs({ ...latestClientWithPsvs.psvs_snapshot, messageId: latestClientWithPsvs.id });
-        } else if (latestPsvs) {
-          // Fallback: Use PSVS from session data
-          setCurrentPsvs({
-            stress_level: latestPsvs.stress_level,
-            energy_state: latestPsvs.energy_state,
-            distance_from_center: latestPsvs.distance_from_center,
-            messageId: null
-          });
-        } else {
-          // Last fallback: Check if any conversation has sessionPsvs
-          const convWithPsvs = conversationsWithMessages.find(conv => conv.sessionPsvs);
-          if (convWithPsvs?.sessionPsvs) {
-            setCurrentPsvs({
-              stress_level: convWithPsvs.sessionPsvs.stress_level,
-              energy_state: convWithPsvs.sessionPsvs.energy_state,
-              distance_from_center: convWithPsvs.sessionPsvs.distance_from_center,
-              messageId: null
-            });
-          }
         }
+        // If no visible messages with PSVS, we already set it from getPsvsProfile above
       }
     } catch (error) {
       console.error('Failed to fetch conversations:', error);
