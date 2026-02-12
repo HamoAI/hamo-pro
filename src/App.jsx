@@ -615,6 +615,10 @@ const HamoPro = () => {
     try {
       // Fetch sessions for this mind
       const sessionsResult = await apiService.getSessions(client.id);
+
+      // Also fetch Mind data to get latest PSVS (in case all chats are hidden)
+      const mindResult = await apiService.getMind(client.id);
+
       if (sessionsResult.success && sessionsResult.sessions.length > 0) {
         // Fetch messages for each session
         const conversationsWithMessages = await Promise.all(
@@ -642,12 +646,34 @@ const HamoPro = () => {
         );
         setConversationsData(conversationsWithMessages);
 
-        // Set initial PSVS from the latest message that has psvs_snapshot
-        const allMessages = conversationsWithMessages.flatMap(conv => conv.messages || []);
-        const latestWithPsvs = [...allMessages].reverse().find(msg => msg.psvs_snapshot);
-        if (latestWithPsvs?.psvs_snapshot) {
-          setCurrentPsvs({ ...latestWithPsvs.psvs_snapshot, messageId: latestWithPsvs.id });
+        // Set initial PSVS from the latest CLIENT message that has psvs_snapshot
+        // Only use messages from role="user" (Client), not "assistant" (Avatar)
+        const allClientMessages = conversationsWithMessages
+          .flatMap(conv => conv.messages || [])
+          .filter(msg => msg.role === 'user');
+        const latestClientWithPsvs = [...allClientMessages].reverse().find(msg => msg.psvs_snapshot);
+
+        if (latestClientWithPsvs?.psvs_snapshot) {
+          setCurrentPsvs({ ...latestClientWithPsvs.psvs_snapshot, messageId: latestClientWithPsvs.id });
+        } else if (mindResult.success && mindResult.mind?.psvs_profile) {
+          // Fallback: If no visible messages with PSVS, use Mind's current PSVS profile
+          const psvsProfile = mindResult.mind.psvs_profile;
+          setCurrentPsvs({
+            stress_level: psvsProfile.stress_level,
+            energy_state: psvsProfile.energy_state,
+            distance_from_center: psvsProfile.distance_from_center,
+            messageId: null
+          });
         }
+      } else if (mindResult.success && mindResult.mind?.psvs_profile) {
+        // No sessions but we have Mind data with PSVS
+        const psvsProfile = mindResult.mind.psvs_profile;
+        setCurrentPsvs({
+          stress_level: psvsProfile.stress_level,
+          energy_state: psvsProfile.energy_state,
+          distance_from_center: psvsProfile.distance_from_center,
+          messageId: null
+        });
       }
     } catch (error) {
       console.error('Failed to fetch conversations:', error);
@@ -665,8 +691,9 @@ const HamoPro = () => {
     const containerTop = containerRect.top;
     const containerHeight = containerRect.height;
 
-    // Find all message elements with data-psvs attribute
-    const messageElements = container.querySelectorAll('[data-psvs]');
+    // Find all CLIENT message elements with data-psvs attribute (role="user")
+    // Only update PSVS when scrolling to Client messages, not Avatar messages
+    const messageElements = container.querySelectorAll('[data-psvs][data-role="user"]');
 
     let topVisibleMessage = null;
     let minDistance = Infinity;
@@ -2432,8 +2459,9 @@ const HamoPro = () => {
                                 key={j}
                                 data-psvs={msg.psvs_snapshot ? JSON.stringify(msg.psvs_snapshot) : null}
                                 data-message-id={msg.id}
+                                data-role={msg.role}
                                 className={`p-3 rounded-lg mb-2 cursor-pointer transition-all ${msg.role === 'user' ? 'bg-gray-100 hover:bg-gray-200' : 'bg-blue-50 hover:bg-blue-100'} ${currentPsvs?.messageId === msg.id ? 'ring-2 ring-blue-400' : ''}`}
-                                onClick={() => msg.psvs_snapshot && setCurrentPsvs({ ...msg.psvs_snapshot, messageId: msg.id })}
+                                onClick={() => msg.role === 'user' && msg.psvs_snapshot && setCurrentPsvs({ ...msg.psvs_snapshot, messageId: msg.id })}
                               >
                                 <div className="flex justify-between mb-1">
                                   <span className="text-xs font-medium">{msg.role === 'user' ? selectedClient.name : (avatars.find(a => String(a.id) === String(selectedClient.avatarId))?.name || 'Avatar')}</span>
