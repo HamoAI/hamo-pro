@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { User, Brain, BarChart3, Plus, Ticket, Eye, EyeOff, Clock, MessageSquare, LogOut, Trash2, Download, CheckCircle, Calendar, Sparkles, Send, Star, X, Briefcase, ChevronRight } from 'lucide-react';
 import apiService from './services/api';
 
@@ -86,6 +86,8 @@ const HamoPro = () => {
   const [conversationsData, setConversationsData] = useState([]);
   const [conversationsLoading, setConversationsLoading] = useState(false);
   const [currentPsvs, setCurrentPsvs] = useState(null); // Track current PSVS indicators for status bar
+  const [messageRefs, setMessageRefs] = useState({}); // Store refs for each message
+  const chatScrollRef = useRef(null); // Ref for the scrollable chat container
   const [selectedMindClient, setSelectedMindClient] = useState(null);
   const [mindData, setMindData] = useState(null);
   const [mindLoading, setMindLoading] = useState(false);
@@ -653,6 +655,50 @@ const HamoPro = () => {
       setConversationsLoading(false);
     }
   };
+
+  // Handle scroll to update PSVS based on visible messages
+  const handleChatScroll = useCallback(() => {
+    if (!chatScrollRef.current) return;
+
+    const container = chatScrollRef.current;
+    const containerRect = container.getBoundingClientRect();
+    const containerTop = containerRect.top;
+    const containerHeight = containerRect.height;
+
+    // Find all message elements with data-psvs attribute
+    const messageElements = container.querySelectorAll('[data-psvs]');
+
+    let topVisibleMessage = null;
+    let minDistance = Infinity;
+
+    messageElements.forEach((el) => {
+      const rect = el.getBoundingClientRect();
+      const elementTop = rect.top - containerTop;
+
+      // Check if element is visible in the container (at least partially)
+      if (elementTop >= -rect.height && elementTop <= containerHeight) {
+        // Find the message closest to the top of the visible area
+        const distance = Math.abs(elementTop);
+        if (distance < minDistance) {
+          minDistance = distance;
+          topVisibleMessage = el;
+        }
+      }
+    });
+
+    if (topVisibleMessage) {
+      const psvsData = topVisibleMessage.getAttribute('data-psvs');
+      const messageId = topVisibleMessage.getAttribute('data-message-id');
+      if (psvsData) {
+        try {
+          const psvs = JSON.parse(psvsData);
+          setCurrentPsvs({ ...psvs, messageId });
+        } catch (e) {
+          console.error('Failed to parse PSVS data:', e);
+        }
+      }
+    }
+  }, []);
 
   // Handle supervision submission for a specific section
   const handleSupervise = async (section) => {
@@ -2361,7 +2407,11 @@ const HamoPro = () => {
                   </div>
 
                   {/* Content */}
-                  <div className="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+                  <div
+                    ref={chatScrollRef}
+                    onScroll={handleChatScroll}
+                    className="p-6 overflow-y-auto max-h-[calc(90vh-180px)]"
+                  >
                     {conversationsLoading ? (
                       <div className="text-center py-12 text-gray-500">
                         <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-3"></div>
@@ -2380,6 +2430,8 @@ const HamoPro = () => {
                             conv.messages.map((msg, j) => (
                               <div
                                 key={j}
+                                data-psvs={msg.psvs_snapshot ? JSON.stringify(msg.psvs_snapshot) : null}
+                                data-message-id={msg.id}
                                 className={`p-3 rounded-lg mb-2 cursor-pointer transition-all ${msg.role === 'user' ? 'bg-gray-100 hover:bg-gray-200' : 'bg-blue-50 hover:bg-blue-100'} ${currentPsvs?.messageId === msg.id ? 'ring-2 ring-blue-400' : ''}`}
                                 onClick={() => msg.psvs_snapshot && setCurrentPsvs({ ...msg.psvs_snapshot, messageId: msg.id })}
                               >
