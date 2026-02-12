@@ -613,11 +613,11 @@ const HamoPro = () => {
     setCurrentPsvs(null);
 
     try {
-      // Fetch sessions for this mind
-      const sessionsResult = await apiService.getSessions(client.id);
-
-      // Also fetch Mind data to get latest PSVS (in case all chats are hidden)
-      const mindResult = await apiService.getMind(client.id);
+      // Fetch sessions and PSVS profile in parallel
+      const [sessionsResult, psvsResult] = await Promise.all([
+        apiService.getSessions(client.id),
+        apiService.getPsvsProfile(client.id)
+      ]);
 
       if (sessionsResult.success && sessionsResult.sessions.length > 0) {
         // Fetch messages for each session
@@ -655,23 +655,23 @@ const HamoPro = () => {
 
         if (latestClientWithPsvs?.psvs_snapshot) {
           setCurrentPsvs({ ...latestClientWithPsvs.psvs_snapshot, messageId: latestClientWithPsvs.id });
-        } else if (mindResult.success && mindResult.mind?.psvs_profile) {
-          // Fallback: If no visible messages with PSVS, use Mind's current PSVS profile
-          const psvsProfile = mindResult.mind.psvs_profile;
+        } else if (psvsResult.success && psvsResult.psvs?.current_position) {
+          // Fallback: If no visible messages with PSVS, use PSVS profile's current_position
+          const pos = psvsResult.psvs.current_position;
           setCurrentPsvs({
-            stress_level: psvsProfile.stress_level,
-            energy_state: psvsProfile.energy_state,
-            distance_from_center: psvsProfile.distance_from_center,
+            stress_level: pos.stress_level,
+            energy_state: pos.energy_state,
+            distance_from_center: pos.distance_from_center,
             messageId: null
           });
         }
-      } else if (mindResult.success && mindResult.mind?.psvs_profile) {
-        // No sessions but we have Mind data with PSVS
-        const psvsProfile = mindResult.mind.psvs_profile;
+      } else if (psvsResult.success && psvsResult.psvs?.current_position) {
+        // No sessions but we have PSVS profile
+        const pos = psvsResult.psvs.current_position;
         setCurrentPsvs({
-          stress_level: psvsProfile.stress_level,
-          energy_state: psvsProfile.energy_state,
-          distance_from_center: psvsProfile.distance_from_center,
+          stress_level: pos.stress_level,
+          energy_state: pos.energy_state,
+          distance_from_center: pos.distance_from_center,
           messageId: null
         });
       }

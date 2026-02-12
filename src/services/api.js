@@ -516,6 +516,30 @@ class ApiService {
     }
   }
 
+  // Get PSVS profile for a specific mind
+  async getPsvsProfile(mindId) {
+    try {
+      console.log('🔵 Fetching PSVS profile for mind:', mindId);
+      const response = await this.request(`/mind/${mindId}/psvs`, {
+        method: 'GET',
+      });
+
+      console.log('✅ PSVS profile fetched:', response);
+
+      return {
+        success: true,
+        psvs: response,
+      };
+    } catch (error) {
+      console.error('❌ Failed to fetch PSVS profile:', error.message);
+      return {
+        success: false,
+        error: error.message,
+        psvs: null,
+      };
+    }
+  }
+
   // Get all sessions for a specific mind
   async getSessions(mindId) {
     try {
