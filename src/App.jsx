@@ -613,13 +613,31 @@ const HamoPro = () => {
     setCurrentPsvs(null);
 
     try {
-      // Fetch sessions and PSVS profile in parallel
-      const [sessionsResult, psvsResult] = await Promise.all([
-        apiService.getSessions(client.id),
-        apiService.getPsvsProfile(client.id)
-      ]);
+      // Fetch sessions for this mind
+      const sessionsResult = await apiService.getSessions(client.id);
+      console.log('🔵 Sessions result:', sessionsResult);
 
       if (sessionsResult.success && sessionsResult.sessions.length > 0) {
+        // Sort sessions by date (newest first) to find latest PSVS
+        const sortedSessions = [...sessionsResult.sessions].sort((a, b) =>
+          new Date(b.started_at || b.created_at) - new Date(a.started_at || a.created_at)
+        );
+
+        // Try to get PSVS from the latest session that has it
+        let latestPsvs = null;
+        for (const session of sortedSessions) {
+          // Check various possible PSVS fields in session data
+          const sessionPsvs = session.current_psvs_position ||
+                             session.psvs_position ||
+                             session.initial_psvs_position ||
+                             session.psvs;
+          if (sessionPsvs) {
+            latestPsvs = sessionPsvs;
+            console.log('🔵 Found PSVS in session:', latestPsvs);
+            break;
+          }
+        }
+
         // Fetch messages for each session
         const conversationsWithMessages = await Promise.all(
           sessionsResult.sessions.map(async (session) => {
@@ -640,7 +658,9 @@ const HamoPro = () => {
                 minute: '2-digit'
               }),
               messages,
-              proVisible
+              proVisible,
+              // Store session's PSVS for fallback
+              sessionPsvs: session.current_psvs_position || session.psvs_position || session.initial_psvs_position || session.psvs
             };
           })
         );
@@ -655,25 +675,26 @@ const HamoPro = () => {
 
         if (latestClientWithPsvs?.psvs_snapshot) {
           setCurrentPsvs({ ...latestClientWithPsvs.psvs_snapshot, messageId: latestClientWithPsvs.id });
-        } else if (psvsResult.success && psvsResult.psvs?.current_position) {
-          // Fallback: If no visible messages with PSVS, use PSVS profile's current_position
-          const pos = psvsResult.psvs.current_position;
+        } else if (latestPsvs) {
+          // Fallback: Use PSVS from session data
           setCurrentPsvs({
-            stress_level: pos.stress_level,
-            energy_state: pos.energy_state,
-            distance_from_center: pos.distance_from_center,
+            stress_level: latestPsvs.stress_level,
+            energy_state: latestPsvs.energy_state,
+            distance_from_center: latestPsvs.distance_from_center,
             messageId: null
           });
+        } else {
+          // Last fallback: Check if any conversation has sessionPsvs
+          const convWithPsvs = conversationsWithMessages.find(conv => conv.sessionPsvs);
+          if (convWithPsvs?.sessionPsvs) {
+            setCurrentPsvs({
+              stress_level: convWithPsvs.sessionPsvs.stress_level,
+              energy_state: convWithPsvs.sessionPsvs.energy_state,
+              distance_from_center: convWithPsvs.sessionPsvs.distance_from_center,
+              messageId: null
+            });
+          }
         }
-      } else if (psvsResult.success && psvsResult.psvs?.current_position) {
-        // No sessions but we have PSVS profile
-        const pos = psvsResult.psvs.current_position;
-        setCurrentPsvs({
-          stress_level: pos.stress_level,
-          energy_state: pos.energy_state,
-          distance_from_center: pos.distance_from_center,
-          messageId: null
-        });
       }
     } catch (error) {
       console.error('Failed to fetch conversations:', error);
