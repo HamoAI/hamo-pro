@@ -3,7 +3,7 @@ import { User, Brain, BarChart3, Plus, Ticket, Eye, EyeOff, Clock, MessageSquare
 import apiService from './services/api';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.4.7";
+  const APP_VERSION = "1.4.8";
 
   // Hamo Logo SVG Component (Light theme, no text)
   const HamoLogo = ({ size = 40, className = "" }) => (
@@ -85,6 +85,7 @@ const HamoPro = () => {
   const [selectedClient, setSelectedClient] = useState(null);
   const [conversationsData, setConversationsData] = useState([]);
   const [conversationsLoading, setConversationsLoading] = useState(false);
+  const [currentPsvs, setCurrentPsvs] = useState(null); // Track current PSVS indicators for status bar
   const [selectedMindClient, setSelectedMindClient] = useState(null);
   const [mindData, setMindData] = useState(null);
   const [mindLoading, setMindLoading] = useState(false);
@@ -607,6 +608,7 @@ const HamoPro = () => {
     setSelectedClient(client);
     setConversationsLoading(true);
     setConversationsData([]);
+    setCurrentPsvs(null);
 
     try {
       // Fetch sessions for this mind
@@ -637,6 +639,13 @@ const HamoPro = () => {
           })
         );
         setConversationsData(conversationsWithMessages);
+
+        // Set initial PSVS from the latest message that has psvs_snapshot
+        const allMessages = conversationsWithMessages.flatMap(conv => conv.messages || []);
+        const latestWithPsvs = [...allMessages].reverse().find(msg => msg.psvs_snapshot);
+        if (latestWithPsvs?.psvs_snapshot) {
+          setCurrentPsvs({ ...latestWithPsvs.psvs_snapshot, messageId: latestWithPsvs.id });
+        }
       }
     } catch (error) {
       console.error('Failed to fetch conversations:', error);
@@ -1731,7 +1740,7 @@ const HamoPro = () => {
                     </div>
                     <div className="flex space-x-2">
                       <button onClick={() => handleViewMind(c)} className="flex-1 bg-purple-50 text-purple-600 px-2 sm:px-3 py-2 rounded-lg flex items-center justify-center space-x-1 sm:space-x-2 hover:bg-purple-100"><Sparkles className="w-4 h-4 flex-shrink-0" /><span className="text-xs sm:text-sm whitespace-nowrap">AI Mind</span></button>
-                      <button onClick={() => handleViewChats(c)} className="flex-1 bg-blue-50 text-blue-600 px-2 sm:px-3 py-2 rounded-lg flex items-center justify-center space-x-1 sm:space-x-2 hover:bg-blue-100"><Eye className="w-4 h-4 flex-shrink-0" /><span className="text-xs sm:text-sm whitespace-nowrap">View Chats</span></button>
+                      <button onClick={() => handleViewChats(c)} className="flex-1 bg-blue-50 text-blue-600 px-2 sm:px-3 py-2 rounded-lg flex items-center justify-center space-x-1 sm:space-x-2 hover:bg-blue-100"><Eye className="w-4 h-4 flex-shrink-0" /><span className="text-xs sm:text-sm whitespace-nowrap">Chats & Status</span></button>
                     </div>
                   </div>
                 );
@@ -2268,7 +2277,7 @@ const HamoPro = () => {
             )}
 
             {selectedClient && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4" onClick={() => setSelectedClient(null)}>
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4" onClick={() => { setSelectedClient(null); setCurrentPsvs(null); }}>
                 <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
                   {/* Header */}
                   <div className="bg-gradient-to-r from-blue-500 to-cyan-500 px-6 py-4 rounded-t-2xl">
@@ -2278,20 +2287,81 @@ const HamoPro = () => {
                           <MessageSquare className="w-5 h-5 text-white" />
                         </div>
                         <div>
-                          <h3 className="text-lg font-semibold text-white">Conversations</h3>
+                          <h3 className="text-lg font-semibold text-white">Chats & Status</h3>
                           <p className="text-blue-100 text-sm">{selectedClient.name}</p>
                         </div>
                       </div>
                       <button
-                        onClick={() => setSelectedClient(null)}
+                        onClick={() => { setSelectedClient(null); setCurrentPsvs(null); }}
                         className="text-white/80 hover:text-white hover:bg-white/20 p-1 rounded-full transition-colors"
                       >
                         <X className="w-5 h-5" />
                       </button>
                     </div>
                   </div>
+
+                  {/* PSVS Status Bar - Fixed at top */}
+                  <div className="bg-gray-50 border-b px-4 py-3">
+                    <div className="flex justify-between items-center">
+                      {/* Stress Level */}
+                      <div className="flex-1 text-center">
+                        <p className="text-xs text-gray-500 mb-1">Stress Level</p>
+                        <div className="flex items-center justify-center space-x-1">
+                          <span className={`text-lg font-bold ${
+                            currentPsvs?.stress_level >= 7 ? 'text-red-500' :
+                            currentPsvs?.stress_level >= 4 ? 'text-yellow-500' :
+                            currentPsvs?.stress_level !== undefined ? 'text-green-500' : 'text-gray-300'
+                          }`}>
+                            {currentPsvs?.stress_level !== undefined ? currentPsvs.stress_level.toFixed(1) : '--'}
+                          </span>
+                          <span className="text-xs text-gray-400">/10</span>
+                        </div>
+                      </div>
+
+                      <div className="w-px h-10 bg-gray-200"></div>
+
+                      {/* Energy State */}
+                      <div className="flex-1 text-center">
+                        <p className="text-xs text-gray-500 mb-1">Energy State</p>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                          currentPsvs?.energy_state === 'neurotic' ? 'bg-red-100 text-red-700' :
+                          currentPsvs?.energy_state === 'negative' ? 'bg-yellow-100 text-yellow-700' :
+                          currentPsvs?.energy_state === 'positive' ? 'bg-green-100 text-green-700' :
+                          'bg-gray-100 text-gray-400'
+                        }`}>
+                          {currentPsvs?.energy_state ? (
+                            <>
+                              <span className={`w-2 h-2 rounded-full mr-1 ${
+                                currentPsvs.energy_state === 'neurotic' ? 'bg-red-500' :
+                                currentPsvs.energy_state === 'negative' ? 'bg-yellow-500' :
+                                'bg-green-500'
+                              }`}></span>
+                              {currentPsvs.energy_state.charAt(0).toUpperCase() + currentPsvs.energy_state.slice(1)}
+                            </>
+                          ) : '--'}
+                        </span>
+                      </div>
+
+                      <div className="w-px h-10 bg-gray-200"></div>
+
+                      {/* Distance from Center */}
+                      <div className="flex-1 text-center">
+                        <p className="text-xs text-gray-500 mb-1">Distance</p>
+                        <div className="flex items-center justify-center space-x-1">
+                          <span className={`text-lg font-bold ${
+                            currentPsvs?.distance_from_center >= 0.7 ? 'text-red-500' :
+                            currentPsvs?.distance_from_center >= 0.4 ? 'text-yellow-500' :
+                            currentPsvs?.distance_from_center !== undefined ? 'text-green-500' : 'text-gray-300'
+                          }`}>
+                            {currentPsvs?.distance_from_center !== undefined ? currentPsvs.distance_from_center.toFixed(2) : '--'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Content */}
-                  <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+                  <div className="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
                     {conversationsLoading ? (
                       <div className="text-center py-12 text-gray-500">
                         <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-3"></div>
@@ -2308,12 +2378,25 @@ const HamoPro = () => {
                             </div>
                           ) : conv.messages && conv.messages.length > 0 ? (
                             conv.messages.map((msg, j) => (
-                              <div key={j} className={`p-3 rounded-lg mb-2 ${msg.role === 'user' ? 'bg-gray-100' : 'bg-blue-50'}`}>
+                              <div
+                                key={j}
+                                className={`p-3 rounded-lg mb-2 cursor-pointer transition-all ${msg.role === 'user' ? 'bg-gray-100 hover:bg-gray-200' : 'bg-blue-50 hover:bg-blue-100'} ${currentPsvs?.messageId === msg.id ? 'ring-2 ring-blue-400' : ''}`}
+                                onClick={() => msg.psvs_snapshot && setCurrentPsvs({ ...msg.psvs_snapshot, messageId: msg.id })}
+                              >
                                 <div className="flex justify-between mb-1">
                                   <span className="text-xs font-medium">{msg.role === 'user' ? 'Client' : 'Avatar'}</span>
-                                  <span className="text-xs text-gray-400">
-                                    {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : ''}
-                                  </span>
+                                  <div className="flex items-center space-x-2">
+                                    {msg.psvs_snapshot && (
+                                      <span className={`w-2 h-2 rounded-full ${
+                                        msg.psvs_snapshot.energy_state === 'neurotic' ? 'bg-red-500' :
+                                        msg.psvs_snapshot.energy_state === 'negative' ? 'bg-yellow-500' :
+                                        'bg-green-500'
+                                      }`} title={`Stress: ${msg.psvs_snapshot.stress_level?.toFixed(1)}`}></span>
+                                    )}
+                                    <span className="text-xs text-gray-400">
+                                      {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : ''}
+                                    </span>
+                                  </div>
                                 </div>
                                 <p className="text-sm">{msg.content}</p>
                               </div>
