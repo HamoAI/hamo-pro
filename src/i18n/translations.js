@@ -178,14 +178,14 @@ export const translations = {
     mentalHealthProfessional: '心理健康专业人士',
 
     // Navigation
-    aiAvatars: 'AI 形象',
+    aiAvatars: '虚拟咨询师',
     clients: '来访者',
     dashboard: '仪表板',
 
     // Avatars
     avatarTherapists: '虚拟咨询师',
-    createAvatar: '创建形象',
-    editAvatar: '编辑形象',
+    createAvatar: '创建虚拟咨询师',
+    editAvatar: '编辑虚拟咨询师',
     avatarName: '形象名称',
     specialty: '专业领域',
     selectSpecialty: '选择专业领域',
