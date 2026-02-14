@@ -1041,12 +1041,9 @@ const HamoPro = () => {
                 <p className="text-sm text-gray-500">{t('tagline')}</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <div className="flex items-center space-x-2 text-sm font-medium"><span>{currentUser?.full_name || currentUser?.fullName}</span></div>
-                <p className="text-xs text-gray-500">{language === 'zh' ? t('mentalHealthProfessional') : getProfessionLabel(currentUser?.profession)}</p>
-              </div>
-              <LanguageToggle />
+            <div className="text-right">
+              <div className="flex items-center space-x-2 text-sm font-medium"><span>{currentUser?.full_name || currentUser?.fullName}</span></div>
+              <p className="text-xs text-gray-500">{language === 'zh' ? t('mentalHealthProfessional') : getProfessionLabel(currentUser?.profession)}</p>
             </div>
           </div>
         </div>
@@ -2587,7 +2584,10 @@ const HamoPro = () => {
 
         {activeTab === 'settings' && (
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold">{t('settings')}</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">{t('settings')}</h2>
+              <LanguageToggle />
+            </div>
 
             {/* Profile Settings */}
             <div className="bg-white rounded-xl shadow-md p-6">
