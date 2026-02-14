@@ -117,6 +117,22 @@ const HamoPro = () => {
     { value: 'act', label: t('act') }
   ], [t]);
 
+  // Helper function to get translated specialty label from value
+  const getSpecialtyLabel = useCallback((value) => {
+    if (!value) return '';
+    const options = getSpecialtyOptions();
+    const option = options.find(opt => opt.value === value);
+    return option ? option.label : value; // Return original value if not found (for custom or legacy)
+  }, [getSpecialtyOptions]);
+
+  // Helper function to get translated therapeutic approach label from value
+  const getApproachLabel = useCallback((value) => {
+    if (!value) return '';
+    const options = getTherapeuticApproachOptions();
+    const option = options.find(opt => opt.value === value);
+    return option ? option.label : value; // Return original value if not found (for custom or legacy)
+  }, [getTherapeuticApproachOptions]);
+
   // Legacy options for backward compatibility
   const specialtyOptions = [
     'Depression & Anxiety',
@@ -1280,7 +1296,7 @@ const HamoPro = () => {
                       <div className="flex items-start justify-between">
                         <div>
                           <h3 className="text-lg font-semibold text-gray-900">{a.name}</h3>
-                          <p className="text-sm text-blue-600">{a.specialty || a.theory}</p>
+                          <p className="text-sm text-blue-600">{getSpecialtyLabel(a.specialty) || a.specialty || a.theory}</p>
                         </div>
                         {/* Rating placeholder - can be removed if not needed */}
                         <div className="flex items-center space-x-1 text-yellow-500">
@@ -1291,7 +1307,7 @@ const HamoPro = () => {
 
                       {/* Therapeutic Approaches */}
                       {a.therapeuticApproaches && a.therapeuticApproaches.length > 0 && (
-                        <p className="text-sm text-gray-600 mt-1">{a.therapeuticApproaches.join(' • ')}</p>
+                        <p className="text-sm text-gray-600 mt-1">{a.therapeuticApproaches.map(ap => getApproachLabel(ap)).join(' • ')}</p>
                       )}
 
                       {/* Stats Row */}
@@ -1328,7 +1344,7 @@ const HamoPro = () => {
                         <Brain className="w-12 h-12 text-blue-500" />
                       </div>
                       <h2 className="text-2xl font-bold text-white">{selectedAvatar.name}</h2>
-                      <p className="text-blue-100 mt-1">{selectedAvatar.specialty || selectedAvatar.theory}</p>
+                      <p className="text-blue-100 mt-1">{getSpecialtyLabel(selectedAvatar.specialty) || selectedAvatar.specialty || selectedAvatar.theory}</p>
 
                       {/* Rating */}
                       <div className="flex items-center space-x-1 mt-2">
@@ -1345,8 +1361,8 @@ const HamoPro = () => {
                     {/* Therapeutic Approaches */}
                     {selectedAvatar.therapeuticApproaches && selectedAvatar.therapeuticApproaches.length > 0 && (
                       <div>
-                        <h4 className="text-sm font-medium text-gray-500 mb-2">Therapeutic Approach</h4>
-                        <p className="text-gray-800">{selectedAvatar.therapeuticApproaches.join(' • ')}</p>
+                        <h4 className="text-sm font-medium text-gray-500 mb-2">{t('therapeuticApproaches')}</h4>
+                        <p className="text-gray-800">{selectedAvatar.therapeuticApproaches.map(ap => getApproachLabel(ap)).join(' • ')}</p>
                       </div>
                     )}
 
