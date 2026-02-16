@@ -4,7 +4,7 @@ import apiService from './services/api';
 import { translations } from './i18n/translations';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.5.7";
+  const APP_VERSION = "1.5.8";
 
   // Language state - default to browser language or English
   const [language, setLanguage] = useState(() => {
@@ -752,7 +752,10 @@ const HamoPro = () => {
         // Messages within each conversation are ordered by time, and conversations are ordered by date
         // We need to find the absolute latest client message
         let latestClientMessage = null;
-        let latestTimestamp = null;
+        let latestTimestamp = 0;
+
+        // Debug: log all client messages
+        console.log('🔍 Searching for latest client message...');
 
         // Iterate through all conversations and all messages to find the latest client message
         for (const conv of conversationsWithMessages) {
@@ -760,7 +763,8 @@ const HamoPro = () => {
             for (const msg of conv.messages) {
               if (msg.role === 'user') {
                 const msgTime = msg.timestamp ? new Date(msg.timestamp).getTime() : 0;
-                if (!latestTimestamp || msgTime > latestTimestamp) {
+                console.log('  Client msg:', msg.id, msg.content?.substring(0, 20), 'time:', msgTime);
+                if (msgTime >= latestTimestamp) {
                   latestTimestamp = msgTime;
                   latestClientMessage = msg;
                 }
@@ -769,18 +773,19 @@ const HamoPro = () => {
           }
         }
 
-        // Set PSVS: use message's psvs_snapshot if available, otherwise keep the getPsvsProfile data
+        // Set PSVS with the latest client message ID
         if (latestClientMessage) {
-          console.log('🔵 Latest client message found:', {
-            id: latestClientMessage.id,
-            content: latestClientMessage.content?.substring(0, 30),
-            timestamp: latestClientMessage.timestamp
-          });
+          const latestMsgId = String(latestClientMessage.id);
+          console.log('🔵 Selected latest client message:', latestMsgId, latestClientMessage.content?.substring(0, 30));
+
           if (latestClientMessage.psvs_snapshot) {
-            setCurrentPsvs({ ...latestClientMessage.psvs_snapshot, messageId: String(latestClientMessage.id) });
+            setCurrentPsvs({ ...latestClientMessage.psvs_snapshot, messageId: latestMsgId });
           } else {
             // Use PSVS from getPsvsProfile but associate with this message ID for highlighting
-            setCurrentPsvs(prev => prev ? { ...prev, messageId: String(latestClientMessage.id) } : null);
+            setCurrentPsvs(prev => {
+              console.log('  Setting messageId to:', latestMsgId, 'prev:', prev?.messageId);
+              return prev ? { ...prev, messageId: latestMsgId } : null;
+            });
           }
         }
       }
