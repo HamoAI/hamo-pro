@@ -4,7 +4,7 @@ import apiService from './services/api';
 import { translations } from './i18n/translations';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.5.9";
+  const APP_VERSION = "1.5.10";
 
   // Language state - default to browser language or English
   const [language, setLanguage] = useState(() => {
@@ -85,7 +85,7 @@ const HamoPro = () => {
 
   // Profession options for sign up
   const professionOptions = [
-    { value: 'mental_health_professional', label: 'Mental Health Professional' },
+    { value: 'mental_health_professional', label: t('mentalHealthProfessional') },
   ];
 
   // Helper function to get profession label
@@ -1112,7 +1112,7 @@ const HamoPro = () => {
             </div>
             <div className="text-right">
               <div className="flex items-center space-x-2 text-sm font-medium"><span>{currentUser?.full_name || currentUser?.fullName}</span></div>
-              <p className="text-xs text-gray-500">{language === 'zh' ? t('mentalHealthProfessional') : getProfessionLabel(currentUser?.profession)}</p>
+              <p className="text-xs text-gray-500">{getProfessionLabel(currentUser?.profession)}</p>
             </div>
           </div>
         </div>
