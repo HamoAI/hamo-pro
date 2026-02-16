@@ -921,10 +921,9 @@ const HamoPro = () => {
     }
   }, [selectedClient]);
 
-  // Auto-scroll to bottom once when conversations finish loading
+  // Auto-scroll to bottom whenever new conversations/messages are loaded
   useEffect(() => {
-    if (selectedClient && !conversationsLoading && conversationsData.length > 0 && !hasScrolledRef.current) {
-      hasScrolledRef.current = true;
+    if (selectedClient && !conversationsLoading && conversationsData.length > 0) {
       // Set flag to prevent scroll handler from overriding our PSVS selection
       isInitialScrollRef.current = true;
       // Small delay to ensure DOM is rendered
