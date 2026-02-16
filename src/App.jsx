@@ -4,7 +4,7 @@ import apiService from './services/api';
 import { translations } from './i18n/translations';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.5.3";
+  const APP_VERSION = "1.5.4";
 
   // Language state - default to browser language or English
   const [language, setLanguage] = useState(() => {
@@ -748,24 +748,29 @@ const HamoPro = () => {
         );
         setConversationsData(conversationsWithMessages);
 
-        // Find the latest CLIENT message with PSVS from the most recent conversation
-        // Conversations are sorted by date, so we check from the last conversation first
-        let latestClientWithPsvs = null;
-        for (let i = conversationsWithMessages.length - 1; i >= 0 && !latestClientWithPsvs; i--) {
+        // Find the latest CLIENT message from the most recent conversation
+        // We want to highlight the newest client message, regardless of whether it has PSVS data
+        let latestClientMessage = null;
+        for (let i = conversationsWithMessages.length - 1; i >= 0 && !latestClientMessage; i--) {
           const conv = conversationsWithMessages[i];
           if (conv.messages && conv.messages.length > 0) {
-            // Find the last client message with PSVS in this conversation
-            const clientMessages = conv.messages.filter(msg => msg.role === 'user' && msg.psvs_snapshot);
+            // Find the last client message in this conversation
+            const clientMessages = conv.messages.filter(msg => msg.role === 'user');
             if (clientMessages.length > 0) {
-              latestClientWithPsvs = clientMessages[clientMessages.length - 1];
+              latestClientMessage = clientMessages[clientMessages.length - 1];
             }
           }
         }
 
-        if (latestClientWithPsvs?.psvs_snapshot) {
-          setCurrentPsvs({ ...latestClientWithPsvs.psvs_snapshot, messageId: latestClientWithPsvs.id });
+        // Set PSVS: use message's psvs_snapshot if available, otherwise keep the getPsvsProfile data
+        if (latestClientMessage) {
+          if (latestClientMessage.psvs_snapshot) {
+            setCurrentPsvs({ ...latestClientMessage.psvs_snapshot, messageId: latestClientMessage.id });
+          } else {
+            // Use PSVS from getPsvsProfile but associate with this message ID for highlighting
+            setCurrentPsvs(prev => prev ? { ...prev, messageId: latestClientMessage.id } : null);
+          }
         }
-        // If no visible messages with PSVS, we already set it from getPsvsProfile above
       }
     } catch (error) {
       console.error('Failed to fetch conversations:', error);
