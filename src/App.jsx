@@ -4,7 +4,7 @@ import apiService from './services/api';
 import { translations } from './i18n/translations';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.5.5";
+  const APP_VERSION = "1.5.6";
 
   // Language state - default to browser language or English
   const [language, setLanguage] = useState(() => {
@@ -825,6 +825,28 @@ const HamoPro = () => {
     }
   }, []);
 
+  // Track if we've already scrolled for this dialog open
+  const hasScrolledRef = useRef(false);
+
+  // Reset scroll flag when dialog closes
+  useEffect(() => {
+    if (!selectedClient) {
+      hasScrolledRef.current = false;
+    }
+  }, [selectedClient]);
+
+  // Auto-scroll to bottom once when conversations finish loading
+  useEffect(() => {
+    if (selectedClient && !conversationsLoading && conversationsData.length > 0 && !hasScrolledRef.current) {
+      hasScrolledRef.current = true;
+      // Small delay to ensure DOM is rendered
+      setTimeout(() => {
+        if (chatScrollRef.current) {
+          chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+        }
+      }, 100);
+    }
+  }, [selectedClient, conversationsLoading, conversationsData]);
 
   // Handle supervision submission for a specific section
   const handleSupervise = async (section) => {
@@ -2536,15 +2558,7 @@ const HamoPro = () => {
 
                   {/* Content */}
                   <div
-                    ref={(el) => {
-                      chatScrollRef.current = el;
-                      // Auto-scroll to bottom when element is mounted and has content
-                      if (el && !conversationsLoading && conversationsData.length > 0) {
-                        setTimeout(() => {
-                          el.scrollTop = el.scrollHeight;
-                        }, 50);
-                      }
-                    }}
+                    ref={chatScrollRef}
                     onScroll={handleChatScroll}
                     className="p-6 overflow-y-auto max-h-[calc(90vh-180px)]"
                   >
