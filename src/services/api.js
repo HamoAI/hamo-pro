@@ -1,5 +1,5 @@
-// Hamo Pro API Service v1.3.7
-// Integrates with Hamo-UME Backend v1.3.7
+// Hamo Pro API Service v1.5.2
+// Integrates with Hamo-UME Backend v1.5.2
 // Production: https://api.hamo.ai/api
 // AWS Deployment with Custom Domain and HTTPS
 
@@ -577,6 +577,16 @@ class ApiService {
 
       console.log('✅ Messages fetched:', response);
 
+      // Debug: Log raw message structure to check PSVS field names
+      if (response?.messages?.[0]) {
+        console.log('🔍 Sample message structure:', Object.keys(response.messages[0]));
+        console.log('🔍 PSVS fields check:', {
+          psvs_snapshot: response.messages[0].psvs_snapshot,
+          psvs: response.messages[0].psvs,
+          snapshot: response.messages[0].snapshot,
+        });
+      }
+
       // Handle multiple response formats:
       // 1. Array of messages directly
       // 2. Object with data property containing array
@@ -597,7 +607,8 @@ class ApiService {
           role: msg.role,
           content: msg.content,
           timestamp: msg.timestamp,
-          psvs_snapshot: msg.psvs_snapshot,
+          // Support multiple field names: psvs_snapshot, psvs, or snapshot
+          psvs_snapshot: msg.psvs_snapshot || msg.psvs || msg.snapshot || null,
         })),
       };
     } catch (error) {

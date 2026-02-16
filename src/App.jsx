@@ -4,7 +4,7 @@ import apiService from './services/api';
 import { translations } from './i18n/translations';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.5.2";
+  const APP_VERSION = "1.5.3";
 
   // Language state - default to browser language or English
   const [language, setLanguage] = useState(() => {
@@ -748,11 +748,19 @@ const HamoPro = () => {
         );
         setConversationsData(conversationsWithMessages);
 
-        // If we have visible messages, update PSVS from the latest CLIENT message
-        const allClientMessages = conversationsWithMessages
-          .flatMap(conv => conv.messages || [])
-          .filter(msg => msg.role === 'user');
-        const latestClientWithPsvs = [...allClientMessages].reverse().find(msg => msg.psvs_snapshot);
+        // Find the latest CLIENT message with PSVS from the most recent conversation
+        // Conversations are sorted by date, so we check from the last conversation first
+        let latestClientWithPsvs = null;
+        for (let i = conversationsWithMessages.length - 1; i >= 0 && !latestClientWithPsvs; i--) {
+          const conv = conversationsWithMessages[i];
+          if (conv.messages && conv.messages.length > 0) {
+            // Find the last client message with PSVS in this conversation
+            const clientMessages = conv.messages.filter(msg => msg.role === 'user' && msg.psvs_snapshot);
+            if (clientMessages.length > 0) {
+              latestClientWithPsvs = clientMessages[clientMessages.length - 1];
+            }
+          }
+        }
 
         if (latestClientWithPsvs?.psvs_snapshot) {
           setCurrentPsvs({ ...latestClientWithPsvs.psvs_snapshot, messageId: latestClientWithPsvs.id });
@@ -810,6 +818,7 @@ const HamoPro = () => {
       }
     }
   }, []);
+
 
   // Handle supervision submission for a specific section
   const handleSupervise = async (section) => {
@@ -2521,7 +2530,15 @@ const HamoPro = () => {
 
                   {/* Content */}
                   <div
-                    ref={chatScrollRef}
+                    ref={(el) => {
+                      chatScrollRef.current = el;
+                      // Auto-scroll to bottom when element is mounted and has content
+                      if (el && !conversationsLoading && conversationsData.length > 0) {
+                        setTimeout(() => {
+                          el.scrollTop = el.scrollHeight;
+                        }, 50);
+                      }
+                    }}
                     onScroll={handleChatScroll}
                     className="p-6 overflow-y-auto max-h-[calc(90vh-180px)]"
                   >
