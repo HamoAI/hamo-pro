@@ -252,6 +252,66 @@ const HamoPro = () => {
     checkAuth();
   }, []);
 
+  // Auto-refresh conversations and PSVS while modal is open
+  useEffect(() => {
+    if (!selectedClient) return;
+
+    const refreshData = async () => {
+      try {
+        // Fetch updated PSVS
+        const psvsResult = await apiService.getPsvsProfile(selectedClient.id);
+        if (psvsResult.success && psvsResult.psvs?.current_position) {
+          const pos = psvsResult.psvs.current_position;
+          setCurrentPsvs(prev => ({
+            stress_level: pos.stress_level,
+            energy_state: pos.energy_state,
+            distance_from_center: pos.distance_from_center || pos.distance,
+            messageId: prev?.messageId || null // Preserve messageId if set
+          }));
+        }
+
+        // Fetch updated sessions
+        const sessionsResult = await apiService.getSessions(selectedClient.id);
+        if (sessionsResult.success && sessionsResult.sessions.length > 0) {
+          const conversationsWithMessages = await Promise.all(
+            sessionsResult.sessions.map(async (session) => {
+              const proVisible = session.pro_visible !== false;
+              let messages = [];
+              if (proVisible) {
+                const messagesResult = await apiService.getSessionMessages(session.id);
+                messages = messagesResult.success ? messagesResult.messages : [];
+              }
+              return {
+                sessionId: session.id,
+                date: new Date(session.started_at || session.created_at).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                }),
+                messages,
+                proVisible
+              };
+            })
+          );
+          setConversationsData(conversationsWithMessages);
+        }
+      } catch (error) {
+        console.error('Failed to refresh data:', error);
+      }
+    };
+
+    // Initial refresh
+    refreshData();
+
+    // Set up polling interval (every 3 seconds)
+    const intervalId = setInterval(refreshData, 3000);
+
+    // Cleanup on unmount or when selectedClient changes
+    return () => clearInterval(intervalId);
+  }, [selectedClient]);
+
   const generateMockConversations = () => [
     {
       date: '2026-01-10',
