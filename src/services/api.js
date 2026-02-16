@@ -577,13 +577,23 @@ class ApiService {
 
       console.log('✅ Messages fetched:', response);
 
-      // Handle both array response and object with data property
-      const messages = Array.isArray(response) ? response : (response.data || response.messages || []);
+      // Handle multiple response formats:
+      // 1. Array of messages directly
+      // 2. Object with data property containing array
+      // 3. Object with messages property containing array (new format from hamo-ume)
+      let messages = [];
+      if (Array.isArray(response)) {
+        messages = response;
+      } else if (response?.data && Array.isArray(response.data)) {
+        messages = response.data;
+      } else if (response?.messages && Array.isArray(response.messages)) {
+        messages = response.messages;
+      }
 
       return {
         success: true,
         messages: messages.map(msg => ({
-          id: msg.id,
+          id: msg.id || msg.message_id,  // Support both id and message_id
           role: msg.role,
           content: msg.content,
           timestamp: msg.timestamp,
