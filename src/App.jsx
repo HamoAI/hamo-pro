@@ -4,7 +4,7 @@ import apiService from './services/api';
 import { translations } from './i18n/translations';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.5.4";
+  const APP_VERSION = "1.5.5";
 
   // Language state - default to browser language or English
   const [language, setLanguage] = useState(() => {
@@ -764,11 +764,12 @@ const HamoPro = () => {
 
         // Set PSVS: use message's psvs_snapshot if available, otherwise keep the getPsvsProfile data
         if (latestClientMessage) {
+          console.log('🔵 Latest client message:', latestClientMessage.id, latestClientMessage.content?.substring(0, 30));
           if (latestClientMessage.psvs_snapshot) {
-            setCurrentPsvs({ ...latestClientMessage.psvs_snapshot, messageId: latestClientMessage.id });
+            setCurrentPsvs({ ...latestClientMessage.psvs_snapshot, messageId: String(latestClientMessage.id) });
           } else {
             // Use PSVS from getPsvsProfile but associate with this message ID for highlighting
-            setCurrentPsvs(prev => prev ? { ...prev, messageId: latestClientMessage.id } : null);
+            setCurrentPsvs(prev => prev ? { ...prev, messageId: String(latestClientMessage.id) } : null);
           }
         }
       }
@@ -2568,7 +2569,7 @@ const HamoPro = () => {
                                 data-psvs={msg.psvs_snapshot ? JSON.stringify(msg.psvs_snapshot) : null}
                                 data-message-id={msg.id}
                                 data-role={msg.role}
-                                className={`p-3 rounded-lg mb-2 cursor-pointer transition-all ${msg.role === 'user' ? 'bg-gray-100 hover:bg-gray-200' : 'bg-blue-50 hover:bg-blue-100'} ${currentPsvs?.messageId === msg.id ? 'ring-2 ring-blue-400' : ''}`}
+                                className={`p-3 rounded-lg mb-2 cursor-pointer transition-all ${msg.role === 'user' ? 'bg-gray-100 hover:bg-gray-200' : 'bg-blue-50 hover:bg-blue-100'} ${String(currentPsvs?.messageId) === String(msg.id) ? 'ring-2 ring-blue-400' : ''}`}
                                 onClick={() => msg.role === 'user' && msg.psvs_snapshot && setCurrentPsvs({ ...msg.psvs_snapshot, messageId: msg.id })}
                               >
                                 <div className="flex justify-between mb-1">
