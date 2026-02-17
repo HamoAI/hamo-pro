@@ -4,7 +4,7 @@ import apiService from './services/api';
 import { translations } from './i18n/translations';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.5.11";
+  const APP_VERSION = "1.5.12";
 
   // Language state - default to browser language or English
   const [language, setLanguage] = useState(() => {
@@ -2691,7 +2691,7 @@ const HamoPro = () => {
                                       }`} title={`Stress: ${msg.psvs_snapshot.stress_level?.toFixed(1)}`}></span>
                                     )}
                                     <span className="text-xs text-gray-400">
-                                      {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : ''}
+                                      {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : ''}
                                     </span>
                                   </div>
                                 </div>
