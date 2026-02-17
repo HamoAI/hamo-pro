@@ -2759,13 +2759,15 @@ const HamoPro = () => {
 
                     {/* New messages indicator */}
                     {hasNewMessages && (
-                      <button
-                        onClick={scrollToLatestMessage}
-                        className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-4 py-2 rounded-full shadow-lg flex items-center space-x-2 hover:bg-blue-600 transition-colors animate-bounce"
-                      >
-                        <ArrowDown className="w-4 h-4" />
-                        <span className="text-sm font-medium">{language === 'zh' ? '新消息' : 'New Messages'}</span>
-                      </button>
+                      <div className="absolute bottom-4 left-0 right-0 flex justify-center pointer-events-none">
+                        <button
+                          onClick={scrollToLatestMessage}
+                          className="pointer-events-auto bg-blue-500 text-white px-4 py-2 rounded-full shadow-lg flex items-center space-x-2 hover:bg-blue-600 transition-colors animate-bounce"
+                        >
+                          <ArrowDown className="w-4 h-4" />
+                          <span className="text-sm font-medium">{language === 'zh' ? '新消息' : 'New Messages'}</span>
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
