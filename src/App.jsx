@@ -3065,12 +3065,16 @@ const HamoPro = () => {
                             conv.miniSessionGroups.map((group, gi) => {
                               const isExpanded = expandedMiniSessions.has(group.miniSessionId);
                               const isLatest = gi === conv.miniSessionGroups.length - 1;
-                              const msTime = group.startedAt ? new Date(
-                                group.startedAt.endsWith?.('Z') ? group.startedAt : group.startedAt + 'Z'
-                              ) : null;
-                              const timeLabel = msTime ? msTime.toLocaleString(language === 'zh' ? 'zh-CN' : 'en-US', {
-                                month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false
-                              }) : '';
+                              const msTime = (() => {
+                                if (!group.startedAt) return null;
+                                const ts = String(group.startedAt);
+                                // Ensure UTC 'Z' suffix for correct timezone conversion
+                                const d = new Date(ts.endsWith('Z') ? ts : ts + 'Z');
+                                return isNaN(d.getTime()) ? new Date(ts) : d;
+                              })();
+                              const timeLabel = msTime && !isNaN(msTime.getTime())
+                                ? `${msTime.getMonth() + 1}${language === 'zh' ? '月' : '/'}${msTime.getDate()}${language === 'zh' ? '日 ' : ' '}${String(msTime.getHours()).padStart(2, '0')}:${String(msTime.getMinutes()).padStart(2, '0')}`
+                                : '';
 
                               return (
                                 <div key={group.miniSessionId} className="mb-2">
