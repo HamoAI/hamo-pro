@@ -240,7 +240,7 @@ class ApiService {
           id: response.id,
           name: response.name,
           specialty: response.specialty,
-          therapeuticApproaches: response.therapeutic_approaches,
+          therapeuticApproaches: Array.isArray(response.therapeutic_approaches) ? response.therapeutic_approaches : (response.therapeutic_approaches ? String(response.therapeutic_approaches).split(',').map(s => s.trim()) : []),
           about: response.about,
           experienceYears: response.experience_years,
           experienceMonths: response.experience_months,
@@ -282,7 +282,7 @@ class ApiService {
           id: response.id,
           name: response.name,
           specialty: response.specialty,
-          therapeuticApproaches: response.therapeutic_approaches,
+          therapeuticApproaches: Array.isArray(response.therapeutic_approaches) ? response.therapeutic_approaches : (response.therapeutic_approaches ? String(response.therapeutic_approaches).split(',').map(s => s.trim()) : []),
           about: response.about,
           experienceYears: response.experience_years,
           experienceMonths: response.experience_months,
@@ -316,7 +316,12 @@ class ApiService {
           id: avatar.id,
           name: avatar.name,
           specialty: avatar.specialty,
-          therapeuticApproaches: avatar.therapeutic_approaches || avatar.therapeuticApproaches,
+          therapeuticApproaches: (() => {
+            const raw = avatar.therapeutic_approaches || avatar.therapeuticApproaches;
+            if (Array.isArray(raw)) return raw;
+            if (typeof raw === 'string' && raw) return raw.split(',').map(s => s.trim());
+            return [];
+          })(),
           about: avatar.about,
           experienceYears: avatar.experience_years || avatar.experienceYears,
           experienceMonths: avatar.experience_months || avatar.experienceMonths,

@@ -566,7 +566,9 @@ const HamoPro = () => {
       name: avatar.name || '',
       specialty: isCustomSpecialty ? 'custom' : (avatar.specialty || ''),
       customSpecialty: isCustomSpecialty ? avatar.specialty : '',
-      therapeuticApproaches: avatar.therapeuticApproaches || [],
+      therapeuticApproaches: Array.isArray(avatar.therapeuticApproaches)
+        ? avatar.therapeuticApproaches
+        : (avatar.therapeuticApproaches ? String(avatar.therapeuticApproaches).split(',').map(s => s.trim()) : []),
       customApproach: '',
       about: avatar.about || '',
       experienceYears: avatar.experienceYears || 0,
