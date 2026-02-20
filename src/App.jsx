@@ -94,8 +94,8 @@ const HamoPro = () => {
     return option ? option.label : value;
   };
 
-  // Avatar form options - returns translated options
-  const getSpecialtyOptions = useCallback(() => [
+  // Avatar form options - use backend specialties if available, with local fallback
+  const localSpecialtyFallback = [
     { value: 'depression_anxiety', label: t('depressionAnxiety') },
     { value: 'npd_personality', label: t('npdPersonality') },
     { value: 'family_couples', label: t('familyCouples') },
@@ -104,7 +104,17 @@ const HamoPro = () => {
     { value: 'ptsd_trauma', label: t('ptsdTrauma') },
     { value: 'substance_abuse', label: t('substanceAbuse') },
     { value: 'ocd_anxiety', label: t('ocdAnxiety') }
-  ], [t]);
+  ];
+
+  const getSpecialtyOptions = useCallback(() => {
+    if (specialtiesMap.length > 0) {
+      return specialtiesMap.map(s => ({
+        value: s.id,
+        label: language === 'zh' ? s.zh : s.en,
+      }));
+    }
+    return localSpecialtyFallback;
+  }, [specialtiesMap, language, t]);
 
   const getTherapeuticApproachOptions = useCallback(() => [
     { value: 'cbt', label: t('cbt') },
@@ -117,13 +127,19 @@ const HamoPro = () => {
     { value: 'act', label: t('act') }
   ], [t]);
 
-  // Helper function to get translated specialty label from value
+  // Helper function to get translated specialty label from value (ID or legacy name)
   const getSpecialtyLabel = useCallback((value) => {
     if (!value) return '';
+    // First try backend specialties map
+    if (specialtiesMap.length > 0) {
+      const match = specialtiesMap.find(s => s.id === value);
+      if (match) return language === 'zh' ? match.zh : match.en;
+    }
+    // Fallback to local options
     const options = getSpecialtyOptions();
     const option = options.find(opt => opt.value === value);
     return option ? option.label : value; // Return original value if not found (for custom or legacy)
-  }, [getSpecialtyOptions]);
+  }, [specialtiesMap, language, getSpecialtyOptions]);
 
   // Helper function to get translated therapeutic approach label from value
   const getApproachLabel = useCallback((value) => {
@@ -164,6 +180,8 @@ const HamoPro = () => {
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   
+  const [specialtiesMap, setSpecialtiesMap] = useState([]); // From GET /api/specialties
+
   const [activeTab, setActiveTab] = useState('avatars');
   const [avatars, setAvatars] = useState([]);
   const [clients, setClients] = useState([]);
@@ -230,18 +248,26 @@ const HamoPro = () => {
   const loadUserData = async () => {
     console.log('🔵 Loading user data...');
 
-    // Load avatars
-    const avatarsResult = await apiService.getAvatars();
+    // Load avatars, clients, and specialties in parallel
+    const [avatarsResult, clientsResult, specialtiesResult] = await Promise.all([
+      apiService.getAvatars(),
+      apiService.getClients(),
+      apiService.getSpecialties(),
+    ]);
+
     if (avatarsResult.success) {
       setAvatars(avatarsResult.avatars);
       console.log('✅ Loaded avatars:', avatarsResult.avatars.length);
     }
 
-    // Load clients
-    const clientsResult = await apiService.getClients();
     if (clientsResult.success) {
       setClients(clientsResult.clients);
       console.log('✅ Loaded clients:', clientsResult.clients.length);
+    }
+
+    if (specialtiesResult.success && specialtiesResult.specialties.length > 0) {
+      setSpecialtiesMap(specialtiesResult.specialties);
+      console.log('✅ Loaded specialties:', specialtiesResult.specialties.length);
     }
   };
 

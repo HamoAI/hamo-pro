@@ -516,6 +516,19 @@ class ApiService {
     }
   }
 
+  // Get all specialties with i18n names
+  async getSpecialties() {
+    try {
+      const response = await fetch(`${this.baseURL}/specialties`);
+      if (!response.ok) throw new Error('Failed to fetch specialties');
+      const data = await response.json();
+      return { success: true, specialties: data };
+    } catch (error) {
+      console.error('❌ Failed to fetch specialties:', error.message);
+      return { success: false, error: error.message, specialties: [] };
+    }
+  }
+
   // Get PSVS profile for a specific mind
   async getPsvsProfile(mindId) {
     try {
