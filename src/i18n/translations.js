@@ -142,6 +142,9 @@ export const translations = {
     hiddenFromPro: 'The client has turned on "Hidden from Pro". This conversation is not viewable.',
     noConversationsYet: 'No conversations yet',
     loadingConversations: 'Loading conversations...',
+    miniSessionMessages: 'messages',
+    miniSessionActive: 'Active',
+    currentSession: 'Current Session',
 
     // Stress Detail Panel
     stressLevelHistory: 'STRESS LEVEL HISTORY',
@@ -324,6 +327,9 @@ export const translations = {
     hiddenFromPro: '来访者已开启"对咨询师隐藏"。无法查看此对话。',
     noConversationsYet: '暂无对话记录',
     loadingConversations: '加载对话中...',
+    miniSessionMessages: '条消息',
+    miniSessionActive: '进行中',
+    currentSession: '当前会话',
 
     // Stress Detail Panel
     stressLevelHistory: '压力等级历史',

@@ -4,7 +4,7 @@ import apiService from './services/api';
 import { translations } from './i18n/translations';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.5.16";
+  const APP_VERSION = "1.5.17";
 
   // Language state - default to browser language or English
   const [language, setLanguage] = useState(() => {
@@ -198,6 +198,7 @@ const HamoPro = () => {
   const lastMessageCountRef = useRef(0); // Track message count for detecting new messages
   const [showStressDetail, setShowStressDetail] = useState(false); // Toggle stress detail panel
   const [stressIndicatorsData, setStressIndicatorsData] = useState(null); // A/W/E/H/B from portal API
+  const [expandedMiniSessions, setExpandedMiniSessions] = useState(new Set()); // Track which mini sessions are expanded
   const [selectedMindClient, setSelectedMindClient] = useState(null);
   const [mindData, setMindData] = useState(null);
   const [mindLoading, setMindLoading] = useState(false);
@@ -307,10 +308,56 @@ const HamoPro = () => {
           sessionsResult.sessions.map(async (session) => {
             const proVisible = session.pro_visible !== false;
             let messages = [];
+            let miniSessions = [];
             if (proVisible) {
-              const messagesResult = await apiService.getSessionMessages(session.id);
+              const [messagesResult, miniSessionsResult] = await Promise.all([
+                apiService.getSessionMessages(session.id),
+                apiService.getMiniSessions(session.id)
+              ]);
               messages = messagesResult.success ? messagesResult.messages : [];
+              miniSessions = miniSessionsResult.success ? miniSessionsResult.miniSessions : [];
             }
+
+            miniSessions.sort((a, b) => new Date(a.startedAt) - new Date(b.startedAt));
+
+            const miniSessionGroups = [];
+            if (miniSessions.length > 0) {
+              for (const ms of miniSessions) {
+                const msMessages = messages.filter(m => m.mini_session_id === ms.id);
+                const userMsgCount = msMessages.filter(m => m.role === 'user').length;
+                miniSessionGroups.push({
+                  miniSessionId: ms.id,
+                  startedAt: ms.startedAt,
+                  endedAt: ms.endedAt,
+                  isActive: ms.isActive,
+                  messageCount: userMsgCount,
+                  messages: msMessages,
+                });
+              }
+              const orphanMsgs = messages.filter(m => !m.mini_session_id);
+              if (orphanMsgs.length > 0) {
+                miniSessionGroups.unshift({
+                  miniSessionId: '__orphan__',
+                  startedAt: session.started_at || session.created_at,
+                  endedAt: null,
+                  isActive: false,
+                  messageCount: orphanMsgs.filter(m => m.role === 'user').length,
+                  messages: orphanMsgs,
+                });
+              }
+            } else {
+              if (messages.length > 0) {
+                miniSessionGroups.push({
+                  miniSessionId: '__legacy__',
+                  startedAt: session.started_at || session.created_at,
+                  endedAt: null,
+                  isActive: false,
+                  messageCount: messages.filter(m => m.role === 'user').length,
+                  messages: messages,
+                });
+              }
+            }
+
             return {
               sessionId: session.id,
               date: new Date(session.started_at || session.created_at).toLocaleDateString('en-US', {
@@ -321,6 +368,7 @@ const HamoPro = () => {
                 minute: '2-digit'
               }),
               messages,
+              miniSessionGroups,
               proVisible
             };
           })
@@ -332,6 +380,13 @@ const HamoPro = () => {
         // If this is a polling refresh and message count increased, show new message indicator
         if (isPolling && newMessageCount > lastMessageCountRef.current && lastMessageCountRef.current > 0) {
           setHasNewMessages(true);
+          // Auto-expand the latest mini session when new messages arrive
+          for (const conv of conversationsWithMessages) {
+            if (conv.miniSessionGroups && conv.miniSessionGroups.length > 0 && conv.proVisible !== false) {
+              const lastGroup = conv.miniSessionGroups[conv.miniSessionGroups.length - 1];
+              setExpandedMiniSessions(prev => new Set([...prev, lastGroup.miniSessionId]));
+            }
+          }
         }
 
         // Update the message count reference
@@ -824,6 +879,7 @@ const HamoPro = () => {
     setConversationsLoading(true);
     setConversationsData([]);
     setCurrentPsvs(null);
+    setExpandedMiniSessions(new Set());
 
     try {
       // Fetch sessions, PSVS profile, and portal messages (for A/W/E/H/B) in parallel
@@ -858,16 +914,65 @@ const HamoPro = () => {
       }
 
       if (sessionsResult.success && sessionsResult.sessions.length > 0) {
-        // Fetch messages for each session
+        // Fetch messages and mini sessions for each session
         const conversationsWithMessages = await Promise.all(
           sessionsResult.sessions.map(async (session) => {
-            const proVisible = session.pro_visible !== false; // default true
-            // Only fetch messages if visible to Pro
+            const proVisible = session.pro_visible !== false;
             let messages = [];
+            let miniSessions = [];
             if (proVisible) {
-              const messagesResult = await apiService.getSessionMessages(session.id);
+              const [messagesResult, miniSessionsResult] = await Promise.all([
+                apiService.getSessionMessages(session.id),
+                apiService.getMiniSessions(session.id)
+              ]);
               messages = messagesResult.success ? messagesResult.messages : [];
+              miniSessions = miniSessionsResult.success ? miniSessionsResult.miniSessions : [];
             }
+
+            // Sort mini sessions by startedAt (oldest first)
+            miniSessions.sort((a, b) => new Date(a.startedAt) - new Date(b.startedAt));
+
+            // Group messages by mini_session_id
+            const miniSessionGroups = [];
+            if (miniSessions.length > 0) {
+              for (const ms of miniSessions) {
+                const msMessages = messages.filter(m => m.mini_session_id === ms.id);
+                const userMsgCount = msMessages.filter(m => m.role === 'user').length;
+                miniSessionGroups.push({
+                  miniSessionId: ms.id,
+                  startedAt: ms.startedAt,
+                  endedAt: ms.endedAt,
+                  isActive: ms.isActive,
+                  messageCount: userMsgCount,
+                  messages: msMessages,
+                });
+              }
+              // Also collect orphan messages (no mini_session_id) — older messages before mini session feature
+              const orphanMsgs = messages.filter(m => !m.mini_session_id);
+              if (orphanMsgs.length > 0) {
+                miniSessionGroups.unshift({
+                  miniSessionId: '__orphan__',
+                  startedAt: session.started_at || session.created_at,
+                  endedAt: null,
+                  isActive: false,
+                  messageCount: orphanMsgs.filter(m => m.role === 'user').length,
+                  messages: orphanMsgs,
+                });
+              }
+            } else {
+              // No mini sessions — show all messages as one group (legacy)
+              if (messages.length > 0) {
+                miniSessionGroups.push({
+                  miniSessionId: '__legacy__',
+                  startedAt: session.started_at || session.created_at,
+                  endedAt: null,
+                  isActive: false,
+                  messageCount: messages.filter(m => m.role === 'user').length,
+                  messages: messages,
+                });
+              }
+            }
+
             return {
               sessionId: session.id,
               date: new Date(session.started_at || session.created_at).toLocaleDateString('en-US', {
@@ -878,28 +983,33 @@ const HamoPro = () => {
                 minute: '2-digit'
               }),
               messages,
+              miniSessionGroups,
               proVisible
             };
           })
         );
         setConversationsData(conversationsWithMessages);
 
-        // Find the latest CLIENT message across ALL conversations
-        // Messages within each conversation are ordered by time, and conversations are ordered by date
-        // We need to find the absolute latest client message
+        // Auto-expand only the latest mini session
+        let latestMiniSessionId = null;
+        for (const conv of conversationsWithMessages) {
+          if (conv.miniSessionGroups && conv.miniSessionGroups.length > 0 && conv.proVisible !== false) {
+            const lastGroup = conv.miniSessionGroups[conv.miniSessionGroups.length - 1];
+            latestMiniSessionId = lastGroup.miniSessionId;
+          }
+        }
+        if (latestMiniSessionId) {
+          setExpandedMiniSessions(new Set([latestMiniSessionId]));
+        }
+
+        // Find the latest CLIENT message for PSVS highlighting
         let latestClientMessage = null;
         let latestTimestamp = 0;
-
-        // Debug: log all client messages
-        console.log('🔍 Searching for latest client message...');
-
-        // Iterate through all conversations and all messages to find the latest client message
         for (const conv of conversationsWithMessages) {
           if (conv.messages && conv.messages.length > 0 && conv.proVisible !== false) {
             for (const msg of conv.messages) {
               if (msg.role === 'user') {
                 const msgTime = msg.timestamp ? new Date(msg.timestamp).getTime() : 0;
-                console.log('  Client msg:', msg.id, msg.content?.substring(0, 20), 'time:', msgTime);
                 if (msgTime >= latestTimestamp) {
                   latestTimestamp = msgTime;
                   latestClientMessage = msg;
@@ -909,19 +1019,12 @@ const HamoPro = () => {
           }
         }
 
-        // Set PSVS with the latest client message ID
         if (latestClientMessage) {
           const latestMsgId = String(latestClientMessage.id);
-          console.log('🔵 Selected latest client message:', latestMsgId, latestClientMessage.content?.substring(0, 30));
-
           if (latestClientMessage.psvs_snapshot) {
             setCurrentPsvs({ ...latestClientMessage.psvs_snapshot, messageId: latestMsgId });
           } else {
-            // Use PSVS from getPsvsProfile but associate with this message ID for highlighting
-            setCurrentPsvs(prev => {
-              console.log('  Setting messageId to:', latestMsgId, 'prev:', prev?.messageId);
-              return prev ? { ...prev, messageId: latestMsgId } : null;
-            });
+            setCurrentPsvs(prev => prev ? { ...prev, messageId: latestMsgId } : null);
           }
         }
       }
@@ -930,6 +1033,27 @@ const HamoPro = () => {
     } finally {
       setConversationsLoading(false);
     }
+  };
+
+  // Toggle mini session expand/collapse and update PSVS status
+  const toggleMiniSession = (miniSessionId, messages) => {
+    setExpandedMiniSessions(prev => {
+      const next = new Set(prev);
+      if (next.has(miniSessionId)) {
+        next.delete(miniSessionId);
+      } else {
+        next.add(miniSessionId);
+        // When expanding, update PSVS to this mini session's last user message
+        const userMsgs = (messages || []).filter(m => m.role === 'user');
+        if (userMsgs.length > 0) {
+          const lastUserMsg = userMsgs[userMsgs.length - 1];
+          if (lastUserMsg.psvs_snapshot) {
+            setCurrentPsvs({ ...lastUserMsg.psvs_snapshot, messageId: lastUserMsg.id });
+          }
+        }
+      }
+      return next;
+    });
   };
 
   // Flag to skip scroll handler during initial auto-scroll
@@ -2928,43 +3052,110 @@ const HamoPro = () => {
                       </div>
                     ) : conversationsData && conversationsData.length > 0 ? (
                       conversationsData.map((conv, i) => (
-                        <div key={i} className={`border-l-4 ${conv.proVisible === false ? 'border-gray-300' : 'border-blue-500'} pl-4 mb-6`}>
-                          <p className="text-sm font-medium text-gray-500 mb-3">{conv.date}</p>
+                        <div key={i} className="mb-4">
                           {conv.proVisible === false ? (
-                            <div className="flex items-center gap-2 p-3 rounded-lg bg-gray-50">
-                              <EyeOff size={16} className="text-gray-400 flex-shrink-0" />
-                              <p className="text-sm text-gray-400 italic">{t('hiddenFromPro')}</p>
-                            </div>
-                          ) : conv.messages && conv.messages.length > 0 ? (
-                            conv.messages.map((msg, j) => (
-                              <div
-                                key={j}
-                                data-psvs={msg.psvs_snapshot ? JSON.stringify(msg.psvs_snapshot) : null}
-                                data-message-id={msg.id}
-                                data-role={msg.role}
-                                className={`p-3 rounded-lg mb-2 cursor-pointer transition-all ${msg.role === 'user' ? 'bg-gray-100 hover:bg-gray-200' : 'bg-blue-50 hover:bg-blue-100'} ${String(currentPsvs?.messageId) === String(msg.id) ? 'ring-2 ring-blue-400' : ''}`}
-                                onClick={() => msg.role === 'user' && msg.psvs_snapshot && setCurrentPsvs({ ...msg.psvs_snapshot, messageId: msg.id })}
-                              >
-                                <div className="flex justify-between mb-1">
-                                  <span className="text-xs font-medium">{msg.role === 'user' ? selectedClient.name : (avatars.find(a => String(a.id) === String(selectedClient.avatarId))?.name || 'Avatar')}</span>
-                                  <div className="flex items-center space-x-2">
-                                    {msg.psvs_snapshot && (
-                                      <span className={`w-2 h-2 rounded-full ${
-                                        msg.psvs_snapshot.energy_state === 'neurotic' ? 'bg-red-500' :
-                                        msg.psvs_snapshot.energy_state === 'negative' ? 'bg-yellow-500' :
-                                        'bg-green-500'
-                                      }`} title={`Stress: ${msg.psvs_snapshot.stress_level?.toFixed(1)}`}></span>
-                                    )}
-                                    <span className="text-xs text-gray-400">
-                                      {msg.timestamp ? new Date(msg.timestamp.endsWith('Z') ? msg.timestamp : msg.timestamp + 'Z').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : ''}
-                                    </span>
-                                  </div>
-                                </div>
-                                <p className="text-sm">{msg.content}</p>
+                            <div className="border-l-4 border-gray-300 pl-4 mb-4">
+                              <p className="text-sm font-medium text-gray-500 mb-3">{conv.date}</p>
+                              <div className="flex items-center gap-2 p-3 rounded-lg bg-gray-50">
+                                <EyeOff size={16} className="text-gray-400 flex-shrink-0" />
+                                <p className="text-sm text-gray-400 italic">{t('hiddenFromPro')}</p>
                               </div>
-                            ))
+                            </div>
+                          ) : conv.miniSessionGroups && conv.miniSessionGroups.length > 0 ? (
+                            conv.miniSessionGroups.map((group, gi) => {
+                              const isExpanded = expandedMiniSessions.has(group.miniSessionId);
+                              const isLatest = gi === conv.miniSessionGroups.length - 1;
+                              const msTime = group.startedAt ? new Date(
+                                group.startedAt.endsWith?.('Z') ? group.startedAt : group.startedAt + 'Z'
+                              ) : null;
+                              const timeLabel = msTime ? msTime.toLocaleString(language === 'zh' ? 'zh-CN' : 'en-US', {
+                                month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false
+                              }) : '';
+
+                              return (
+                                <div key={group.miniSessionId} className="mb-2">
+                                  {/* Mini session collapsed header */}
+                                  {!isExpanded ? (
+                                    <div
+                                      className="flex items-center justify-center cursor-pointer hover:bg-gray-50 py-2 transition-colors group"
+                                      onClick={() => toggleMiniSession(group.miniSessionId, group.messages)}
+                                    >
+                                      <div className="flex-1 border-t border-gray-200"></div>
+                                      <div className="flex items-center space-x-2 px-4">
+                                        <ChevronRight className="w-3.5 h-3.5 text-gray-400 group-hover:text-blue-500" />
+                                        <span className="text-xs text-gray-400 group-hover:text-blue-500 whitespace-nowrap">
+                                          {timeLabel} · {group.messageCount} {t('miniSessionMessages')}
+                                        </span>
+                                        {group.isActive && (
+                                          <span className="text-xs text-green-500 font-medium">{t('miniSessionActive')}</span>
+                                        )}
+                                      </div>
+                                      <div className="flex-1 border-t border-gray-200"></div>
+                                    </div>
+                                  ) : (
+                                    <>
+                                      {/* Expanded mini session header */}
+                                      <div
+                                        className="flex items-center justify-center cursor-pointer hover:bg-blue-50 py-2 transition-colors group"
+                                        onClick={() => toggleMiniSession(group.miniSessionId, group.messages)}
+                                      >
+                                        <div className="flex-1 border-t border-blue-200"></div>
+                                        <div className="flex items-center space-x-2 px-4">
+                                          <ChevronDown className="w-3.5 h-3.5 text-blue-500" />
+                                          <span className="text-xs text-blue-500 font-medium whitespace-nowrap">
+                                            {timeLabel} · {group.messageCount} {t('miniSessionMessages')}
+                                          </span>
+                                          {group.isActive && (
+                                            <span className="text-xs text-green-500 font-medium">{t('miniSessionActive')}</span>
+                                          )}
+                                        </div>
+                                        <div className="flex-1 border-t border-blue-200"></div>
+                                      </div>
+
+                                      {/* Expanded messages */}
+                                      <div className="border-l-4 border-blue-500 pl-4 mt-1 mb-2">
+                                        {group.messages && group.messages.length > 0 ? (
+                                          group.messages.map((msg, j) => (
+                                            <div
+                                              key={j}
+                                              data-psvs={msg.psvs_snapshot ? JSON.stringify(msg.psvs_snapshot) : null}
+                                              data-message-id={msg.id}
+                                              data-role={msg.role}
+                                              className={`p-3 rounded-lg mb-2 cursor-pointer transition-all ${msg.role === 'user' ? 'bg-gray-100 hover:bg-gray-200' : 'bg-blue-50 hover:bg-blue-100'} ${String(currentPsvs?.messageId) === String(msg.id) ? 'ring-2 ring-blue-400' : ''}`}
+                                              onClick={() => msg.role === 'user' && msg.psvs_snapshot && setCurrentPsvs({ ...msg.psvs_snapshot, messageId: msg.id })}
+                                            >
+                                              <div className="flex justify-between mb-1">
+                                                <span className="text-xs font-medium">{msg.role === 'user' ? selectedClient.name : (avatars.find(a => String(a.id) === String(selectedClient.avatarId))?.name || 'Avatar')}</span>
+                                                <div className="flex items-center space-x-2">
+                                                  {msg.psvs_snapshot && (
+                                                    <span className={`w-2 h-2 rounded-full ${
+                                                      msg.psvs_snapshot.energy_state === 'neurotic' ? 'bg-red-500' :
+                                                      msg.psvs_snapshot.energy_state === 'negative' ? 'bg-yellow-500' :
+                                                      'bg-green-500'
+                                                    }`} title={`Stress: ${msg.psvs_snapshot.stress_level?.toFixed(1)}`}></span>
+                                                  )}
+                                                  <span className="text-xs text-gray-400">
+                                                    {msg.timestamp ? new Date(msg.timestamp.endsWith('Z') ? msg.timestamp : msg.timestamp + 'Z').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : ''}
+                                                  </span>
+                                                </div>
+                                              </div>
+                                              <p className="text-sm">{msg.content}</p>
+                                            </div>
+                                          ))
+                                        ) : (
+                                          <p className="text-sm text-gray-400 italic">{t('noMessagesInSession')}</p>
+                                        )}
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              );
+                            })
                           ) : (
-                            <p className="text-sm text-gray-400 italic">{t('noMessagesInSession')}</p>
+                            <div className="border-l-4 border-gray-300 pl-4">
+                              <p className="text-sm font-medium text-gray-500 mb-3">{conv.date}</p>
+                              <p className="text-sm text-gray-400 italic">{t('noMessagesInSession')}</p>
+                            </div>
                           )}
                         </div>
                       ))

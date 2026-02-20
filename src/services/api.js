@@ -613,6 +613,7 @@ class ApiService {
           role: msg.role,
           content: msg.content,
           timestamp: msg.timestamp,
+          mini_session_id: msg.mini_session_id || null,
           // Support multiple field names: psvs_snapshot, psvs, or snapshot
           psvs_snapshot: msg.psvs_snapshot || msg.psvs || msg.snapshot || null,
         })),
@@ -623,6 +624,36 @@ class ApiService {
         success: false,
         error: error.message,
         messages: [],
+      };
+    }
+  }
+
+  // Get mini sessions for a specific session
+  async getMiniSessions(sessionId) {
+    try {
+      const response = await this.request(`/session/${sessionId}/mini-sessions`, {
+        method: 'GET',
+      });
+
+      const miniSessions = Array.isArray(response) ? response : (response.data || response.mini_sessions || []);
+
+      return {
+        success: true,
+        miniSessions: miniSessions.map(ms => ({
+          id: ms.id,
+          sessionId: ms.session_id,
+          startedAt: ms.started_at,
+          endedAt: ms.ended_at,
+          messageCount: ms.message_count || 0,
+          isActive: ms.is_active || false,
+        })),
+      };
+    } catch (error) {
+      console.error('❌ Failed to fetch mini sessions:', error.message);
+      return {
+        success: false,
+        error: error.message,
+        miniSessions: [],
       };
     }
   }
