@@ -141,6 +141,26 @@ export const translations = {
     noConversationsYet: 'No conversations yet',
     loadingConversations: 'Loading conversations...',
 
+    // Stress Detail Panel
+    stressLevelHistory: 'STRESS LEVEL HISTORY',
+    earlier: 'Earlier',
+    latest: 'Latest',
+    dataPoints: 'Data Points',
+    peakStress: 'Peak Stress',
+    minStress: 'Min Stress',
+    average: 'Average',
+    stressIndicators: 'STRESS INDICATORS (A/W/E/H/B)',
+    fromLatestMsg: 'From most recent client message',
+    agency: 'Agency',
+    withdrawal: 'Withdrawal',
+    extremity: 'Extremity',
+    hostility: 'Hostility',
+    boundary: 'Boundary',
+    reducesStress: 'Reduces stress',
+    raisesStress: 'Raises stress',
+    stronglyRaises: 'Strongly raises',
+    tapToClose: 'Tap to close',
+
     // Dashboard
     noClientData: 'No client data available',
     contributors: 'Contributors',
@@ -300,6 +320,26 @@ export const translations = {
     hiddenFromPro: '来访者已开启"对咨询师隐藏"。无法查看此对话。',
     noConversationsYet: '暂无对话记录',
     loadingConversations: '加载对话中...',
+
+    // Stress Detail Panel
+    stressLevelHistory: '压力等级历史',
+    earlier: '较早',
+    latest: '最新',
+    dataPoints: '数据点',
+    peakStress: '峰值压力',
+    minStress: '最低压力',
+    average: '平均值',
+    stressIndicators: '压力指标 (A/W/E/H/B)',
+    fromLatestMsg: '来自最新来访者消息',
+    agency: '自主性',
+    withdrawal: '退缩',
+    extremity: '极端性',
+    hostility: '敌意',
+    boundary: '边界',
+    reducesStress: '降低压力',
+    raisesStress: '升高压力',
+    stronglyRaises: '强烈升高',
+    tapToClose: '点击收起',
 
     // Dashboard
     noClientData: '暂无来访者数据',

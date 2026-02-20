@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { User, Brain, Settings, Plus, Ticket, Eye, EyeOff, Clock, MessageSquare, LogOut, Trash2, Download, CheckCircle, Calendar, Sparkles, Send, Star, X, Briefcase, ChevronRight, Globe, Upload, RefreshCw, ArrowDown } from 'lucide-react';
+import { User, Brain, Settings, Plus, Ticket, Eye, EyeOff, Clock, MessageSquare, LogOut, Trash2, Download, CheckCircle, Calendar, Sparkles, Send, Star, X, Briefcase, ChevronRight, ChevronDown, ChevronUp, Globe, Upload, RefreshCw, ArrowDown } from 'lucide-react';
 import apiService from './services/api';
 import { translations } from './i18n/translations';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.5.14";
+  const APP_VERSION = "1.5.15";
 
   // Language state - default to browser language or English
   const [language, setLanguage] = useState(() => {
@@ -178,6 +178,7 @@ const HamoPro = () => {
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(false); // Auto-refresh toggle (default off)
   const [hasNewMessages, setHasNewMessages] = useState(false); // Show "new messages" indicator
   const lastMessageCountRef = useRef(0); // Track message count for detecting new messages
+  const [showStressDetail, setShowStressDetail] = useState(false); // Toggle stress detail panel
   const [selectedMindClient, setSelectedMindClient] = useState(null);
   const [mindData, setMindData] = useState(null);
   const [mindLoading, setMindLoading] = useState(false);
@@ -2638,9 +2639,15 @@ const HamoPro = () => {
                   {/* PSVS Status Bar - Fixed at top */}
                   <div className="bg-gray-50 border-b px-4 py-3">
                     <div className="flex justify-between items-center">
-                      {/* Stress Level */}
-                      <div className="flex-1 text-center">
-                        <p className="text-xs text-gray-500 mb-1">{t('stressLevel')}</p>
+                      {/* Stress Level - Clickable to expand detail */}
+                      <div
+                        className="flex-1 text-center cursor-pointer hover:bg-gray-100 rounded-lg py-1 transition-colors"
+                        onClick={() => setShowStressDetail(!showStressDetail)}
+                      >
+                        <p className="text-xs text-gray-500 mb-1 flex items-center justify-center space-x-1">
+                          <span>{t('stressLevel')}</span>
+                          {showStressDetail ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                        </p>
                         <div className="flex items-center justify-center space-x-1">
                           <span className={`text-lg font-bold ${
                             currentPsvs?.stress_level >= 7 ? 'text-red-500' :
@@ -2697,6 +2704,179 @@ const HamoPro = () => {
                       </div>
                     </div>
                   </div>
+
+                  {/* Stress Detail Panel - Expandable */}
+                  {showStressDetail && (() => {
+                    // Collect all client messages with psvs_snapshot from conversations
+                    const stressDataPoints = [];
+                    if (conversationsData && conversationsData.length > 0) {
+                      conversationsData.forEach(conv => {
+                        if (conv.messages) {
+                          conv.messages.forEach(msg => {
+                            if (msg.role === 'user' && msg.psvs_snapshot && msg.psvs_snapshot.stress_level !== undefined) {
+                              stressDataPoints.push({
+                                stress: msg.psvs_snapshot.stress_level,
+                                energy: msg.psvs_snapshot.energy_state,
+                                timestamp: msg.timestamp,
+                                agency: msg.psvs_snapshot.agency,
+                                withdrawal: msg.psvs_snapshot.withdrawal,
+                                extremity: msg.psvs_snapshot.extremity,
+                                hostility: msg.psvs_snapshot.hostility,
+                                boundary: msg.psvs_snapshot.boundary,
+                              });
+                            }
+                          });
+                        }
+                      });
+                    }
+
+                    // Get last 50 data points for chart
+                    const chartData = stressDataPoints.slice(-50);
+                    const latestPoint = stressDataPoints[stressDataPoints.length - 1];
+
+                    // Calculate stats
+                    const stressValues = chartData.map(d => d.stress);
+                    const peakStress = stressValues.length > 0 ? Math.max(...stressValues) : 0;
+                    const minStressVal = stressValues.length > 0 ? Math.min(...stressValues) : 0;
+                    const avgStress = stressValues.length > 0 ? stressValues.reduce((a, b) => a + b, 0) / stressValues.length : 0;
+
+                    // SVG chart dimensions
+                    const svgW = 340, svgH = 140, padL = 30, padR = 10, padT = 15, padB = 25;
+                    const plotW = svgW - padL - padR, plotH = svgH - padT - padB;
+
+                    // Build SVG path for stress line
+                    const getX = (i) => padL + (chartData.length > 1 ? (i / (chartData.length - 1)) * plotW : plotW / 2);
+                    const getY = (val) => padT + plotH - (val / 10) * plotH;
+
+                    const linePath = chartData.map((d, i) => `${i === 0 ? 'M' : 'L'}${getX(i).toFixed(1)},${getY(d.stress).toFixed(1)}`).join(' ');
+
+                    // Color for each dot
+                    const dotColor = (val) => val >= 7 ? '#ef4444' : val >= 4 ? '#f59e0b' : '#22c55e';
+
+                    // A/W/E/H/B indicator config
+                    const indicators = [
+                      { key: 'agency', label: t('agency'), letter: 'A', color: '#22c55e', effect: `\u2193 ${t('reducesStress')}`, val: latestPoint?.agency },
+                      { key: 'withdrawal', label: t('withdrawal'), letter: 'W', color: '#f59e0b', effect: `\u2191 ${t('raisesStress')}`, val: latestPoint?.withdrawal },
+                      { key: 'extremity', label: t('extremity'), letter: 'E', color: '#f59e0b', effect: `\u2191\u2191 ${t('raisesStress')}`, val: latestPoint?.extremity },
+                      { key: 'hostility', label: t('hostility'), letter: 'H', color: '#ef4444', effect: `\u2191\u2191\u2191 ${t('stronglyRaises')}`, val: latestPoint?.hostility },
+                      { key: 'boundary', label: t('boundary'), letter: 'B', color: '#22c55e', effect: `\u2193\u2193 ${t('reducesStress')}`, val: latestPoint?.boundary },
+                    ];
+
+                    const hasAWEHB = indicators.some(ind => ind.val !== undefined && ind.val !== null);
+
+                    return (
+                      <div className="bg-white border-b px-4 py-3 max-h-[50vh] overflow-y-auto">
+                        {/* Stress Level History Chart */}
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="text-xs font-bold text-gray-700 uppercase">{t('stressLevelHistory')}</h4>
+                            <div className="flex items-center space-x-3 text-[10px]">
+                              <span className="flex items-center"><span className="w-2 h-2 rounded-full bg-green-500 mr-1"></span>&lt;4 {t('positive')}</span>
+                              <span className="flex items-center"><span className="w-2 h-2 rounded-full bg-yellow-500 mr-1"></span>4-7 {t('negative')}</span>
+                              <span className="flex items-center"><span className="w-2 h-2 rounded-full bg-red-500 mr-1"></span>&gt;7 {t('neurotic')}</span>
+                            </div>
+                          </div>
+
+                          {chartData.length > 0 ? (
+                            <svg viewBox={`0 0 ${svgW} ${svgH}`} className="w-full" style={{ maxHeight: '160px' }}>
+                              {/* Background zones */}
+                              <rect x={padL} y={padT} width={plotW} height={plotH * 0.3} fill="#fef2f2" opacity="0.5" />
+                              <rect x={padL} y={padT + plotH * 0.3} width={plotW} height={plotH * 0.3} fill="#fefce8" opacity="0.5" />
+                              <rect x={padL} y={padT + plotH * 0.6} width={plotW} height={plotH * 0.4} fill="#f0fdf4" opacity="0.5" />
+
+                              {/* Grid lines */}
+                              <line x1={padL} y1={getY(10)} x2={padL + plotW} y2={getY(10)} stroke="#e5e7eb" strokeWidth="0.5" />
+                              <line x1={padL} y1={getY(7)} x2={padL + plotW} y2={getY(7)} stroke="#ef4444" strokeWidth="0.5" strokeDasharray="4,3" opacity="0.5" />
+                              <line x1={padL} y1={getY(4)} x2={padL + plotW} y2={getY(4)} stroke="#3b82f6" strokeWidth="0.5" strokeDasharray="4,3" opacity="0.5" />
+                              <line x1={padL} y1={getY(0)} x2={padL + plotW} y2={getY(0)} stroke="#e5e7eb" strokeWidth="0.5" />
+
+                              {/* Y axis labels */}
+                              <text x={padL - 4} y={getY(10) + 3} textAnchor="end" fontSize="8" fill="#9ca3af">10</text>
+                              <text x={padL - 4} y={getY(7) + 3} textAnchor="end" fontSize="8" fill="#ef4444">7</text>
+                              <text x={padL - 4} y={getY(4) + 3} textAnchor="end" fontSize="8" fill="#3b82f6">4</text>
+                              <text x={padL - 4} y={getY(0) + 3} textAnchor="end" fontSize="8" fill="#9ca3af">0</text>
+
+                              {/* Line path */}
+                              <path d={linePath} fill="none" stroke="#3b82f6" strokeWidth="1.5" />
+
+                              {/* Data dots */}
+                              {chartData.map((d, i) => (
+                                <circle key={i} cx={getX(i)} cy={getY(d.stress)} r="2.5" fill={dotColor(d.stress)} stroke="white" strokeWidth="0.5" />
+                              ))}
+
+                              {/* X axis labels */}
+                              <text x={padL} y={svgH - 4} fontSize="8" fill="#9ca3af">{`\u2190 ${t('earlier')}`}</text>
+                              <text x={padL + plotW / 2} y={svgH - 4} textAnchor="middle" fontSize="8" fill="#9ca3af">
+                                {chartData.length} {language === 'zh' ? '条消息' : 'messages'}
+                              </text>
+                              <text x={padL + plotW} y={svgH - 4} textAnchor="end" fontSize="8" fill="#9ca3af">{`${t('latest')} \u2192`}</text>
+                            </svg>
+                          ) : (
+                            <div className="text-center py-4 text-gray-400 text-sm">
+                              {language === 'zh' ? '暂无压力数据' : 'No stress data available'}
+                            </div>
+                          )}
+
+                          {/* Stats row */}
+                          {chartData.length > 0 && (
+                            <div className="grid grid-cols-4 gap-2 mt-2">
+                              <div className="bg-gray-50 rounded-lg p-2 text-center">
+                                <p className="text-[10px] text-gray-500">{t('dataPoints')}</p>
+                                <p className="text-sm font-bold text-gray-700">{chartData.length}</p>
+                              </div>
+                              <div className="bg-gray-50 rounded-lg p-2 text-center">
+                                <p className="text-[10px] text-gray-500">{t('peakStress')}</p>
+                                <p className="text-sm font-bold text-red-500">{peakStress.toFixed(1)}</p>
+                              </div>
+                              <div className="bg-gray-50 rounded-lg p-2 text-center">
+                                <p className="text-[10px] text-gray-500">{t('minStress')}</p>
+                                <p className="text-sm font-bold text-green-500">{minStressVal.toFixed(1)}</p>
+                              </div>
+                              <div className="bg-gray-50 rounded-lg p-2 text-center">
+                                <p className="text-[10px] text-gray-500">{t('average')}</p>
+                                <p className="text-sm font-bold text-blue-500">{avgStress.toFixed(1)}</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Stress Indicators (A/W/E/H/B) */}
+                        {hasAWEHB && (
+                          <div className="border-t pt-3">
+                            <h4 className="text-xs font-bold text-gray-700 uppercase mb-1">{t('stressIndicators')}</h4>
+                            <p className="text-[10px] text-gray-400 mb-3">{t('fromLatestMsg')}</p>
+
+                            <div className="space-y-2.5">
+                              {indicators.map(ind => (
+                                ind.val !== undefined && ind.val !== null && (
+                                  <div key={ind.key} className="flex items-center space-x-2">
+                                    <span className="text-xs font-bold w-4" style={{ color: ind.color }}>{ind.letter}</span>
+                                    <span className="text-xs text-gray-600 w-20 truncate">{ind.label}</span>
+                                    <div className="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden">
+                                      <div
+                                        className="h-full rounded-full transition-all"
+                                        style={{
+                                          width: `${Math.min((ind.val / 3) * 100, 100)}%`,
+                                          backgroundColor: ind.val > 1.5 ? ind.color : '#d1d5db',
+                                        }}
+                                      />
+                                    </div>
+                                    <span className="text-xs font-mono font-bold w-8 text-right">{ind.val.toFixed(1)}</span>
+                                    <span className="text-[10px] text-gray-400 w-16 truncate">{ind.effect}</span>
+                                  </div>
+                                )
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Tap to close hint */}
+                        <p className="text-[10px] text-gray-400 text-center mt-3 cursor-pointer" onClick={() => setShowStressDetail(false)}>
+                          {t('tapToClose')}
+                        </p>
+                      </div>
+                    );
+                  })()}
 
                   {/* Content wrapper with new message indicator */}
                   <div className="relative">
