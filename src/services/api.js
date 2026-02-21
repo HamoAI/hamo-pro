@@ -212,6 +212,19 @@ class ApiService {
     return !!this.getAccessToken();
   }
 
+  // Update Pro profile (name, sex, age, password)
+  async updateProProfile(data) {
+    try {
+      const response = await this.request('/pro/profile', {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+      return { success: true, user: response.user };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
   // Create a new avatar for the Pro user
   // Returns the avatar with backend-generated ID
   async createAvatar(avatarData) {

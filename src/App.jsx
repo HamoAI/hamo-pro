@@ -177,6 +177,9 @@ const HamoPro = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authMode, setAuthMode] = useState('signin');
   const [currentUser, setCurrentUser] = useState(null);
+  const [profileForm, setProfileForm] = useState({ full_name: '', sex: '', age: '', currentPassword: '', newPassword: '' });
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileMessage, setProfileMessage] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [authForm, setAuthForm] = useState({ email: '', password: '', fullName: '', profession: '' });
   const [authError, setAuthError] = useState('');
@@ -287,6 +290,20 @@ const HamoPro = () => {
     };
     checkAuth();
   }, []);
+
+  // Sync profileForm when currentUser changes
+  useEffect(() => {
+    if (currentUser) {
+      setProfileForm(prev => ({
+        ...prev,
+        full_name: currentUser.full_name || currentUser.fullName || '',
+        sex: currentUser.sex || '',
+        age: currentUser.age || '',
+        currentPassword: '',
+        newPassword: '',
+      }));
+    }
+  }, [currentUser]);
 
   // Refresh data function for conversations and PSVS
   const refreshConversationsData = useCallback(async (isPolling = false) => {
@@ -545,6 +562,34 @@ const HamoPro = () => {
     setAvatars([]);
     setClients([]);
     setShowDeleteConfirm(false);
+  };
+
+  const handleSaveProfile = async () => {
+    setProfileSaving(true);
+    setProfileMessage('');
+    try {
+      const data = {};
+      if (profileForm.full_name) data.full_name = profileForm.full_name;
+      if (profileForm.sex) data.sex = profileForm.sex;
+      if (profileForm.age) data.age = parseInt(profileForm.age);
+      if (profileForm.newPassword) {
+        data.current_password = profileForm.currentPassword;
+        data.new_password = profileForm.newPassword;
+      }
+      const result = await apiService.updateProProfile(data);
+      if (result.success) {
+        setCurrentUser(prev => ({ ...prev, ...result.user }));
+        setProfileForm(prev => ({ ...prev, currentPassword: '', newPassword: '' }));
+        setProfileMessage('success');
+        setTimeout(() => setProfileMessage(''), 3000);
+      } else {
+        setProfileMessage(result.error || 'Failed to save');
+      }
+    } catch (error) {
+      setProfileMessage('Failed to save profile');
+    } finally {
+      setProfileSaving(false);
+    }
   };
 
   const handleCreateAvatar = async () => {
@@ -3528,9 +3573,39 @@ const HamoPro = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">{t('nickname')}</label>
                   <input
                     type="text"
-                    defaultValue={currentUser?.full_name || currentUser?.fullName || ''}
+                    value={profileForm.full_name}
+                    onChange={(e) => setProfileForm({ ...profileForm, full_name: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     placeholder={t('nickname')}
+                  />
+                </div>
+
+                {/* Sex */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('sex')}</label>
+                  <select
+                    value={profileForm.sex}
+                    onChange={(e) => setProfileForm({ ...profileForm, sex: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+                  >
+                    <option value="">{t('sex')}</option>
+                    <option value="male">{t('male')}</option>
+                    <option value="female">{t('female')}</option>
+                    <option value="other">{t('other')}</option>
+                  </select>
+                </div>
+
+                {/* Age */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('age')}</label>
+                  <input
+                    type="number"
+                    value={profileForm.age}
+                    onChange={(e) => setProfileForm({ ...profileForm, age: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder={t('age')}
+                    min="1"
+                    max="150"
                   />
                 </div>
 
@@ -3550,6 +3625,8 @@ const HamoPro = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">{t('currentPassword')}</label>
                   <input
                     type="password"
+                    value={profileForm.currentPassword}
+                    onChange={(e) => setProfileForm({ ...profileForm, currentPassword: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     placeholder="••••••••"
                   />
@@ -3560,13 +3637,25 @@ const HamoPro = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">{t('newPassword')}</label>
                   <input
                     type="password"
+                    value={profileForm.newPassword}
+                    onChange={(e) => setProfileForm({ ...profileForm, newPassword: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     placeholder="••••••••"
                   />
                 </div>
 
+                {/* Success/Error Message */}
+                {profileMessage && (
+                  <p className={`text-sm text-center ${profileMessage === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+                    {profileMessage === 'success' ? (language === 'zh' ? '保存成功' : 'Saved successfully') : profileMessage}
+                  </p>
+                )}
+
                 {/* Save Changes Button */}
-                <button className="w-full bg-purple-500 text-white py-3 rounded-lg font-medium hover:bg-purple-600 transition-colors">
+                <button
+                  onClick={handleSaveProfile}
+                  disabled={profileSaving}
+                  className="w-full bg-purple-500 text-white py-3 rounded-lg font-medium hover:bg-purple-600 transition-colors disabled:opacity-50">
                   {t('saveChanges')}
                 </button>
               </div>
