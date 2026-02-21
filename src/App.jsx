@@ -3508,30 +3508,46 @@ const HamoPro = () => {
                                       <div className="border-l-4 border-blue-500 pl-4 mt-1 mb-2">
                                         {group.messages && group.messages.length > 0 ? (
                                           group.messages.map((msg, j) => (
-                                            <div
-                                              key={j}
-                                              data-psvs={msg.psvs_snapshot ? JSON.stringify(msg.psvs_snapshot) : null}
-                                              data-message-id={msg.id}
-                                              data-role={msg.role}
-                                              className={`p-3 rounded-lg mb-2 cursor-pointer transition-all ${msg.role === 'user' ? 'bg-gray-100 hover:bg-gray-200' : 'bg-blue-50 hover:bg-blue-100'} ${String(currentPsvs?.messageId) === String(msg.id) ? 'ring-2 ring-blue-400' : ''}`}
-                                              onClick={() => msg.role === 'user' && msg.psvs_snapshot && setCurrentPsvs({ ...msg.psvs_snapshot, messageId: msg.id })}
-                                            >
-                                              <div className="flex justify-between mb-1">
-                                                <span className="text-xs font-medium">{msg.role === 'user' ? selectedClient.name : (avatars.find(a => String(a.id) === String(selectedClient.avatarId))?.name || 'Avatar')}</span>
-                                                <div className="flex items-center space-x-2">
-                                                  {msg.psvs_snapshot && (
-                                                    <span className={`w-2 h-2 rounded-full ${
-                                                      msg.psvs_snapshot.energy_state === 'neurotic' ? 'bg-red-500' :
-                                                      msg.psvs_snapshot.energy_state === 'negative' ? 'bg-yellow-500' :
-                                                      'bg-green-500'
-                                                    }`} title={`Stress: ${msg.psvs_snapshot.stress_level?.toFixed(1)}`}></span>
-                                                  )}
-                                                  <span className="text-xs text-gray-400">
-                                                    {msg.timestamp ? new Date(msg.timestamp.endsWith('Z') ? msg.timestamp : msg.timestamp + 'Z').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : ''}
-                                                  </span>
+                                            <div key={j} className="flex items-start space-x-2 mb-2">
+                                              {/* Avatar */}
+                                              {msg.role === 'user' ? (
+                                                selectedClient.profilePicture ? (
+                                                  <img src={selectedClient.profilePicture} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0 mt-1" />
+                                                ) : (
+                                                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 mt-1">
+                                                    <User className="w-4 h-4 text-gray-500" />
+                                                  </div>
+                                                )
+                                              ) : (
+                                                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-1">
+                                                  <Brain className="w-4 h-4 text-blue-500" />
                                                 </div>
+                                              )}
+                                              {/* Message bubble */}
+                                              <div
+                                                data-psvs={msg.psvs_snapshot ? JSON.stringify(msg.psvs_snapshot) : null}
+                                                data-message-id={msg.id}
+                                                data-role={msg.role}
+                                                className={`flex-1 p-3 rounded-lg cursor-pointer transition-all ${msg.role === 'user' ? 'bg-gray-100 hover:bg-gray-200' : 'bg-blue-50 hover:bg-blue-100'} ${String(currentPsvs?.messageId) === String(msg.id) ? 'ring-2 ring-blue-400' : ''}`}
+                                                onClick={() => msg.role === 'user' && msg.psvs_snapshot && setCurrentPsvs({ ...msg.psvs_snapshot, messageId: msg.id })}
+                                              >
+                                                <div className="flex justify-between mb-1">
+                                                  <span className="text-xs font-medium">{msg.role === 'user' ? selectedClient.name : (avatars.find(a => String(a.id) === String(selectedClient.avatarId))?.name || 'Avatar')}</span>
+                                                  <div className="flex items-center space-x-2">
+                                                    {msg.psvs_snapshot && (
+                                                      <span className={`w-2 h-2 rounded-full ${
+                                                        msg.psvs_snapshot.energy_state === 'neurotic' ? 'bg-red-500' :
+                                                        msg.psvs_snapshot.energy_state === 'negative' ? 'bg-yellow-500' :
+                                                        'bg-green-500'
+                                                      }`} title={`Stress: ${msg.psvs_snapshot.stress_level?.toFixed(1)}`}></span>
+                                                    )}
+                                                    <span className="text-xs text-gray-400">
+                                                      {msg.timestamp ? new Date(msg.timestamp.endsWith('Z') ? msg.timestamp : msg.timestamp + 'Z').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : ''}
+                                                    </span>
+                                                  </div>
+                                                </div>
+                                                <p className="text-sm">{msg.content}</p>
                                               </div>
-                                              <p className="text-sm">{msg.content}</p>
                                             </div>
                                           ))
                                         ) : (
