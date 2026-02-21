@@ -715,10 +715,29 @@ const HamoPro = () => {
     return t(key) || traitId;
   };
 
+  // Parse primary_traits array to extract dimensions and trait selections
+  const parsePrimaryTraits = (primaryTraits) => {
+    const DIMENSION1_VALUES = ['introverted', 'extroverted'];
+    const DIMENSION2_VALUES = ['rational', 'emotional'];
+    let dimension1 = '';
+    let dimension2 = '';
+    const traits = [];
+    for (const item of (primaryTraits || [])) {
+      if (DIMENSION1_VALUES.includes(item)) {
+        dimension1 = item;
+      } else if (DIMENSION2_VALUES.includes(item)) {
+        dimension2 = item;
+      } else {
+        traits.push(item);
+      }
+    }
+    return { dimension1, dimension2, traits };
+  };
+
   // Get personality traits based on dimension selections
-  const getPersonalityTraitOptions = () => {
-    const d1 = clientForm.personalityDimension1;
-    const d2 = clientForm.personalityDimension2;
+  const getPersonalityTraitOptions = (d1Override, d2Override) => {
+    const d1 = d1Override !== undefined ? d1Override : clientForm.personalityDimension1;
+    const d2 = d2Override !== undefined ? d2Override : clientForm.personalityDimension2;
 
     if (d1 === 'introverted' && d2 === 'rational') {
       return {
@@ -761,6 +780,22 @@ const HamoPro = () => {
         ...clientForm,
         personalityTraits: [...currentTraits, trait]
       });
+    }
+  };
+
+  // Toggle personality trait selection in edit mode
+  const toggleEditPersonalityTrait = (trait) => {
+    const currentTraits = mindEditData?.personality?.personalityTraits || [];
+    if (currentTraits.includes(trait)) {
+      setMindEditData(prev => ({
+        ...prev,
+        personality: { ...prev.personality, personalityTraits: currentTraits.filter(t => t !== trait) }
+      }));
+    } else if (currentTraits.length < 6) {
+      setMindEditData(prev => ({
+        ...prev,
+        personality: { ...prev.personality, personalityTraits: [...currentTraits, trait] }
+      }));
     }
   };
 
@@ -884,10 +919,16 @@ const HamoPro = () => {
     setMindEditData({
       goals: mindData.goals || '',
       therapy_principles: mindData.therapy_principles || '',
-      personality: {
-        primary_traits: mindData.personality?.primary_traits || [],
-        description: mindData.personality?.description || '',
-      },
+      personality: (() => {
+        const parsed = parsePrimaryTraits(mindData.personality?.primary_traits);
+        return {
+          primary_traits: mindData.personality?.primary_traits || [],
+          description: mindData.personality?.description || '',
+          personalityDimension1: parsed.dimension1,
+          personalityDimension2: parsed.dimension2,
+          personalityTraits: parsed.traits,
+        };
+      })(),
       emotion_pattern: {
         dominant_emotions: mindData.emotion_pattern?.dominant_emotions || [],
         triggers: mindData.emotion_pattern?.triggers || [],
@@ -917,7 +958,19 @@ const HamoPro = () => {
     if (!selectedMindClient || !mindEditData) return;
     setMindSaving(true);
     try {
-      const result = await apiService.updateMind(selectedMindClient.id, mindEditData);
+      // Reconstruct primary_traits from dimension + trait selections
+      const saveData = {
+        ...mindEditData,
+        personality: {
+          primary_traits: [
+            mindEditData.personality?.personalityDimension1,
+            mindEditData.personality?.personalityDimension2,
+            ...(mindEditData.personality?.personalityTraits || [])
+          ].filter(Boolean),
+          description: mindEditData.personality?.description || '',
+        }
+      };
+      const result = await apiService.updateMind(selectedMindClient.id, saveData);
       if (result.success) {
         setMindData(result.mind);
         setMindEditMode(false);
@@ -2432,16 +2485,87 @@ const HamoPro = () => {
                           <div className="flex items-center space-x-2 mb-3">
                             <Brain className="w-5 h-5 text-purple-600" />
                             <h4 className="font-semibold text-purple-800">{t('mindPersonalityTraits')}</h4>
+                            <span className="text-xs text-purple-500">({t('selectDimensions')})</span>
                           </div>
-                          <div className="space-y-3">
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">{t('primaryTraitsLabel')}</label>
-                              <input type="text" value={(mindEditData?.personality?.primary_traits || []).join(', ')} onChange={(e) => updateMindEditArray('personality', 'primary_traits', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={language === 'zh' ? '例如：内向, 感性, 善解人意' : 'e.g. introverted, emotional, empathetic'} />
+
+                          {/* Dimension 1: Social Orientation */}
+                          <div className="mb-3">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">{t('socialOrientation')}</label>
+                            <div className="flex space-x-3">
+                              <button type="button" onClick={() => setMindEditData(prev => ({ ...prev, personality: { ...prev.personality, personalityDimension1: 'introverted', personalityTraits: [] } }))} className={`flex-1 py-2 px-4 rounded-lg border-2 transition-all ${mindEditData?.personality?.personalityDimension1 === 'introverted' ? 'border-purple-500 bg-purple-100 text-purple-700 font-medium' : 'border-gray-200 bg-white text-gray-600 hover:border-purple-300'}`}>
+                                {t('introverted')}
+                              </button>
+                              <button type="button" onClick={() => setMindEditData(prev => ({ ...prev, personality: { ...prev.personality, personalityDimension1: 'extroverted', personalityTraits: [] } }))} className={`flex-1 py-2 px-4 rounded-lg border-2 transition-all ${mindEditData?.personality?.personalityDimension1 === 'extroverted' ? 'border-purple-500 bg-purple-100 text-purple-700 font-medium' : 'border-gray-200 bg-white text-gray-600 hover:border-purple-300'}`}>
+                                {t('extroverted')}
+                              </button>
                             </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">{t('descriptionLabel')}</label>
-                              <textarea value={mindEditData?.personality?.description || ''} onChange={(e) => updateMindEditString('personality', 'description', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" rows="2" placeholder={language === 'zh' ? '描述人格特征...' : 'Describe personality traits...'} />
+                          </div>
+
+                          {/* Dimension 2: Decision Style */}
+                          <div className="mb-3">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">{t('decisionStyle')}</label>
+                            <div className="flex space-x-3">
+                              <button type="button" onClick={() => setMindEditData(prev => ({ ...prev, personality: { ...prev.personality, personalityDimension2: 'rational', personalityTraits: [] } }))} className={`flex-1 py-2 px-4 rounded-lg border-2 transition-all ${mindEditData?.personality?.personalityDimension2 === 'rational' ? 'border-purple-500 bg-purple-100 text-purple-700 font-medium' : 'border-gray-200 bg-white text-gray-600 hover:border-purple-300'}`}>
+                                {t('rational')}
+                              </button>
+                              <button type="button" onClick={() => setMindEditData(prev => ({ ...prev, personality: { ...prev.personality, personalityDimension2: 'emotional', personalityTraits: [] } }))} className={`flex-1 py-2 px-4 rounded-lg border-2 transition-all ${mindEditData?.personality?.personalityDimension2 === 'emotional' ? 'border-purple-500 bg-purple-100 text-purple-700 font-medium' : 'border-gray-200 bg-white text-gray-600 hover:border-purple-300'}`}>
+                                {t('emotional')}
+                              </button>
                             </div>
+                          </div>
+
+                          {/* Trait Selection - Only show when both dimensions selected */}
+                          {(() => {
+                            const traitOptions = getPersonalityTraitOptions(mindEditData?.personality?.personalityDimension1, mindEditData?.personality?.personalityDimension2);
+                            if (!traitOptions) return null;
+                            const selectedTraits = mindEditData?.personality?.personalityTraits || [];
+                            return (
+                              <div className="mt-4 pt-4 border-t border-purple-200">
+                                <div className="flex items-center justify-between mb-3">
+                                  <label className="text-sm font-medium text-gray-700">{t('selectTraits')}</label>
+                                  <span className="text-xs text-purple-500">{selectedTraits.length}/6 {t('selected')}</span>
+                                </div>
+                                {/* Adaptive Traits */}
+                                <div className="bg-orange-50 rounded-lg p-3 mb-3">
+                                  <p className="text-xs text-orange-600 font-medium mb-2">{t('adaptiveTraits')}</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {traitOptions.orange.map(trait => (
+                                      <button key={trait} type="button" onClick={() => toggleEditPersonalityTrait(trait)} className={`px-3 py-1.5 rounded-full text-sm transition-all ${selectedTraits.includes(trait) ? 'bg-orange-500 text-white' : 'bg-white border border-orange-300 text-orange-700 hover:bg-orange-100'}`}>
+                                        {translateTrait(trait)}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                                {/* Mild Maladaptive */}
+                                <div className="bg-gray-100 rounded-lg p-3 mb-3">
+                                  <p className="text-xs text-gray-600 font-medium mb-2">{t('mildMaladaptive')}</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {traitOptions.gray.map(trait => (
+                                      <button key={trait} type="button" onClick={() => toggleEditPersonalityTrait(trait)} className={`px-3 py-1.5 rounded-full text-sm transition-all ${selectedTraits.includes(trait) ? 'bg-gray-600 text-white' : 'bg-white border border-gray-400 text-gray-700 hover:bg-gray-200'}`}>
+                                        {translateTrait(trait)}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                                {/* Severe Maladaptive */}
+                                <div className="bg-red-50 rounded-lg p-3">
+                                  <p className="text-xs text-red-600 font-medium mb-2">{t('severeMaladaptive')}</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {traitOptions.red.map(trait => (
+                                      <button key={trait} type="button" onClick={() => toggleEditPersonalityTrait(trait)} className={`px-3 py-1.5 rounded-full text-sm transition-all ${selectedTraits.includes(trait) ? 'bg-red-500 text-white' : 'bg-white border border-red-300 text-red-700 hover:bg-red-100'}`}>
+                                        {translateTrait(trait)}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })()}
+
+                          {/* Description */}
+                          <div className="mt-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">{t('descriptionLabel')}</label>
+                            <textarea value={mindEditData?.personality?.description || ''} onChange={(e) => updateMindEditString('personality', 'description', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" rows="2" placeholder={language === 'zh' ? '描述人格特征...' : 'Describe personality traits...'} />
                           </div>
                         </div>
 
