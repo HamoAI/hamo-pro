@@ -2786,9 +2786,13 @@ const HamoPro = () => {
                     <div className="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-4 border border-gray-100">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
-                          <div className="w-14 h-14 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                            {mindData.name?.charAt(0) || selectedMindClient?.name?.charAt(0) || ''}
-                          </div>
+                          {selectedMindClient?.profilePicture ? (
+                            <img src={selectedMindClient.profilePicture} alt={mindData.name} className="w-14 h-14 rounded-full object-cover" />
+                          ) : (
+                            <div className="w-14 h-14 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                              {mindData.name?.charAt(0) || selectedMindClient?.name?.charAt(0) || ''}
+                            </div>
+                          )}
                           <div>
                             <h4 className="font-semibold text-gray-900 text-lg">{mindData.name || selectedMindClient.name}</h4>
                             <div className="flex items-center space-x-3 text-sm text-gray-500 mt-1">
