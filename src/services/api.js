@@ -392,6 +392,7 @@ class ApiService {
           sessions: client.sessions || 0,
           avgTime: client.avg_time || client.avgTime || 0,
           conversations: client.conversations || [],
+          profilePicture: client.profile_picture || null,
         })),
       };
     } catch (error) {

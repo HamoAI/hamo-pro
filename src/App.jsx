@@ -4,7 +4,7 @@ import apiService from './services/api';
 import { translations } from './i18n/translations';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.5.18";
+  const APP_VERSION = "1.5.19";
 
   // Language state - default to browser language or English
   const [language, setLanguage] = useState(() => {
@@ -2452,6 +2452,16 @@ const HamoPro = () => {
                 // Connection date now formatted inline in English
                 return (
                   <div key={c.id} className="bg-white rounded-xl shadow-md p-4 sm:p-6">
+                    {/* Profile Picture */}
+                    <div className="flex justify-center mb-3">
+                      {c.profilePicture ? (
+                        <img src={c.profilePicture} alt={c.name} className="w-16 h-16 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center">
+                          <User className="w-8 h-8 text-purple-400" />
+                        </div>
+                      )}
+                    </div>
                     <div className="flex justify-between mb-3">
                       <div><h3 className="font-semibold">{c.name}</h3><p className="text-sm text-gray-500">{c.sex ? (t(c.sex) || c.sex) : ''}{c.sex && c.age ? ', ' : ''}{c.age ? `${c.age} ${language === 'zh' ? '岁' : 'years'}` : ''}</p></div>
                       {isConnected ? (
