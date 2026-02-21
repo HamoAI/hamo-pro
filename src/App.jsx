@@ -1870,9 +1870,13 @@ const HamoPro = () => {
                 >
                   <div className="flex items-start space-x-4">
                     {/* Avatar Icon */}
-                    <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-teal-400 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Brain className="w-8 h-8 text-white" />
-                    </div>
+                    {a.avatarPicture ? (
+                      <img src={a.avatarPicture} alt={a.name} className="w-16 h-16 rounded-full object-cover flex-shrink-0" />
+                    ) : (
+                      <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-teal-400 rounded-full flex items-center justify-center flex-shrink-0">
+                        <Brain className="w-8 h-8 text-white" />
+                      </div>
+                    )}
 
                     {/* Avatar Info */}
                     <div className="flex-1 min-w-0">
