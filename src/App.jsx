@@ -4,7 +4,7 @@ import apiService from './services/api';
 import { translations } from './i18n/translations';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.5.17";
+  const APP_VERSION = "1.5.18";
 
   // Language state - default to browser language or English
   const [language, setLanguage] = useState(() => {
@@ -2312,11 +2312,11 @@ const HamoPro = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">{t('triggersLabel')}</label>
-                      <input type="text" value={clientForm.emotion_pattern.triggers} onChange={(e) => setClientForm({ ...clientForm, emotion_pattern: { ...clientForm.emotion_pattern, triggers: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" />
+                      <input type="text" value={clientForm.emotion_pattern.triggers} onChange={(e) => setClientForm({ ...clientForm, emotion_pattern: { ...clientForm.emotion_pattern, triggers: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('triggersPlaceholder')} />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">{t('copingMechanismsLabel')}</label>
-                      <input type="text" value={clientForm.emotion_pattern.coping_mechanisms} onChange={(e) => setClientForm({ ...clientForm, emotion_pattern: { ...clientForm.emotion_pattern, coping_mechanisms: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" />
+                      <input type="text" value={clientForm.emotion_pattern.coping_mechanisms} onChange={(e) => setClientForm({ ...clientForm, emotion_pattern: { ...clientForm.emotion_pattern, coping_mechanisms: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('copingMechanismsPlaceholder')} />
                     </div>
                   </div>
                 </div>
@@ -2334,24 +2334,24 @@ const HamoPro = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">{t('cognitiveDistortionsLabel')}</label>
-                      <input type="text" value={clientForm.cognition_beliefs.cognitive_distortions} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, cognitive_distortions: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" />
+                      <input type="text" value={clientForm.cognition_beliefs.cognitive_distortions} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, cognitive_distortions: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('cognitiveDistortionsPlaceholder')} />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">{t('thinkingPatternsLabel')}</label>
-                      <input type="text" value={clientForm.cognition_beliefs.thinking_patterns} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, thinking_patterns: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" />
+                      <input type="text" value={clientForm.cognition_beliefs.thinking_patterns} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, thinking_patterns: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('thinkingPatternsPlaceholder')} />
                     </div>
                     <div className="grid grid-cols-3 gap-3">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">{t('selfPerception')}</label>
-                        <input type="text" value={clientForm.cognition_beliefs.self_perception} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, self_perception: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" />
+                        <input type="text" value={clientForm.cognition_beliefs.self_perception} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, self_perception: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('selfPerceptionPlaceholder')} />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">{t('worldPerception')}</label>
-                        <input type="text" value={clientForm.cognition_beliefs.world_perception} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, world_perception: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" />
+                        <input type="text" value={clientForm.cognition_beliefs.world_perception} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, world_perception: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('worldPerceptionPlaceholder')} />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">{t('futurePerception')}</label>
-                        <input type="text" value={clientForm.cognition_beliefs.future_perception} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, future_perception: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" />
+                        <input type="text" value={clientForm.cognition_beliefs.future_perception} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, future_perception: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('futurePerceptionPlaceholder')} />
                       </div>
                     </div>
                   </div>
@@ -2380,11 +2380,11 @@ const HamoPro = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">{t('communicationStyle')}</label>
-                      <input type="text" value={clientForm.relationship_manipulations.communication_style} onChange={(e) => setClientForm({ ...clientForm, relationship_manipulations: { ...clientForm.relationship_manipulations, communication_style: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" />
+                      <input type="text" value={clientForm.relationship_manipulations.communication_style} onChange={(e) => setClientForm({ ...clientForm, relationship_manipulations: { ...clientForm.relationship_manipulations, communication_style: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('communicationStylePlaceholder')} />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">{t('conflictResolution')}</label>
-                      <input type="text" value={clientForm.relationship_manipulations.conflict_resolution} onChange={(e) => setClientForm({ ...clientForm, relationship_manipulations: { ...clientForm.relationship_manipulations, conflict_resolution: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" />
+                      <input type="text" value={clientForm.relationship_manipulations.conflict_resolution} onChange={(e) => setClientForm({ ...clientForm, relationship_manipulations: { ...clientForm.relationship_manipulations, conflict_resolution: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('conflictResolutionPlaceholder')} />
                     </div>
                   </div>
                 </div>
@@ -2636,11 +2636,11 @@ const HamoPro = () => {
                             </div>
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">{t('triggersLabel')}</label>
-                              <input type="text" value={(mindEditData?.emotion_pattern?.triggers || []).join(', ')} onChange={(e) => updateMindEditArray('emotion_pattern', 'triggers', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" />
+                              <input type="text" value={(mindEditData?.emotion_pattern?.triggers || []).join(', ')} onChange={(e) => updateMindEditArray('emotion_pattern', 'triggers', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('triggersPlaceholder')} />
                             </div>
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">{t('copingMechanismsLabel')}</label>
-                              <input type="text" value={(mindEditData?.emotion_pattern?.coping_mechanisms || []).join(', ')} onChange={(e) => updateMindEditArray('emotion_pattern', 'coping_mechanisms', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" />
+                              <input type="text" value={(mindEditData?.emotion_pattern?.coping_mechanisms || []).join(', ')} onChange={(e) => updateMindEditArray('emotion_pattern', 'coping_mechanisms', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('copingMechanismsPlaceholder')} />
                             </div>
                           </div>
                         </div>
@@ -2658,24 +2658,24 @@ const HamoPro = () => {
                             </div>
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">{t('cognitiveDistortionsLabel')}</label>
-                              <input type="text" value={(mindEditData?.cognition_beliefs?.cognitive_distortions || []).join(', ')} onChange={(e) => updateMindEditArray('cognition_beliefs', 'cognitive_distortions', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" />
+                              <input type="text" value={(mindEditData?.cognition_beliefs?.cognitive_distortions || []).join(', ')} onChange={(e) => updateMindEditArray('cognition_beliefs', 'cognitive_distortions', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('cognitiveDistortionsPlaceholder')} />
                             </div>
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">{t('thinkingPatternsLabel')}</label>
-                              <input type="text" value={(mindEditData?.cognition_beliefs?.thinking_patterns || []).join(', ')} onChange={(e) => updateMindEditArray('cognition_beliefs', 'thinking_patterns', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" />
+                              <input type="text" value={(mindEditData?.cognition_beliefs?.thinking_patterns || []).join(', ')} onChange={(e) => updateMindEditArray('cognition_beliefs', 'thinking_patterns', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('thinkingPatternsPlaceholder')} />
                             </div>
                             <div className="grid grid-cols-3 gap-3">
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">{t('selfPerception')}</label>
-                                <input type="text" value={mindEditData?.cognition_beliefs?.self_perception || ''} onChange={(e) => updateMindEditString('cognition_beliefs', 'self_perception', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" />
+                                <input type="text" value={mindEditData?.cognition_beliefs?.self_perception || ''} onChange={(e) => updateMindEditString('cognition_beliefs', 'self_perception', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('selfPerceptionPlaceholder')} />
                               </div>
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">{t('worldPerception')}</label>
-                                <input type="text" value={mindEditData?.cognition_beliefs?.world_perception || ''} onChange={(e) => updateMindEditString('cognition_beliefs', 'world_perception', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" />
+                                <input type="text" value={mindEditData?.cognition_beliefs?.world_perception || ''} onChange={(e) => updateMindEditString('cognition_beliefs', 'world_perception', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('worldPerceptionPlaceholder')} />
                               </div>
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">{t('futurePerception')}</label>
-                                <input type="text" value={mindEditData?.cognition_beliefs?.future_perception || ''} onChange={(e) => updateMindEditString('cognition_beliefs', 'future_perception', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" />
+                                <input type="text" value={mindEditData?.cognition_beliefs?.future_perception || ''} onChange={(e) => updateMindEditString('cognition_beliefs', 'future_perception', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('futurePerceptionPlaceholder')} />
                               </div>
                             </div>
                           </div>
@@ -2704,11 +2704,11 @@ const HamoPro = () => {
                             </div>
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">{t('communicationStyle')}</label>
-                              <input type="text" value={mindEditData?.relationship_manipulations?.communication_style || ''} onChange={(e) => updateMindEditString('relationship_manipulations', 'communication_style', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" />
+                              <input type="text" value={mindEditData?.relationship_manipulations?.communication_style || ''} onChange={(e) => updateMindEditString('relationship_manipulations', 'communication_style', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('communicationStylePlaceholder')} />
                             </div>
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">{t('conflictResolution')}</label>
-                              <input type="text" value={mindEditData?.relationship_manipulations?.conflict_resolution || ''} onChange={(e) => updateMindEditString('relationship_manipulations', 'conflict_resolution', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" />
+                              <input type="text" value={mindEditData?.relationship_manipulations?.conflict_resolution || ''} onChange={(e) => updateMindEditString('relationship_manipulations', 'conflict_resolution', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('conflictResolutionPlaceholder')} />
                             </div>
                           </div>
                         </div>
