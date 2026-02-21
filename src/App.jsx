@@ -3624,24 +3624,24 @@ const HamoPro = () => {
 
       {/* Fixed Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40">
-        <div className="max-w-7xl mx-auto flex justify-around items-center py-3 pb-6">
+        <div className="max-w-7xl mx-auto flex items-center py-3 pb-6">
           <button
             onClick={() => setActiveTab('avatars')}
-            className={`flex flex-col items-center justify-center py-2 px-6 ${activeTab === 'avatars' ? 'text-blue-500' : 'text-gray-400'}`}
+            className={`flex-1 flex flex-col items-center justify-center py-2 ${activeTab === 'avatars' ? 'text-blue-500' : 'text-gray-400'}`}
           >
             <Brain className="w-6 h-6" />
             <span className="text-xs mt-1 font-medium">{t('aiAvatars')}</span>
           </button>
           <button
             onClick={() => { setActiveTab('clients'); loadUserData(); }}
-            className={`flex flex-col items-center justify-center py-2 px-6 ${activeTab === 'clients' ? 'text-blue-500' : 'text-gray-400'}`}
+            className={`flex-1 flex flex-col items-center justify-center py-2 ${activeTab === 'clients' ? 'text-blue-500' : 'text-gray-400'}`}
           >
             <User className="w-6 h-6" />
             <span className="text-xs mt-1 font-medium">{t('clients')}</span>
           </button>
           <button
             onClick={() => setActiveTab('settings')}
-            className={`flex flex-col items-center justify-center py-2 px-6 ${activeTab === 'settings' ? 'text-purple-500' : 'text-gray-400'}`}
+            className={`flex-1 flex flex-col items-center justify-center py-2 ${activeTab === 'settings' ? 'text-purple-500' : 'text-gray-400'}`}
           >
             <Settings className="w-6 h-6" />
             <span className="text-xs mt-1 font-medium">{t('settings')}</span>
