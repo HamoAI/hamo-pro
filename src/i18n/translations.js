@@ -112,7 +112,7 @@ export const translations = {
     cognitionPlaceholder: 'Core beliefs, cognitive patterns, and thought distortions',
     relationshipManipulations: 'Relationship Manipulations',
     relationshipPlaceholder: 'Attachment style, relationship patterns, communication style',
-    initializeMind: 'Initialize Mind',
+    initializeMind: 'Initialize AI Mind',
     initializing: 'Initializing...',
 
     // Invitation
@@ -403,7 +403,7 @@ export const translations = {
     cognitionPlaceholder: '核心信念、认知模式和思维扭曲',
     relationshipManipulations: '关系互动',
     relationshipPlaceholder: '依恋风格、关系模式、沟通方式',
-    initializeMind: '初始化 Mind',
+    initializeMind: '初始化 AI Mind',
     initializing: '初始化中...',
 
     // Invitation
