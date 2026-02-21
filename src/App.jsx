@@ -709,6 +709,12 @@ const HamoPro = () => {
     setEditingAvatar(null);
   };
 
+  // Translate a personality trait ID to display label
+  const translateTrait = (traitId) => {
+    const key = `trait_${traitId}`;
+    return t(key) || traitId;
+  };
+
   // Get personality traits based on dimension selections
   const getPersonalityTraitOptions = () => {
     const d1 = clientForm.personalityDimension1;
@@ -2095,7 +2101,7 @@ const HamoPro = () => {
                   <div className="mb-4">
                     {/* Dimension 1: Introverted vs Extroverted */}
                     <div className="mb-3">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">{language === 'zh' ? '社交倾向' : 'Social Orientation'}</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('socialOrientation')}</label>
                       <div className="flex space-x-3">
                         <button
                           type="button"
@@ -2124,7 +2130,7 @@ const HamoPro = () => {
 
                     {/* Dimension 2: Rational vs Emotional */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">{language === 'zh' ? '决策风格' : 'Decision Style'}</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('decisionStyle')}</label>
                       <div className="flex space-x-3">
                         <button
                           type="button"
@@ -2156,13 +2162,13 @@ const HamoPro = () => {
                   {getPersonalityTraitOptions() && (
                     <div className="mt-4 pt-4 border-t border-purple-200">
                       <div className="flex items-center justify-between mb-3">
-                        <label className="text-sm font-medium text-gray-700">Select Traits (1-6)</label>
-                        <span className="text-xs text-purple-500">{clientForm.personalityTraits.length}/6 selected</span>
+                        <label className="text-sm font-medium text-gray-700">{t('selectTraits')}</label>
+                        <span className="text-xs text-purple-500">{clientForm.personalityTraits.length}/6 {t('selected')}</span>
                       </div>
 
                       {/* Orange Block - Adaptive */}
                       <div className="bg-orange-50 rounded-lg p-3 mb-3">
-                        <p className="text-xs text-orange-600 font-medium mb-2">Adaptive Traits</p>
+                        <p className="text-xs text-orange-600 font-medium mb-2">{t('adaptiveTraits')}</p>
                         <div className="flex flex-wrap gap-2">
                           {getPersonalityTraitOptions().orange.map(trait => (
                             <button
@@ -2175,7 +2181,7 @@ const HamoPro = () => {
                                   : 'bg-white border border-orange-300 text-orange-700 hover:bg-orange-100'
                               }`}
                             >
-                              {trait}
+                              {translateTrait(trait)}
                             </button>
                           ))}
                         </div>
@@ -2183,7 +2189,7 @@ const HamoPro = () => {
 
                       {/* Gray Block - Maladaptive Mild */}
                       <div className="bg-gray-100 rounded-lg p-3 mb-3">
-                        <p className="text-xs text-gray-600 font-medium mb-2">Mild Maladaptive</p>
+                        <p className="text-xs text-gray-600 font-medium mb-2">{t('mildMaladaptive')}</p>
                         <div className="flex flex-wrap gap-2">
                           {getPersonalityTraitOptions().gray.map(trait => (
                             <button
@@ -2196,7 +2202,7 @@ const HamoPro = () => {
                                   : 'bg-white border border-gray-400 text-gray-700 hover:bg-gray-200'
                               }`}
                             >
-                              {trait}
+                              {translateTrait(trait)}
                             </button>
                           ))}
                         </div>
@@ -2204,7 +2210,7 @@ const HamoPro = () => {
 
                       {/* Red Block - Maladaptive Severe */}
                       <div className="bg-red-50 rounded-lg p-3">
-                        <p className="text-xs text-red-600 font-medium mb-2">Severe Maladaptive</p>
+                        <p className="text-xs text-red-600 font-medium mb-2">{t('severeMaladaptive')}</p>
                         <div className="flex flex-wrap gap-2">
                           {getPersonalityTraitOptions().red.map(trait => (
                             <button
@@ -2217,7 +2223,7 @@ const HamoPro = () => {
                                   : 'bg-white border border-red-300 text-red-700 hover:bg-red-100'
                               }`}
                             >
-                              {trait}
+                              {translateTrait(trait)}
                             </button>
                           ))}
                         </div>
@@ -2638,7 +2644,7 @@ const HamoPro = () => {
                                 <div className="flex flex-wrap gap-2 mt-2">
                                   {mindData.personality.primary_traits.slice(0, 3).map((trait, idx) => (
                                     <span key={idx} className="px-2 py-0.5 bg-white/20 text-white/90 rounded-full text-xs border border-white/30">
-                                      {trait}
+                                      {translateTrait(trait)}
                                     </span>
                                   ))}
                                   {mindData.personality.primary_traits.length > 3 && (
@@ -2660,7 +2666,7 @@ const HamoPro = () => {
                                       <span className="text-xs font-medium text-purple-600 uppercase tracking-wide">{t('allTraits')}</span>
                                       <div className="flex flex-wrap gap-2 mt-2">
                                         {mindData.personality.primary_traits.map((trait, idx) => (
-                                          <span key={idx} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">{trait}</span>
+                                          <span key={idx} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">{translateTrait(trait)}</span>
                                         ))}
                                       </div>
                                     </div>

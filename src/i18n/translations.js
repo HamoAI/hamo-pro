@@ -180,6 +180,62 @@ export const translations = {
     connectedOn: 'Connected',
     createdOn: 'Created',
 
+    // Personality Dimension Labels
+    socialOrientation: 'Social Orientation',
+    decisionStyle: 'Decision Style',
+    selectTraits: 'Select Traits (1-6)',
+    selected: 'selected',
+    adaptiveTraits: 'Adaptive Traits',
+    mildMaladaptive: 'Mild Maladaptive',
+    severeMaladaptive: 'Severe Maladaptive',
+
+    // Personality Traits (36 traits - ID -> display)
+    // Introverted + Rational
+    'trait_Respectful': 'Respectful',
+    'trait_Logical / Fact-based': 'Logical / Fact-based',
+    'trait_Cautious / Prudent': 'Cautious / Prudent',
+    'trait_Avoidant': 'Avoidant',
+    'trait_Passive': 'Passive',
+    'trait_Disengaged': 'Disengaged',
+    'trait_Procrastinating': 'Procrastinating',
+    'trait_Over-deliberating': 'Over-deliberating',
+    'trait_Decision-blocked': 'Decision-blocked',
+    // Introverted + Emotional
+    'trait_Supportive': 'Supportive',
+    'trait_Trusting': 'Trusting',
+    'trait_Cooperative': 'Cooperative',
+    'trait_Compliant': 'Compliant',
+    'trait_People-pleasing': 'People-pleasing',
+    'trait_Self-erasing': 'Self-erasing',
+    'trait_Withdrawn': 'Withdrawn',
+    'trait_Self-neglecting': 'Self-neglecting',
+    'trait_Emotionally flat': 'Emotionally flat',
+    // Extroverted + Rational
+    'trait_Decisive': 'Decisive',
+    'trait_Controlling': 'Controlling',
+    'trait_Challenge-oriented': 'Challenge-oriented',
+    'trait_Domineering': 'Domineering',
+    'trait_Confrontational': 'Confrontational',
+    'trait_Impatient': 'Impatient',
+    'trait_Aggressive': 'Aggressive',
+    'trait_Reckless': 'Reckless',
+    'trait_Hyper-controlling': 'Hyper-controlling',
+    // Extroverted + Emotional
+    'trait_Expressive': 'Expressive',
+    'trait_Inspiring': 'Inspiring',
+    'trait_Enthusiastic': 'Enthusiastic',
+    'trait_Suspicious': 'Suspicious',
+    'trait_Dramatizing': 'Dramatizing',
+    'trait_Attention-seeking': 'Attention-seeking',
+    'trait_Narcissistic': 'Narcissistic',
+    'trait_Entitled': 'Entitled',
+    'trait_Exploitative': 'Exploitative',
+    // Dimension values
+    'trait_introverted': 'introverted',
+    'trait_extroverted': 'extroverted',
+    'trait_rational': 'rational',
+    'trait_emotional': 'emotional',
+
     // Chats & Status
     conversations: 'Conversations',
     stressLevel: 'Stress Level',
@@ -414,6 +470,62 @@ export const translations = {
     // AI Mind Footer
     connectedOn: '连接于',
     createdOn: '创建于',
+
+    // Personality Dimension Labels
+    socialOrientation: '社交倾向',
+    decisionStyle: '决策风格',
+    selectTraits: '选择特征（1-6）',
+    selected: '已选',
+    adaptiveTraits: '适应性特征',
+    mildMaladaptive: '轻度适应不良',
+    severeMaladaptive: '重度适应不良',
+
+    // Personality Traits (36 traits - ID -> display)
+    // Introverted + Rational (内向 + 理性)
+    'trait_Respectful': '尊重他人',
+    'trait_Logical / Fact-based': '逻辑导向',
+    'trait_Cautious / Prudent': '谨慎稳重',
+    'trait_Avoidant': '回避型',
+    'trait_Passive': '被动型',
+    'trait_Disengaged': '疏离型',
+    'trait_Procrastinating': '拖延型',
+    'trait_Over-deliberating': '过度思虑',
+    'trait_Decision-blocked': '决策困难',
+    // Introverted + Emotional (内向 + 感性)
+    'trait_Supportive': '支持型',
+    'trait_Trusting': '信任型',
+    'trait_Cooperative': '合作型',
+    'trait_Compliant': '顺从型',
+    'trait_People-pleasing': '讨好型',
+    'trait_Self-erasing': '自我消除',
+    'trait_Withdrawn': '退缩型',
+    'trait_Self-neglecting': '自我忽视',
+    'trait_Emotionally flat': '情感平淡',
+    // Extroverted + Rational (外向 + 理性)
+    'trait_Decisive': '果断型',
+    'trait_Controlling': '控制型',
+    'trait_Challenge-oriented': '挑战导向',
+    'trait_Domineering': '强势型',
+    'trait_Confrontational': '对抗型',
+    'trait_Impatient': '急躁型',
+    'trait_Aggressive': '攻击型',
+    'trait_Reckless': '鲁莽型',
+    'trait_Hyper-controlling': '过度控制',
+    // Extroverted + Emotional (外向 + 感性)
+    'trait_Expressive': '表达型',
+    'trait_Inspiring': '感召型',
+    'trait_Enthusiastic': '热情型',
+    'trait_Suspicious': '多疑型',
+    'trait_Dramatizing': '戏剧化',
+    'trait_Attention-seeking': '寻求关注',
+    'trait_Narcissistic': '自恋型',
+    'trait_Entitled': '特权感',
+    'trait_Exploitative': '剥削型',
+    // Dimension values
+    'trait_introverted': '内向',
+    'trait_extroverted': '外向',
+    'trait_rational': '理性',
+    'trait_emotional': '感性',
 
     // Chats & Status
     conversations: '对话记录',
