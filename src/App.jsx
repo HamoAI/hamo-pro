@@ -2674,12 +2674,6 @@ const HamoPro = () => {
                                   {mindData.personality?.description && (
                                     <p className="text-sm text-gray-600 bg-purple-50 rounded-lg p-3 italic mb-4">"{mindData.personality.description}"</p>
                                   )}
-                                  <div className="flex pt-3 border-t border-purple-100">
-                                    <input type="text" value={supervisionInputs.personality} onChange={(e) => setSupervisionInputs(prev => ({ ...prev, personality: e.target.value }))} placeholder={t('submitFeedback')} className="flex-1 px-3 py-2 text-sm border border-purple-200 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-purple-400" onClick={(e) => e.stopPropagation()} />
-                                    <button onClick={(e) => { e.stopPropagation(); handleSupervise('personality'); }} disabled={!supervisionInputs.personality.trim() || supervisionLoading.personality} className="px-4 py-2 bg-purple-500 text-white text-sm font-medium rounded-r-lg hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1">
-                                      <Send className="w-4 h-4" /><span>{supervisionLoading.personality ? '...' : t('supervise')}</span>
-                                    </button>
-                                  </div>
                                 </>
                             </div>
                           )}
@@ -2740,12 +2734,6 @@ const HamoPro = () => {
                                     )}
                                   </div>
                                   {mindData.emotion_pattern?.description && (<p className="text-sm text-gray-600 bg-emerald-50 rounded-lg p-3 italic mb-4">"{mindData.emotion_pattern.description}"</p>)}
-                                  <div className="flex pt-3 border-t border-emerald-100">
-                                    <input type="text" value={supervisionInputs.emotion_pattern} onChange={(e) => setSupervisionInputs(prev => ({ ...prev, emotion_pattern: e.target.value }))} placeholder={t('submitFeedback')} className="flex-1 px-3 py-2 text-sm border border-emerald-200 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-emerald-400" onClick={(e) => e.stopPropagation()} />
-                                    <button onClick={(e) => { e.stopPropagation(); handleSupervise('emotion_pattern'); }} disabled={!supervisionInputs.emotion_pattern.trim() || supervisionLoading.emotion_pattern} className="px-4 py-2 bg-emerald-500 text-white text-sm font-medium rounded-r-lg hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1">
-                                      <Send className="w-4 h-4" /><span>{supervisionLoading.emotion_pattern ? '...' : t('supervise')}</span>
-                                    </button>
-                                  </div>
                                 </>
                             </div>
                           )}
@@ -2812,12 +2800,6 @@ const HamoPro = () => {
                                       {mindData.cognition_beliefs.future_perception && (<div className="bg-gray-50 rounded-lg p-3 text-center"><div className="text-xs font-medium text-gray-600 uppercase tracking-wide mb-1">{t('futurePerception')}</div><div className="text-sm text-gray-700">{mindData.cognition_beliefs.future_perception}</div></div>)}
                                     </div>
                                   )}
-                                  <div className="flex pt-3 border-t border-amber-100">
-                                    <input type="text" value={supervisionInputs.cognition_beliefs} onChange={(e) => setSupervisionInputs(prev => ({ ...prev, cognition_beliefs: e.target.value }))} placeholder={t('submitFeedback')} className="flex-1 px-3 py-2 text-sm border border-amber-200 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-amber-400" onClick={(e) => e.stopPropagation()} />
-                                    <button onClick={(e) => { e.stopPropagation(); handleSupervise('cognition_beliefs'); }} disabled={!supervisionInputs.cognition_beliefs.trim() || supervisionLoading.cognition_beliefs} className="px-4 py-2 bg-amber-500 text-white text-sm font-medium rounded-r-lg hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1">
-                                      <Send className="w-4 h-4" /><span>{supervisionLoading.cognition_beliefs ? '...' : t('supervise')}</span>
-                                    </button>
-                                  </div>
                                 </>
                             </div>
                           )}
@@ -2883,12 +2865,6 @@ const HamoPro = () => {
                                       <div className="text-sm text-gray-700 mt-1">{mindData.relationship_manipulations.conflict_resolution}</div>
                                     </div>
                                   )}
-                                  <div className="flex pt-3 border-t border-blue-100">
-                                    <input type="text" value={supervisionInputs.relationship_manipulations} onChange={(e) => setSupervisionInputs(prev => ({ ...prev, relationship_manipulations: e.target.value }))} placeholder={t('submitFeedback')} className="flex-1 px-3 py-2 text-sm border border-blue-200 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-400" onClick={(e) => e.stopPropagation()} />
-                                    <button onClick={(e) => { e.stopPropagation(); handleSupervise('relationship_manipulations'); }} disabled={!supervisionInputs.relationship_manipulations.trim() || supervisionLoading.relationship_manipulations} className="px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-r-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1">
-                                      <Send className="w-4 h-4" /><span>{supervisionLoading.relationship_manipulations ? '...' : t('supervise')}</span>
-                                    </button>
-                                  </div>
                                 </>
                             </div>
                           )}
