@@ -2483,7 +2483,7 @@ const HamoPro = () => {
                           <div className="px-5 py-4 flex items-center justify-between">
                             <div>
                               <h4 className="text-white font-bold text-lg">Personality Traits</h4>
-                              {mindData.personality.primary_traits?.length > 0 && (
+                              {mindData.personality?.primary_traits?.length > 0 && (
                                 <div className="flex flex-wrap gap-2 mt-2">
                                   {mindData.personality.primary_traits.slice(0, 3).map((trait, idx) => (
                                     <span key={idx} className="px-2 py-0.5 bg-white/20 text-white/90 rounded-full text-xs border border-white/30">
@@ -2554,7 +2554,7 @@ const HamoPro = () => {
                           <div className="px-5 py-4 flex items-center justify-between">
                             <div>
                               <h4 className="text-white font-bold text-lg">Emotion Patterns</h4>
-                              {mindData.emotion_pattern.dominant_emotions?.length > 0 && (
+                              {mindData.emotion_pattern?.dominant_emotions?.length > 0 && (
                                 <div className="flex flex-wrap gap-2 mt-2">
                                   {mindData.emotion_pattern.dominant_emotions.slice(0, 3).map((emotion, idx) => (
                                     <span key={idx} className="px-2 py-0.5 bg-white/20 text-white/90 rounded-full text-xs border border-white/30">
@@ -2641,7 +2641,7 @@ const HamoPro = () => {
                           <div className="px-5 py-4 flex items-center justify-between">
                             <div>
                               <h4 className="text-white font-bold text-lg">Cognition & Beliefs</h4>
-                              {mindData.cognition_beliefs.core_beliefs?.length > 0 && (
+                              {mindData.cognition_beliefs?.core_beliefs?.length > 0 && (
                                 <div className="flex flex-wrap gap-2 mt-2">
                                   {mindData.cognition_beliefs.core_beliefs.slice(0, 2).map((belief, idx) => (
                                     <span key={idx} className="px-2 py-0.5 bg-white/20 text-white/90 rounded-full text-xs border border-white/30 truncate max-w-[150px]">
@@ -2745,12 +2745,12 @@ const HamoPro = () => {
                             <div>
                               <h4 className="text-white font-bold text-lg">Relationship Patterns</h4>
                               <div className="flex flex-wrap gap-2 mt-2">
-                                {mindData.relationship_manipulations.attachment_style && (
+                                {mindData.relationship_manipulations?.attachment_style && (
                                   <span className="px-2 py-0.5 bg-white/20 text-white/90 rounded-full text-xs border border-white/30 capitalize">
                                     {mindData.relationship_manipulations.attachment_style}
                                   </span>
                                 )}
-                                {mindData.relationship_manipulations.relationship_patterns?.slice(0, 2).map((pattern, idx) => (
+                                {mindData.relationship_manipulations?.relationship_patterns?.slice(0, 2).map((pattern, idx) => (
                                   <span key={idx} className="px-2 py-0.5 bg-white/20 text-white/90 rounded-full text-xs border border-white/30">
                                     {pattern}
                                   </span>
