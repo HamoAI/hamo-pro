@@ -241,11 +241,11 @@ const HamoPro = () => {
     personalityDimension2: '', // 'rational' or 'emotional'
     personalityTraits: [], // Selected traits from the 3 blocks
     // Emotion Patterns
-    emotionPattern: '',
+    emotion_pattern: { dominant_emotions: '', triggers: '', coping_mechanisms: '' },
     // Cognition & Beliefs
-    cognition: '',
+    cognition_beliefs: { core_beliefs: '', cognitive_distortions: '', thinking_patterns: '', self_perception: '', world_perception: '', future_perception: '' },
     // Relationship Manipulations
-    relationshipManipulations: ''
+    relationship_manipulations: { attachment_style: '', relationship_patterns: '', communication_style: '', conflict_resolution: '' }
   });
 
   // Load avatars and clients from backend
@@ -814,12 +814,12 @@ const HamoPro = () => {
         name: clientForm.name,
         sex: clientForm.sex,
         age: clientForm.age,
-        emotionPattern: clientForm.emotionPattern,
         personality: personalityString,
-        cognition: clientForm.cognition,
         goals: clientForm.goals,
         therapyPrinciples: clientForm.therapyPrinciples,
-        relationshipManipulations: clientForm.relationshipManipulations,
+        emotion_pattern: clientForm.emotion_pattern,
+        cognition_beliefs: clientForm.cognition_beliefs,
+        relationship_manipulations: clientForm.relationship_manipulations,
       });
 
       if (result.success) {
@@ -852,9 +852,9 @@ const HamoPro = () => {
         personalityDimension1: '',
         personalityDimension2: '',
         personalityTraits: [],
-        emotionPattern: '',
-        cognition: '',
-        relationshipManipulations: ''
+        emotion_pattern: { dominant_emotions: '', triggers: '', coping_mechanisms: '' },
+        cognition_beliefs: { core_beliefs: '', cognitive_distortions: '', thinking_patterns: '', self_perception: '', world_perception: '', future_perception: '' },
+        relationship_manipulations: { attachment_style: '', relationship_patterns: '', communication_style: '', conflict_resolution: '' }
       });
       setShowClientForm(false);
     }
@@ -2291,13 +2291,20 @@ const HamoPro = () => {
                     <Sparkles className="w-5 h-5 text-yellow-600" />
                     <h4 className="font-semibold text-yellow-800">{t('emotionPatterns')}</h4>
                   </div>
-                  <textarea
-                    value={clientForm.emotionPattern}
-                    onChange={(e) => setClientForm({ ...clientForm, emotionPattern: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white"
-                    rows="2"
-                    placeholder={t('emotionPatternsPlaceholder')}
-                  />
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('dominantEmotionsLabel')}</label>
+                      <input type="text" value={clientForm.emotion_pattern.dominant_emotions} onChange={(e) => setClientForm({ ...clientForm, emotion_pattern: { ...clientForm.emotion_pattern, dominant_emotions: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('emotionPatternsPlaceholder')} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('triggersLabel')}</label>
+                      <input type="text" value={clientForm.emotion_pattern.triggers} onChange={(e) => setClientForm({ ...clientForm, emotion_pattern: { ...clientForm.emotion_pattern, triggers: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('copingMechanismsLabel')}</label>
+                      <input type="text" value={clientForm.emotion_pattern.coping_mechanisms} onChange={(e) => setClientForm({ ...clientForm, emotion_pattern: { ...clientForm.emotion_pattern, coping_mechanisms: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" />
+                    </div>
+                  </div>
                 </div>
 
                 {/* Section 5: Cognition & Beliefs */}
@@ -2306,13 +2313,34 @@ const HamoPro = () => {
                     <Brain className="w-5 h-5 text-indigo-600" />
                     <h4 className="font-semibold text-indigo-800">{t('cognitionBeliefs')}</h4>
                   </div>
-                  <textarea
-                    value={clientForm.cognition}
-                    onChange={(e) => setClientForm({ ...clientForm, cognition: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white"
-                    rows="2"
-                    placeholder={t('cognitionPlaceholder')}
-                  />
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('corebeliefsLabel')}</label>
+                      <input type="text" value={clientForm.cognition_beliefs.core_beliefs} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, core_beliefs: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('cognitionPlaceholder')} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('cognitiveDistortionsLabel')}</label>
+                      <input type="text" value={clientForm.cognition_beliefs.cognitive_distortions} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, cognitive_distortions: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('thinkingPatternsLabel')}</label>
+                      <input type="text" value={clientForm.cognition_beliefs.thinking_patterns} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, thinking_patterns: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" />
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('selfPerception')}</label>
+                        <input type="text" value={clientForm.cognition_beliefs.self_perception} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, self_perception: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('worldPerception')}</label>
+                        <input type="text" value={clientForm.cognition_beliefs.world_perception} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, world_perception: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('futurePerception')}</label>
+                        <input type="text" value={clientForm.cognition_beliefs.future_perception} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, future_perception: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" />
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Section 6: Relationship Manipulations */}
@@ -2321,13 +2349,30 @@ const HamoPro = () => {
                     <User className="w-5 h-5 text-rose-600" />
                     <h4 className="font-semibold text-rose-800">{t('relationshipManipulations')}</h4>
                   </div>
-                  <textarea
-                    value={clientForm.relationshipManipulations}
-                    onChange={(e) => setClientForm({ ...clientForm, relationshipManipulations: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white"
-                    rows="2"
-                    placeholder={t('relationshipPlaceholder')}
-                  />
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('attachmentStyle')}</label>
+                      <select value={clientForm.relationship_manipulations.attachment_style} onChange={(e) => setClientForm({ ...clientForm, relationship_manipulations: { ...clientForm.relationship_manipulations, attachment_style: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white">
+                        <option value="">--</option>
+                        <option value="secure">{t('attachmentSecure')}</option>
+                        <option value="anxious">{t('attachmentAnxious')}</option>
+                        <option value="avoidant">{t('attachmentAvoidant')}</option>
+                        <option value="disorganized">{t('attachmentDisorganized')}</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('relationshipPatternsLabel')}</label>
+                      <input type="text" value={clientForm.relationship_manipulations.relationship_patterns} onChange={(e) => setClientForm({ ...clientForm, relationship_manipulations: { ...clientForm.relationship_manipulations, relationship_patterns: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('relationshipPlaceholder')} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('communicationStyle')}</label>
+                      <input type="text" value={clientForm.relationship_manipulations.communication_style} onChange={(e) => setClientForm({ ...clientForm, relationship_manipulations: { ...clientForm.relationship_manipulations, communication_style: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('conflictResolution')}</label>
+                      <input type="text" value={clientForm.relationship_manipulations.conflict_resolution} onChange={(e) => setClientForm({ ...clientForm, relationship_manipulations: { ...clientForm.relationship_manipulations, conflict_resolution: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex space-x-3 pt-2">
