@@ -1477,9 +1477,9 @@ const HamoPro = () => {
     ctx.fillText(avatar?.name || (isZh ? '未知' : 'Unknown'), 200, 420);
 
     // Draw footer
-    ctx.fillStyle = '#9CA3AF';
-    ctx.font = '12px system-ui, sans-serif';
-    ctx.fillText(isZh ? '访问 client.hamo.ai 连接' : 'Visit client.hamo.ai to connect', 200, 470);
+    ctx.fillStyle = '#3B82F6';
+    ctx.font = 'bold 14px system-ui, sans-serif';
+    ctx.fillText(isZh ? '访问 client.hamo.ai 注册，输入邀请码' : 'Visit client.hamo.ai to register and enter code', 200, 470);
 
     // Download the image
     const link = document.createElement('a');
@@ -1663,7 +1663,7 @@ const HamoPro = () => {
                   </div>
                 </div>
 
-                <p className="text-xs text-gray-400 mb-6">{language === 'zh' ? '访问 client.hamo.ai 连接' : 'Visit client.hamo.ai to connect'}</p>
+                <p className="text-sm text-blue-500 font-medium mb-6">{language === 'zh' ? '访问 client.hamo.ai 注册，输入邀请码' : 'Visit client.hamo.ai to register and enter code'}</p>
               </div>
 
               <div className="flex space-x-3">
