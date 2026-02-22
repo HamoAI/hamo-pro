@@ -263,6 +263,8 @@ export const translations = {
     miniSessionMessages: 'messages',
     miniSessionActive: 'Active',
     currentSession: 'Current Session',
+    superviseMessage: 'Supervise',
+    supervisionPlaceholder: 'How would you respond better?',
 
     // Stress Detail Panel
     stressLevelHistory: 'STRESS LEVEL HISTORY',
@@ -566,6 +568,8 @@ export const translations = {
     miniSessionMessages: '条消息',
     miniSessionActive: '进行中',
     currentSession: '当前会话',
+    superviseMessage: '督导',
+    supervisionPlaceholder: '您会如何更好地回应？',
 
     // Stress Detail Panel
     stressLevelHistory: '压力等级历史',

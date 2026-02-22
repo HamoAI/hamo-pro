@@ -588,6 +588,29 @@ class ApiService {
     }
   }
 
+  // Submit per-message supervision note for an avatar message
+  async superviseMessage(messageId, text) {
+    try {
+      console.log('🔵 Supervising message:', messageId);
+      const response = await this.request(`/messages/${messageId}/supervise`, {
+        method: 'PUT',
+        body: JSON.stringify({ text }),
+      });
+
+      console.log('✅ Message supervision saved:', response);
+      return {
+        success: true,
+        supervision: response.supervision,
+      };
+    } catch (error) {
+      console.error('❌ Failed to supervise message:', error.message);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+
   // Get all specialties with i18n names
   async getSpecialties() {
     try {
@@ -683,6 +706,7 @@ class ApiService {
           mini_session_id: msg.mini_session_id || null,
           // Support multiple field names: psvs_snapshot, psvs, or snapshot
           psvs_snapshot: msg.psvs_snapshot || msg.psvs || msg.snapshot || null,
+          supervision: msg.supervision || null,
         })),
       };
     } catch (error) {

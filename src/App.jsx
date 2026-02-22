@@ -4,7 +4,7 @@ import apiService from './services/api';
 import { translations } from './i18n/translations';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.5.20";
+  const APP_VERSION = "1.6.0";
 
   // Language state - default to browser language or English
   const [language, setLanguage] = useState(() => {
@@ -203,6 +203,9 @@ const HamoPro = () => {
   const [showStressDetail, setShowStressDetail] = useState(false); // Toggle stress detail panel
   const [stressIndicatorsData, setStressIndicatorsData] = useState(null); // A/W/E/H/B from portal API
   const [expandedMiniSessions, setExpandedMiniSessions] = useState(new Set()); // Track which mini sessions are expanded
+  const [supervisingMessageId, setSupervisingMessageId] = useState(null); // Which message is being supervised
+  const [supervisionText, setSupervisionText] = useState(''); // Input text for supervision
+  const [supervisionSaving, setSupervisionSaving] = useState(false); // Loading state while saving
   const [selectedMindClient, setSelectedMindClient] = useState(null);
   const [mindData, setMindData] = useState(null);
   const [mindLoading, setMindLoading] = useState(false);
@@ -1400,6 +1403,40 @@ const HamoPro = () => {
       console.error('Failed to submit supervision:', error);
     } finally {
       setSupervisionLoading(prev => ({ ...prev, [section]: false }));
+    }
+  };
+
+  // Handle per-message supervision save
+  const handleMessageSupervise = async () => {
+    if (!supervisionText.trim() || !supervisingMessageId) return;
+
+    setSupervisionSaving(true);
+    try {
+      const result = await apiService.superviseMessage(supervisingMessageId, supervisionText.trim());
+
+      if (result.success) {
+        // Update the message in conversationsData (nested in miniSessionGroups)
+        setConversationsData(prev => prev.map(conv => ({
+          ...conv,
+          miniSessionGroups: conv.miniSessionGroups.map(group => ({
+            ...group,
+            messages: group.messages.map(msg =>
+              msg.id === supervisingMessageId
+                ? { ...msg, supervision: result.supervision }
+                : msg
+            )
+          }))
+        })));
+
+        setSupervisingMessageId(null);
+        setSupervisionText('');
+      } else {
+        alert(result.error || 'Failed to save supervision');
+      }
+    } catch (error) {
+      console.error('Failed to supervise message:', error);
+    } finally {
+      setSupervisionSaving(false);
     }
   };
 
@@ -3648,30 +3685,94 @@ const HamoPro = () => {
                                                   );
                                                 })()
                                               )}
-                                              {/* Message bubble */}
-                                              <div
-                                                data-psvs={msg.psvs_snapshot ? JSON.stringify(msg.psvs_snapshot) : null}
-                                                data-message-id={msg.id}
-                                                data-role={msg.role}
-                                                className={`flex-1 p-3 rounded-lg cursor-pointer transition-all ${msg.role === 'user' ? 'bg-gray-100 hover:bg-gray-200' : 'bg-blue-50 hover:bg-blue-100'} ${String(currentPsvs?.messageId) === String(msg.id) ? 'ring-2 ring-blue-400' : ''}`}
-                                                onClick={() => msg.role === 'user' && msg.psvs_snapshot && setCurrentPsvs({ ...msg.psvs_snapshot, messageId: msg.id })}
-                                              >
-                                                <div className="flex justify-between mb-1">
-                                                  <span className="text-xs font-medium">{msg.role === 'user' ? selectedClient.name : (avatars.find(a => String(a.id) === String(selectedClient.avatarId))?.name || 'Avatar')}</span>
-                                                  <div className="flex items-center space-x-2">
-                                                    {msg.psvs_snapshot && (
-                                                      <span className={`w-2 h-2 rounded-full ${
-                                                        msg.psvs_snapshot.energy_state === 'neurotic' ? 'bg-red-500' :
-                                                        msg.psvs_snapshot.energy_state === 'negative' ? 'bg-yellow-500' :
-                                                        'bg-green-500'
-                                                      }`} title={`Stress: ${msg.psvs_snapshot.stress_level?.toFixed(1)}`}></span>
-                                                    )}
-                                                    <span className="text-xs text-gray-400">
-                                                      {msg.timestamp ? new Date(msg.timestamp.endsWith('Z') ? msg.timestamp : msg.timestamp + 'Z').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : ''}
-                                                    </span>
+                                              {/* Message bubble + supervision */}
+                                              <div className="flex-1">
+                                                <div
+                                                  data-psvs={msg.psvs_snapshot ? JSON.stringify(msg.psvs_snapshot) : null}
+                                                  data-message-id={msg.id}
+                                                  data-role={msg.role}
+                                                  className={`p-3 rounded-lg cursor-pointer transition-all ${msg.role === 'user' ? 'bg-gray-100 hover:bg-gray-200' : 'bg-blue-50 hover:bg-blue-100'} ${String(currentPsvs?.messageId) === String(msg.id) ? 'ring-2 ring-blue-400' : ''}`}
+                                                  onClick={() => msg.role === 'user' && msg.psvs_snapshot && setCurrentPsvs({ ...msg.psvs_snapshot, messageId: msg.id })}
+                                                >
+                                                  <div className="flex justify-between mb-1">
+                                                    <span className="text-xs font-medium">{msg.role === 'user' ? selectedClient.name : (avatars.find(a => String(a.id) === String(selectedClient.avatarId))?.name || 'Avatar')}</span>
+                                                    <div className="flex items-center space-x-2">
+                                                      {msg.psvs_snapshot && (
+                                                        <span className={`w-2 h-2 rounded-full ${
+                                                          msg.psvs_snapshot.energy_state === 'neurotic' ? 'bg-red-500' :
+                                                          msg.psvs_snapshot.energy_state === 'negative' ? 'bg-yellow-500' :
+                                                          'bg-green-500'
+                                                        }`} title={`Stress: ${msg.psvs_snapshot.stress_level?.toFixed(1)}`}></span>
+                                                      )}
+                                                      <span className="text-xs text-gray-400">
+                                                        {msg.timestamp ? new Date(msg.timestamp.endsWith('Z') ? msg.timestamp : msg.timestamp + 'Z').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : ''}
+                                                      </span>
+                                                    </div>
                                                   </div>
+                                                  <p className="text-sm">{msg.content}</p>
+                                                  {/* Supervise button - only on avatar messages */}
+                                                  {msg.role !== 'user' && (
+                                                    <div className="flex justify-end mt-1">
+                                                      <button
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          if (supervisingMessageId === msg.id) {
+                                                            setSupervisingMessageId(null);
+                                                            setSupervisionText('');
+                                                          } else {
+                                                            setSupervisingMessageId(msg.id);
+                                                            setSupervisionText(msg.supervision?.text || '');
+                                                          }
+                                                        }}
+                                                        className="text-xs text-gray-400 hover:text-blue-500 flex items-center space-x-1 transition-colors"
+                                                        title={t('superviseMessage')}
+                                                      >
+                                                        <Edit3 className="w-3 h-3" />
+                                                        <span>{t('superviseMessage')}</span>
+                                                      </button>
+                                                    </div>
+                                                  )}
                                                 </div>
-                                                <p className="text-sm">{msg.content}</p>
+                                                {/* Supervision input area */}
+                                                {msg.role !== 'user' && supervisingMessageId === msg.id && (
+                                                  <div className="mt-2 ml-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                                                    <textarea
+                                                      value={supervisionText}
+                                                      onChange={(e) => setSupervisionText(e.target.value)}
+                                                      placeholder={t('supervisionPlaceholder')}
+                                                      className="w-full text-sm border border-amber-300 rounded p-2 resize-none focus:outline-none focus:ring-1 focus:ring-amber-400"
+                                                      rows={3}
+                                                    />
+                                                    <div className="flex justify-end space-x-2 mt-2">
+                                                      <button
+                                                        onClick={() => { setSupervisingMessageId(null); setSupervisionText(''); }}
+                                                        className="px-3 py-1 text-xs text-gray-500 hover:text-gray-700"
+                                                      >
+                                                        {t('cancel')}
+                                                      </button>
+                                                      <button
+                                                        onClick={handleMessageSupervise}
+                                                        disabled={supervisionSaving || !supervisionText.trim()}
+                                                        className="px-3 py-1 text-xs bg-amber-500 text-white rounded hover:bg-amber-600 disabled:opacity-50 flex items-center space-x-1"
+                                                      >
+                                                        {supervisionSaving ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                                                        <span>{t('save')}</span>
+                                                      </button>
+                                                    </div>
+                                                  </div>
+                                                )}
+                                                {/* Display saved supervision note */}
+                                                {msg.supervision?.text && supervisingMessageId !== msg.id && (
+                                                  <div className="mt-2 ml-2 p-2 bg-amber-50 border-l-4 border-amber-400 rounded-r-lg">
+                                                    <div className="flex items-center justify-between mb-1">
+                                                      <span className="text-xs font-medium text-amber-700">{t('superviseMessage')}</span>
+                                                      <span className="text-xs text-amber-500">
+                                                        {msg.supervision.created_at ? new Date(msg.supervision.created_at).toLocaleDateString() : ''}
+                                                      </span>
+                                                    </div>
+                                                    <p className="text-sm text-amber-900">{msg.supervision.text}</p>
+                                                  </div>
+                                                )}
                                               </div>
                                             </div>
                                           ))
