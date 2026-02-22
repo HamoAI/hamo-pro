@@ -1927,9 +1927,13 @@ const HamoPro = () => {
                     </button>
 
                     <div className="flex flex-col items-center text-center">
-                      <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-4 shadow-lg">
-                        <Brain className="w-12 h-12 text-blue-500" />
-                      </div>
+                      {selectedAvatar.avatarPicture ? (
+                        <img src={selectedAvatar.avatarPicture} alt={selectedAvatar.name} className="w-24 h-24 rounded-full object-cover mb-4 shadow-lg" />
+                      ) : (
+                        <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-4 shadow-lg">
+                          <Brain className="w-12 h-12 text-blue-500" />
+                        </div>
+                      )}
                       <h2 className="text-2xl font-bold text-white">{selectedAvatar.name}</h2>
                       <p className="text-blue-100 mt-1">{getSpecialtyLabel(selectedAvatar.specialty) || selectedAvatar.specialty || selectedAvatar.theory}</p>
 
