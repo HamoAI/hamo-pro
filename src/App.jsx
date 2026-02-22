@@ -1440,6 +1440,30 @@ const HamoPro = () => {
     }
   };
 
+  const handleDeleteSupervision = async (messageId) => {
+    if (!confirm(t('confirmDelete'))) return;
+    try {
+      const result = await apiService.deleteSupervision(messageId);
+      if (result.success) {
+        setConversationsData(prev => prev.map(conv => ({
+          ...conv,
+          miniSessionGroups: conv.miniSessionGroups.map(group => ({
+            ...group,
+            messages: group.messages.map(msg =>
+              msg.id === messageId
+                ? { ...msg, supervision: null }
+                : msg
+            )
+          }))
+        })));
+      } else {
+        alert(result.error || 'Failed to delete supervision');
+      }
+    } catch (error) {
+      console.error('Failed to delete supervision:', error);
+    }
+  };
+
   // Save invitation card as image to local device
   const handleSaveInvitationCard = () => {
     const card = document.getElementById('invitation-card-content');
@@ -3771,6 +3795,15 @@ const HamoPro = () => {
                                                       </span>
                                                     </div>
                                                     <p className="text-sm text-amber-900">{msg.supervision.text}</p>
+                                                    <div className="flex justify-end mt-1">
+                                                      <button
+                                                        onClick={() => handleDeleteSupervision(msg.id)}
+                                                        className="text-amber-400 hover:text-red-500 transition-colors"
+                                                        title="Delete"
+                                                      >
+                                                        <Trash2 className="w-3 h-3" />
+                                                      </button>
+                                                    </div>
                                                   </div>
                                                 )}
                                               </div>

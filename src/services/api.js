@@ -611,6 +611,22 @@ class ApiService {
     }
   }
 
+  // Delete supervision note from a message
+  async deleteSupervision(messageId) {
+    try {
+      console.log('🔵 Deleting supervision for message:', messageId);
+      const response = await this.request(`/messages/${messageId}/supervise`, {
+        method: 'DELETE',
+      });
+
+      console.log('✅ Supervision deleted:', response);
+      return { success: true };
+    } catch (error) {
+      console.error('❌ Failed to delete supervision:', error.message);
+      return { success: false, error: error.message };
+    }
+  }
+
   // Get all specialties with i18n names
   async getSpecialties() {
     try {
