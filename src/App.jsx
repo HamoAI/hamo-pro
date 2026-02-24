@@ -654,8 +654,16 @@ const HamoPro = () => {
     const file = e.target.files[0];
     if (!file) return;
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) return;
-    if (file.size > 2 * 1024 * 1024) return;
+    if (!allowedTypes.includes(file.type)) {
+      alert(t('invalidImageType'));
+      e.target.value = '';
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      alert(t('imageTooLarge'));
+      e.target.value = '';
+      return;
+    }
     setAvatarPictureFile(file);
     setAvatarPicturePreview(URL.createObjectURL(file));
   };
