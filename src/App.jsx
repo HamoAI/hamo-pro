@@ -1601,8 +1601,8 @@ const HamoPro = () => {
       <div className={`min-h-screen flex items-center justify-center px-4 ${tc('bg-gradient-to-br from-blue-50 to-teal-50', 'bg-slate-900')}`}>
         <div className="max-w-md w-full">
           <div className={`rounded-2xl shadow-xl p-8 ${tc('bg-white', 'bg-slate-800')}`}>
-            {/* Language Toggle */}
-            <div className="flex justify-end mb-4 space-x-3">
+            {/* Theme & Language Toggle */}
+            <div className="flex items-center justify-center mb-4 space-x-4">
               <ThemeToggle />
               <LanguageToggle />
             </div>
