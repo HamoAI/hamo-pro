@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { User, Brain, Settings, Plus, Ticket, Eye, EyeOff, Clock, MessageSquare, LogOut, Trash2, Download, CheckCircle, Calendar, Sparkles, Send, Star, Heart, X, Briefcase, ChevronRight, ChevronDown, ChevronUp, Globe, Upload, RefreshCw, ArrowDown, Edit3, Save } from 'lucide-react';
+import { User, Brain, Settings, Plus, Ticket, Eye, EyeOff, Clock, MessageSquare, LogOut, Trash2, Download, CheckCircle, Calendar, Sparkles, Send, Star, Heart, X, Briefcase, ChevronRight, ChevronDown, ChevronUp, Globe, Upload, RefreshCw, ArrowDown, Edit3, Save, Sun, Moon } from 'lucide-react';
 import apiService from './services/api';
 import { translations } from './i18n/translations';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.6.1";
+  const APP_VERSION = "1.7.0";
 
   // Language state - default to browser language or English
   const [language, setLanguage] = useState(() => {
@@ -24,17 +24,30 @@ const HamoPro = () => {
     localStorage.setItem('hamo_pro_language', language);
   }, [language]);
 
+  // Theme state - default to dark
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('hamo_pro_theme') || 'dark';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('hamo_pro_theme', theme);
+  }, [theme]);
+
+  const isDark = theme === 'dark';
+  // Theme class helper: returns dark or light class string based on current theme
+  const tc = useCallback((light, dark) => isDark ? dark : light, [isDark]);
+
   // Language toggle component
   const LanguageToggle = ({ className = "" }) => (
     <div className={`flex items-center space-x-2 ${className}`}>
-      <Globe className="w-4 h-4 text-gray-500" />
-      <div className="flex bg-gray-100 rounded-lg p-0.5">
+      <Globe className={`w-4 h-4 ${tc('text-gray-500', 'text-slate-400')}`} />
+      <div className={`flex rounded-lg p-0.5 ${tc('bg-gray-100', 'bg-slate-700')}`}>
         <button
           onClick={() => setLanguage('en')}
           className={`px-2 py-1 text-xs rounded-md transition-colors ${
             language === 'en'
-              ? 'bg-white text-blue-600 shadow-sm font-medium'
-              : 'text-gray-500 hover:text-gray-700'
+              ? tc('bg-white text-blue-600 shadow-sm font-medium', 'bg-slate-600 text-blue-400 shadow-sm font-medium')
+              : tc('text-gray-500 hover:text-gray-700', 'text-slate-400 hover:text-slate-300')
           }`}
         >
           EN
@@ -43,8 +56,8 @@ const HamoPro = () => {
           onClick={() => setLanguage('zh')}
           className={`px-2 py-1 text-xs rounded-md transition-colors ${
             language === 'zh'
-              ? 'bg-white text-blue-600 shadow-sm font-medium'
-              : 'text-gray-500 hover:text-gray-700'
+              ? tc('bg-white text-blue-600 shadow-sm font-medium', 'bg-slate-600 text-blue-400 shadow-sm font-medium')
+              : tc('text-gray-500 hover:text-gray-700', 'text-slate-400 hover:text-slate-300')
           }`}
         >
           中文
@@ -53,32 +66,66 @@ const HamoPro = () => {
     </div>
   );
 
-  // Hamo Logo SVG Component (Light theme, no text)
-  const HamoLogo = ({ size = 40, className = "" }) => (
-    <svg width={size} height={size} viewBox="0 0 512 512" className={className}>
-      <defs>
-        <mask id="hamo-smile-mask">
-          <rect x="0" y="0" width="512" height="512" fill="white"/>
-          <rect x="226" y="375" width="8" height="80" fill="black"/>
-          <rect x="280" y="375" width="8" height="80" fill="black"/>
-        </mask>
-      </defs>
-      {/* H: eyes (dot 1,2) */}
-      <circle cx="192" cy="125" r="40" fill="#002D72"/>
-      <circle cx="320" cy="125" r="40" fill="#002D72"/>
-      {/* A: nose dot */}
-      <circle cx="256" cy="205" r="12" fill="#002D72"/>
-      {/* H: ear dots (dot 3,4) + A: dash */}
-      <circle cx="88" cy="260" r="22" fill="#002D72"/>
-      <rect x="130" y="236" width="252" height="48" rx="14" fill="#002D72"/>
-      <circle cx="424" cy="260" r="22" fill="#002D72"/>
-      {/* M: 2 dashes */}
-      <rect x="152" y="318" width="96" height="40" rx="12" fill="#3572C6"/>
-      <rect x="264" y="318" width="96" height="40" rx="12" fill="#3572C6"/>
-      {/* O: 3-segment smile */}
-      <path d="M172,394 Q256,456 340,394 Z" fill="#74B3E8" mask="url(#hamo-smile-mask)"/>
-    </svg>
+  // Theme toggle component
+  const ThemeToggle = ({ className = "" }) => (
+    <div className={`flex items-center space-x-2 ${className}`}>
+      {isDark ? <Moon className={`w-4 h-4 ${tc('text-gray-500', 'text-slate-400')}`} /> : <Sun className={`w-4 h-4 ${tc('text-gray-500', 'text-amber-500')}`} />}
+      <div className={`flex rounded-lg p-0.5 ${tc('bg-gray-100', 'bg-slate-700')}`}>
+        <button
+          onClick={() => setTheme('light')}
+          className={`px-2 py-1 text-xs rounded-md transition-colors ${
+            theme === 'light'
+              ? tc('bg-white text-amber-600 shadow-sm font-medium', 'bg-slate-600 text-amber-400 shadow-sm font-medium')
+              : tc('text-gray-500 hover:text-gray-700', 'text-slate-400 hover:text-slate-300')
+          }`}
+        >
+          {t('lightMode')}
+        </button>
+        <button
+          onClick={() => setTheme('dark')}
+          className={`px-2 py-1 text-xs rounded-md transition-colors ${
+            theme === 'dark'
+              ? tc('bg-white text-blue-600 shadow-sm font-medium', 'bg-slate-600 text-blue-400 shadow-sm font-medium')
+              : tc('text-gray-500 hover:text-gray-700', 'text-slate-400 hover:text-slate-300')
+          }`}
+        >
+          {t('darkMode')}
+        </button>
+      </div>
+    </div>
   );
+
+  // Hamo Logo SVG Component (theme-aware)
+  const HamoLogo = ({ size = 40, className = "" }) => {
+    const c = isDark
+      ? { primary: '#3B82F6', secondary: '#60A5FA', tertiary: '#93C5FD' }
+      : { primary: '#002D72', secondary: '#3572C6', tertiary: '#74B3E8' };
+    return (
+      <svg width={size} height={size} viewBox="0 0 512 512" className={className}>
+        <defs>
+          <mask id="hamo-smile-mask">
+            <rect x="0" y="0" width="512" height="512" fill="white"/>
+            <rect x="226" y="375" width="8" height="80" fill="black"/>
+            <rect x="280" y="375" width="8" height="80" fill="black"/>
+          </mask>
+        </defs>
+        {/* H: eyes (dot 1,2) */}
+        <circle cx="192" cy="125" r="40" fill={c.primary}/>
+        <circle cx="320" cy="125" r="40" fill={c.primary}/>
+        {/* A: nose dot */}
+        <circle cx="256" cy="205" r="12" fill={c.primary}/>
+        {/* H: ear dots (dot 3,4) + A: dash */}
+        <circle cx="88" cy="260" r="22" fill={c.primary}/>
+        <rect x="130" y="236" width="252" height="48" rx="14" fill={c.primary}/>
+        <circle cx="424" cy="260" r="22" fill={c.primary}/>
+        {/* M: 2 dashes */}
+        <rect x="152" y="318" width="96" height="40" rx="12" fill={c.secondary}/>
+        <rect x="264" y="318" width="96" height="40" rx="12" fill={c.secondary}/>
+        {/* O: 3-segment smile */}
+        <path d="M172,394 Q256,456 340,394 Z" fill={c.tertiary} mask="url(#hamo-smile-mask)"/>
+      </svg>
+    );
+  };
 
   // Contributors list
   const contributors = ['Chris Cheng', 'Anthropic Claude', 'Kerwin Du', 'Amy Chan'];
@@ -1551,38 +1598,39 @@ const HamoPro = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-teal-50 flex items-center justify-center px-4">
+      <div className={`min-h-screen flex items-center justify-center px-4 ${tc('bg-gradient-to-br from-blue-50 to-teal-50', 'bg-slate-900')}`}>
         <div className="max-w-md w-full">
-          <div className="bg-white rounded-2xl shadow-xl p-8">
+          <div className={`rounded-2xl shadow-xl p-8 ${tc('bg-white', 'bg-slate-800')}`}>
             {/* Language Toggle */}
-            <div className="flex justify-end mb-4">
+            <div className="flex justify-end mb-4 space-x-3">
+              <ThemeToggle />
               <LanguageToggle />
             </div>
 
             <div className="flex items-center justify-center mb-6">
               <HamoLogo size={72} />
             </div>
-            <h1 className="text-3xl font-bold text-center text-gray-900 mb-2">{t('appName')}</h1>
-            <p className="text-center text-gray-500 mb-8 text-sm">{t('tagline')}</p>
+            <h1 className={`text-3xl font-bold text-center mb-2 ${tc('text-gray-900', 'text-white')}`}>{t('appName')}</h1>
+            <p className={`text-center mb-8 text-sm ${tc('text-gray-500', 'text-slate-400')}`}>{t('tagline')}</p>
 
             <div className="flex space-x-2 mb-6">
               <button
                 onClick={() => { setAuthMode('signin'); setAuthError(''); }}
-                className={`flex-1 py-2 rounded-lg font-medium ${authMode === 'signin' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'}`}
+                className={`flex-1 py-2 rounded-lg font-medium ${authMode === 'signin' ? 'bg-blue-500 text-white' : tc('bg-gray-100 text-gray-600', 'bg-slate-700 text-slate-300')}`}
               >
                 {t('signIn')}
               </button>
               <button
                 onClick={() => { setAuthMode('signup'); setAuthError(''); }}
-                className={`flex-1 py-2 rounded-lg font-medium ${authMode === 'signup' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'}`}
+                className={`flex-1 py-2 rounded-lg font-medium ${authMode === 'signup' ? 'bg-blue-500 text-white' : tc('bg-gray-100 text-gray-600', 'bg-slate-700 text-slate-300')}`}
               >
                 {t('signUp')}
               </button>
             </div>
 
             {authError && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-600">{authError}</p>
+              <div className={`mb-4 p-3 rounded-lg ${tc('bg-red-50 border border-red-200', 'bg-red-900/20 border border-red-800')}`}>
+                <p className={`text-sm ${tc('text-red-600', 'text-red-400')}`}>{authError}</p>
               </div>
             )}
 
@@ -1590,22 +1638,22 @@ const HamoPro = () => {
               {authMode === 'signup' && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('fullName')}</label>
+                    <label className={`block text-sm font-medium mb-1 ${tc('text-gray-700', 'text-slate-300')}`}>{t('fullName')}</label>
                     <input
                       type="text"
                       value={authForm.fullName}
                       onChange={(e) => setAuthForm({ ...authForm, fullName: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${tc('border-gray-300 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white placeholder-slate-500')}`}
                       placeholder={t('namePlaceholder')}
                       disabled={authLoading}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('profession')}</label>
+                    <label className={`block text-sm font-medium mb-1 ${tc('text-gray-700', 'text-slate-300')}`}>{t('profession')}</label>
                     <select
                       value={authForm.profession}
                       onChange={(e) => setAuthForm({ ...authForm, profession: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${tc('border-gray-300 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')}`}
                       disabled={authLoading}
                     >
                       <option value="">{t('selectProfession')}</option>
@@ -1619,23 +1667,23 @@ const HamoPro = () => {
                 </>
               )}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('email')}</label>
+                <label className={`block text-sm font-medium mb-1 ${tc('text-gray-700', 'text-slate-300')}`}>{t('email')}</label>
                 <input
                   type="email"
                   value={authForm.email}
                   onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${tc('border-gray-300 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white placeholder-slate-500')}`}
                   placeholder={t('emailPlaceholder')}
                   disabled={authLoading}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('password')}</label>
+                <label className={`block text-sm font-medium mb-1 ${tc('text-gray-700', 'text-slate-300')}`}>{t('password')}</label>
                 <input
                   type="password"
                   value={authForm.password}
                   onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${tc('border-gray-300 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white placeholder-slate-500')}`}
                   placeholder="••••••••"
                   disabled={authLoading}
                 />
@@ -1649,7 +1697,7 @@ const HamoPro = () => {
               </button>
             </div>
 
-            <div className="text-center mt-6 text-xs text-gray-400">
+            <div className={`text-center mt-6 text-xs ${tc('text-gray-400', 'text-slate-500')}`}>
               {t('version')} {APP_VERSION}
             </div>
           </div>
@@ -1659,51 +1707,51 @@ const HamoPro = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-teal-50">
-      <div className="bg-white shadow-sm border-b border-gray-200">
+    <div className={`min-h-screen ${tc('bg-gradient-to-br from-blue-50 to-teal-50', 'bg-slate-900')}`}>
+      <div className={`shadow-sm border-b ${tc('bg-white border-gray-200', 'bg-slate-800 border-slate-700')}`}>
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <HamoLogo size={40} />
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">{t('appName')}</h1>
-                <p className="text-sm text-gray-500">{t('tagline')}</p>
+                <h1 className={`text-2xl font-bold ${tc('text-gray-900', 'text-white')}`}>{t('appName')}</h1>
+                <p className={`text-sm ${tc('text-gray-500', 'text-slate-400')}`}>{t('tagline')}</p>
               </div>
             </div>
             <div className="text-right">
-              <div className="flex items-center space-x-2 text-sm font-medium"><span>{currentUser?.full_name || currentUser?.fullName}</span></div>
-              <p className="text-xs text-gray-500">{getProfessionLabel(currentUser?.profession)}</p>
+              <div className={`flex items-center space-x-2 text-sm font-medium ${tc('', 'text-white')}`}><span>{currentUser?.full_name || currentUser?.fullName}</span></div>
+              <p className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>{getProfessionLabel(currentUser?.profession)}</p>
             </div>
           </div>
         </div>
       </div>
 
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full">
-            <h3 className="text-lg font-semibold mb-2">{t('deleteConfirmTitle')}</h3>
-            <p className="text-gray-600 mb-6">{t('deleteConfirmMessage')}</p>
+        <div className={`fixed inset-0 flex items-center justify-center z-50 px-4 ${tc('bg-black bg-opacity-50', 'bg-black bg-opacity-70')}`}>
+          <div className={`rounded-xl shadow-2xl p-6 max-w-md w-full ${tc('bg-white', 'bg-slate-800')}`}>
+            <h3 className={`text-lg font-semibold mb-2 ${tc('', 'text-white')}`}>{t('deleteConfirmTitle')}</h3>
+            <p className={`mb-6 ${tc('text-gray-600', 'text-slate-400')}`}>{t('deleteConfirmMessage')}</p>
             <div className="flex space-x-3">
               <button onClick={handleDeleteAccount} className="flex-1 bg-red-500 text-white px-4 py-2 rounded-lg">{t('confirmDelete')}</button>
-              <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 bg-gray-200 px-4 py-2 rounded-lg">{t('cancel')}</button>
+              <button onClick={() => setShowDeleteConfirm(false)} className={`flex-1 px-4 py-2 rounded-lg ${tc('bg-gray-200', 'bg-slate-700 text-slate-300')}`}>{t('cancel')}</button>
             </div>
           </div>
         </div>
       )}
 
       {showInvitationCard && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
-          <div className="bg-gradient-to-br from-blue-500 to-teal-500 rounded-2xl p-1 shadow-2xl">
-            <div id="invitation-card-content" className="bg-white rounded-2xl p-8 w-80">
+        <div className={`fixed inset-0 flex items-center justify-center z-50 px-4 ${tc('bg-black bg-opacity-50', 'bg-black bg-opacity-70')}`}>
+          <div className={`rounded-2xl p-1 shadow-2xl ${tc('bg-gradient-to-br from-blue-500 to-teal-500', 'bg-gradient-to-br from-blue-600 to-cyan-600')}`}>
+            <div id="invitation-card-content" className={`rounded-2xl p-8 w-80 ${tc('bg-white', 'bg-slate-800')}`}>
               <div className="text-center">
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-teal-500 rounded-xl flex items-center justify-center mx-auto mb-4">
                   <Ticket className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1">{t('invitationCode')}</h3>
-                <p className="text-sm text-blue-500 mb-6">Hamo Pro</p>
+                <h3 className={`text-xl font-bold mb-1 ${tc('text-gray-900', 'text-white')}`}>{t('invitationCode')}</h3>
+                <p className={`text-sm mb-6 ${tc('text-blue-500', 'text-blue-400')}`}>Hamo Pro</p>
 
-                <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                  <p className="text-3xl font-bold font-mono text-gray-900 tracking-wider">{invitationCode}</p>
+                <div className={`rounded-xl p-4 mb-4 ${tc('bg-gray-50', 'bg-slate-900')}`}>
+                  <p className={`text-3xl font-bold font-mono tracking-wider ${tc('text-gray-900', 'text-white')}`}>{invitationCode}</p>
                 </div>
 
                 <div className="flex items-center justify-center space-x-2 text-orange-500 mb-6">
@@ -1711,20 +1759,20 @@ const HamoPro = () => {
                   <span className="text-sm font-medium">{t('expiresIn')}</span>
                 </div>
 
-                <div className="border-t border-gray-200 pt-4 mb-6">
+                <div className={`border-t pt-4 mb-6 ${tc('border-gray-200', 'border-slate-700')}`}>
                   <div className="mb-3">
-                    <p className="text-xs text-gray-500">{language === 'zh' ? '来访者' : 'Client'}</p>
-                    <p className="font-semibold text-gray-900">{showInvitationCard.name}</p>
+                    <p className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>{language === 'zh' ? '来访者' : 'Client'}</p>
+                    <p className={`font-semibold ${tc('text-gray-900', 'text-white')}`}>{showInvitationCard.name}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500">AI Avatar</p>
-                    <p className="font-semibold text-gray-900">
+                    <p className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>AI Avatar</p>
+                    <p className={`font-semibold ${tc('text-gray-900', 'text-white')}`}>
                       {avatars.find(a => String(a.id) === String(showInvitationCard.avatarId) || String(a.id) === String(showInvitationCard.avatar_id))?.name || (language === 'zh' ? '未知' : 'Unknown')}
                     </p>
                   </div>
                 </div>
 
-                <p className="text-sm text-blue-500 font-medium mb-6">{language === 'zh' ? '访问 client.hamo.ai 注册，输入邀请码' : 'Visit client.hamo.ai to register and enter code'}</p>
+                <p className={`text-sm font-medium mb-6 ${tc('text-blue-500', 'text-blue-400')}`}>{language === 'zh' ? '访问 client.hamo.ai 注册，输入邀请码' : 'Visit client.hamo.ai to register and enter code'}</p>
               </div>
 
               <div className="flex space-x-3">
@@ -1737,7 +1785,7 @@ const HamoPro = () => {
                 </button>
                 <button
                   onClick={() => setShowInvitationCard(null)}
-                  className="flex-1 bg-gray-200 text-gray-700 px-4 py-3 rounded-lg font-medium hover:bg-gray-300"
+                  className={`flex-1 px-4 py-3 rounded-lg font-medium ${tc('bg-gray-200 text-gray-700 hover:bg-gray-300', 'bg-slate-700 text-slate-300 hover:bg-slate-600')}`}
                 >
                   {t('done')}
                 </button>
@@ -1751,39 +1799,39 @@ const HamoPro = () => {
         {activeTab === 'avatars' && (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">{t('avatarTherapists')}</h2>
+              <h2 className={`text-xl font-semibold ${tc('', 'text-white')}`}>{t('avatarTherapists')}</h2>
               <button onClick={() => setShowAvatarForm(!showAvatarForm)} className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-lg"><Plus className="w-5 h-5" /><span>{t('createAvatar')}</span></button>
             </div>
             {showAvatarForm && (
-              <div className="bg-white rounded-xl shadow-md p-6">
-                <h3 className="text-lg font-semibold mb-5">{t('createAvatar')}</h3>
+              <div className={`${tc('bg-white', 'bg-slate-800')} rounded-xl ${tc('shadow-md', 'shadow-lg shadow-black/20')} p-6`}>
+                <h3 className={`text-lg font-semibold mb-5 ${tc('', 'text-white')}`}>{t('createAvatar')}</h3>
 
                 <div className="space-y-4">
                   {/* Section 1: Basic Identity - Blue tint */}
-                  <div className="bg-blue-50/70 rounded-xl p-4 space-y-4">
+                  <div className={`${tc('bg-blue-50/70', 'bg-blue-900/20')} rounded-xl p-4 space-y-4`}>
                     <div className="flex items-center space-x-2 mb-2">
                       <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
                         <User className="w-3.5 h-3.5 text-white" />
                       </div>
-                      <span className="text-sm font-semibold text-blue-700">{t('basicInfo')}</span>
+                      <span className={`text-sm font-semibold ${tc('text-blue-700', 'text-blue-300')}`}>{t('basicInfo')}</span>
                     </div>
 
                     {/* Avatar Name + Picture */}
                     <div className="flex items-start space-x-4">
                       <div className="flex-1">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('avatarName')} <span className="text-red-500">*</span></label>
+                        <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('avatarName')} <span className="text-red-500">*</span></label>
                         <input
                           type="text"
                           value={avatarForm.name}
                           onChange={(e) => setAvatarForm({ ...avatarForm, name: e.target.value })}
-                          className="w-full px-4 py-2.5 border border-blue-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all"
+                          className={`w-full px-4 py-2.5 border ${tc('border-blue-200 bg-white text-gray-900', 'border-blue-800 bg-slate-900 text-white')} rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all`}
                           placeholder={language === 'zh' ? '例如：陈医生' : 'e.g., Dr. Emily Chen'}
                         />
                       </div>
                       <div className="flex flex-col items-center">
                         <div
                           onClick={() => avatarPictureInputRef.current?.click()}
-                          className="w-20 h-20 rounded-full border-2 border-dashed border-blue-300 flex items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all overflow-hidden"
+                          className={`w-20 h-20 rounded-full border-2 border-dashed ${tc('border-blue-300 hover:border-blue-500 hover:bg-blue-50', 'border-blue-600 hover:border-blue-400 hover:bg-blue-900/30')} flex items-center justify-center cursor-pointer transition-all overflow-hidden`}
                         >
                           {avatarPicturePreview ? (
                             <img src={avatarPicturePreview} alt="" className="w-full h-full object-cover" />
@@ -1804,11 +1852,11 @@ const HamoPro = () => {
 
                     {/* Specialty */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('specialty')} <span className="text-red-500">*</span></label>
+                      <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('specialty')} <span className="text-red-500">*</span></label>
                       <select
                         value={avatarForm.specialty}
                         onChange={(e) => setAvatarForm({ ...avatarForm, specialty: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-blue-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all"
+                        className={`w-full px-4 py-2.5 border ${tc('border-blue-200 bg-white text-gray-900', 'border-blue-800 bg-slate-900 text-white')} rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all`}
                       >
                         <option value="">{t('selectSpecialty')}</option>
                         {getSpecialtyOptions().map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
@@ -1819,7 +1867,7 @@ const HamoPro = () => {
                           type="text"
                           value={avatarForm.customSpecialty}
                           onChange={(e) => setAvatarForm({ ...avatarForm, customSpecialty: e.target.value })}
-                          className="w-full px-4 py-2.5 border border-blue-200 rounded-lg bg-white mt-2 focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all"
+                          className={`w-full px-4 py-2.5 border ${tc('border-blue-200 bg-white text-gray-900', 'border-blue-800 bg-slate-900 text-white')} rounded-lg mt-2 focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all`}
                           placeholder={language === 'zh' ? '输入自定义专业领域' : 'Enter custom specialty'}
                         />
                       )}
@@ -1827,13 +1875,13 @@ const HamoPro = () => {
                   </div>
 
                   {/* Section 2: Therapeutic Approach - Teal tint */}
-                  <div className="bg-teal-50/70 rounded-xl p-4">
+                  <div className={`${tc('bg-teal-50/70', 'bg-teal-900/20')} rounded-xl p-4`}>
                     <div className="flex items-center space-x-2 mb-3">
                       <div className="w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center">
                         <Brain className="w-3.5 h-3.5 text-white" />
                       </div>
-                      <span className="text-sm font-semibold text-teal-700">{t('therapeuticApproaches')}</span>
-                      <span className="text-xs text-teal-500 ml-1">{language === 'zh' ? '（选择1-3项）' : '(Select 1-3)'}</span>
+                      <span className={`text-sm font-semibold ${tc('text-teal-700', 'text-teal-300')}`}>{t('therapeuticApproaches')}</span>
+                      <span className={`text-xs ${tc('text-teal-500', 'text-teal-400')} ml-1`}>{language === 'zh' ? '（选择1-3项）' : '(Select 1-3)'}</span>
                     </div>
 
                     <div className="flex flex-wrap gap-2 mb-3">
@@ -1848,7 +1896,7 @@ const HamoPro = () => {
                               setAvatarForm({ ...avatarForm, therapeuticApproaches: [...avatarForm.therapeuticApproaches, opt.value] });
                             }
                           }}
-                          className={`px-3 py-1.5 text-sm rounded-full border transition-all ${avatarForm.therapeuticApproaches.includes(opt.value) ? 'bg-teal-500 text-white border-teal-500 shadow-sm' : 'bg-white text-gray-600 border-teal-200 hover:border-teal-400 hover:bg-teal-50'}`}
+                          className={`px-3 py-1.5 text-sm rounded-full border transition-all ${avatarForm.therapeuticApproaches.includes(opt.value) ? 'bg-teal-500 text-white border-teal-500 shadow-sm' : tc('bg-white text-gray-600 border-teal-200 hover:border-teal-400 hover:bg-teal-50', 'bg-slate-800 text-slate-300 border-teal-700 hover:border-teal-500 hover:bg-teal-900/30')}`}
                         >
                           {opt.label}
                         </button>
@@ -1858,56 +1906,56 @@ const HamoPro = () => {
                       type="text"
                       value={avatarForm.customApproach}
                       onChange={(e) => setAvatarForm({ ...avatarForm, customApproach: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-teal-200 rounded-lg bg-white focus:ring-2 focus:ring-teal-300 focus:border-teal-300 transition-all"
+                      className={`w-full px-4 py-2.5 border ${tc('border-teal-200 bg-white text-gray-900', 'border-teal-800 bg-slate-900 text-white')} rounded-lg focus:ring-2 focus:ring-teal-300 focus:border-teal-300 transition-all`}
                       placeholder={language === 'zh' ? '或添加自定义方法' : 'Or add custom approach'}
                     />
                   </div>
 
                   {/* Section 3: About - Purple tint */}
-                  <div className="bg-purple-50/70 rounded-xl p-4">
+                  <div className={`${tc('bg-purple-50/70', 'bg-purple-900/20')} rounded-xl p-4`}>
                     <div className="flex items-center space-x-2 mb-3">
                       <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
                         <MessageSquare className="w-3.5 h-3.5 text-white" />
                       </div>
-                      <span className="text-sm font-semibold text-purple-700">{t('about')}</span>
+                      <span className={`text-sm font-semibold ${tc('text-purple-700', 'text-purple-300')}`}>{t('about')}</span>
                     </div>
 
                     <textarea
                       value={avatarForm.about}
                       onChange={(e) => setAvatarForm({ ...avatarForm, about: e.target.value.slice(0, 280) })}
-                      className="w-full px-4 py-2.5 border border-purple-200 rounded-lg bg-white focus:ring-2 focus:ring-purple-300 focus:border-purple-300 transition-all resize-none"
+                      className={`w-full px-4 py-2.5 border ${tc('border-purple-200 bg-white text-gray-900', 'border-purple-800 bg-slate-900 text-white')} rounded-lg focus:ring-2 focus:ring-purple-300 focus:border-purple-300 transition-all resize-none`}
                       rows="3"
                       placeholder={language === 'zh' ? '描述形象的专业知识和方法...' : "Describe the avatar's expertise and approach..."}
                     />
-                    <p className="text-xs text-purple-400 mt-1.5">{avatarForm.about.length}/280 {language === 'zh' ? '字符' : 'characters'}</p>
+                    <p className={`text-xs ${tc('text-purple-400', 'text-purple-500')} mt-1.5`}>{avatarForm.about.length}/280 {language === 'zh' ? '字符' : 'characters'}</p>
                   </div>
 
                   {/* Section 4: Experience - Amber tint */}
-                  <div className="bg-amber-50/70 rounded-xl p-4">
+                  <div className={`${tc('bg-amber-50/70', 'bg-amber-900/20')} rounded-xl p-4`}>
                     <div className="flex items-center space-x-2 mb-3">
                       <div className="w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center">
                         <Briefcase className="w-3.5 h-3.5 text-white" />
                       </div>
-                      <span className="text-sm font-semibold text-amber-700">{t('experience')}</span>
+                      <span className={`text-sm font-semibold ${tc('text-amber-700', 'text-amber-300')}`}>{t('experience')}</span>
                     </div>
 
                     <div className="flex space-x-4">
                       <div className="flex-1">
-                        <label className="block text-xs text-amber-600 mb-1">{t('years')}</label>
+                        <label className={`block text-xs ${tc('text-amber-600', 'text-amber-400')} mb-1`}>{t('years')}</label>
                         <select
                           value={avatarForm.experienceYears}
                           onChange={(e) => setAvatarForm({ ...avatarForm, experienceYears: parseInt(e.target.value) })}
-                          className="w-full px-4 py-2.5 border border-amber-200 rounded-lg bg-white focus:ring-2 focus:ring-amber-300 focus:border-amber-300 transition-all"
+                          className={`w-full px-4 py-2.5 border ${tc('border-amber-200 bg-white text-gray-900', 'border-amber-800 bg-slate-900 text-white')} rounded-lg focus:ring-2 focus:ring-amber-300 focus:border-amber-300 transition-all`}
                         >
                           {[...Array(51)].map((_, i) => <option key={i} value={i}>{i} {language === 'zh' ? '年' : (i === 1 ? 'year' : 'years')}</option>)}
                         </select>
                       </div>
                       <div className="flex-1">
-                        <label className="block text-xs text-amber-600 mb-1">{t('months')}</label>
+                        <label className={`block text-xs ${tc('text-amber-600', 'text-amber-400')} mb-1`}>{t('months')}</label>
                         <select
                           value={avatarForm.experienceMonths}
                           onChange={(e) => setAvatarForm({ ...avatarForm, experienceMonths: parseInt(e.target.value) })}
-                          className="w-full px-4 py-2.5 border border-amber-200 rounded-lg bg-white focus:ring-2 focus:ring-amber-300 focus:border-amber-300 transition-all"
+                          className={`w-full px-4 py-2.5 border ${tc('border-amber-200 bg-white text-gray-900', 'border-amber-800 bg-slate-900 text-white')} rounded-lg focus:ring-2 focus:ring-amber-300 focus:border-amber-300 transition-all`}
                         >
                           {[...Array(12)].map((_, i) => <option key={i} value={i}>{i} {language === 'zh' ? '月' : (i === 1 ? 'month' : 'months')}</option>)}
                         </select>
@@ -1917,9 +1965,9 @@ const HamoPro = () => {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex space-x-3 mt-6 pt-4 border-t border-gray-100">
-                  <button onClick={handleCreateAvatar} className="flex-1 bg-gradient-to-r from-blue-500 to-teal-500 text-white px-6 py-2.5 rounded-lg font-medium hover:from-blue-600 hover:to-teal-600 transition-all shadow-sm">{t('createAvatar')}</button>
-                  <button onClick={() => setShowAvatarForm(false)} className="px-6 py-2.5 bg-gray-100 text-gray-600 rounded-lg font-medium hover:bg-gray-200 transition-all">{t('cancel')}</button>
+                <div className={`flex space-x-3 mt-6 pt-4 border-t ${tc('border-gray-100', 'border-slate-700')}`}>
+                  <button onClick={handleCreateAvatar} className={`flex-1 bg-gradient-to-r ${tc('from-blue-500 to-teal-500', 'from-blue-600 to-cyan-600')} text-white px-6 py-2.5 rounded-lg font-medium hover:from-blue-600 hover:to-teal-600 transition-all shadow-sm`}>{t('createAvatar')}</button>
+                  <button onClick={() => setShowAvatarForm(false)} className={`px-6 py-2.5 ${tc('bg-gray-100 text-gray-600 hover:bg-gray-200', 'bg-slate-700 text-slate-300 hover:bg-slate-600')} rounded-lg font-medium transition-all`}>{t('cancel')}</button>
                 </div>
               </div>
             )}
@@ -1929,14 +1977,14 @@ const HamoPro = () => {
                 <div
                   key={a.id}
                   onClick={() => setSelectedAvatar(a)}
-                  className="bg-white rounded-xl shadow-sm p-4 cursor-pointer hover:shadow-md transition-shadow"
+                  className={`${tc('bg-white', 'bg-slate-800')} rounded-xl ${tc('shadow-sm hover:shadow-md', 'shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30')} p-4 cursor-pointer transition-shadow`}
                 >
                   <div className="flex items-start space-x-4">
                     {/* Avatar Icon */}
                     {a.avatarPicture ? (
                       <img src={a.avatarPicture} alt={a.name} className="w-16 h-16 rounded-full object-cover flex-shrink-0" />
                     ) : (
-                      <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-teal-400 rounded-full flex items-center justify-center flex-shrink-0">
+                      <div className={`w-16 h-16 bg-gradient-to-br ${tc('from-blue-400 to-teal-400', 'from-blue-500 to-cyan-500')} rounded-full flex items-center justify-center flex-shrink-0`}>
                         <Brain className="w-8 h-8 text-white" />
                       </div>
                     )}
@@ -1945,22 +1993,22 @@ const HamoPro = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between">
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-900">{a.name}</h3>
-                          <p className="text-sm text-blue-600">{getSpecialtyLabel(a.specialty) || a.specialty || a.theory}</p>
+                          <h3 className={`text-lg font-semibold ${tc('text-gray-900', 'text-white')}`}>{a.name}</h3>
+                          <p className={`text-sm ${tc('text-blue-600', 'text-blue-400')}`}>{getSpecialtyLabel(a.specialty) || a.specialty || a.theory}</p>
                         </div>
                         <div className="flex items-center space-x-1">
-                          <Heart className={`w-4 h-4 ${a.likeCount > 0 ? 'text-gray-400 fill-current' : 'text-gray-300'}`} />
-                          <span className="text-sm font-medium text-gray-500">{a.likeCount || 0}</span>
+                          <Heart className={`w-4 h-4 ${a.likeCount > 0 ? tc('text-gray-400 fill-current', 'text-slate-500 fill-current') : tc('text-gray-300', 'text-slate-600')}`} />
+                          <span className={`text-sm font-medium ${tc('text-gray-500', 'text-slate-400')}`}>{a.likeCount || 0}</span>
                         </div>
                       </div>
 
                       {/* Therapeutic Approaches */}
                       {a.therapeuticApproaches && a.therapeuticApproaches.length > 0 && (
-                        <p className="text-sm text-gray-600 mt-1">{a.therapeuticApproaches.map(ap => getApproachLabel(ap)).join(' • ')}</p>
+                        <p className={`text-sm ${tc('text-gray-600', 'text-slate-400')} mt-1`}>{a.therapeuticApproaches.map(ap => getApproachLabel(ap)).join(' • ')}</p>
                       )}
 
                       {/* Stats Row */}
-                      <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                      <div className={`flex items-center space-x-4 mt-2 text-sm ${tc('text-gray-500', 'text-slate-400')}`}>
                         {(a.experienceYears !== undefined || a.experienceMonths !== undefined) && (
                           <div className="flex items-center space-x-1">
                             <Briefcase className="w-4 h-4" />
@@ -1977,10 +2025,10 @@ const HamoPro = () => {
 
             {/* Avatar Detail Popup */}
             {selectedAvatar && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
-                <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+              <div className={`fixed inset-0 ${tc('bg-black bg-opacity-50', 'bg-black bg-opacity-70')} flex items-center justify-center z-50 px-4`}>
+                <div className={`${tc('bg-white', 'bg-slate-800')} rounded-2xl ${tc('shadow-2xl', 'shadow-2xl shadow-black/40')} max-w-md w-full max-h-[90vh] overflow-y-auto`}>
                   {/* Header with gradient background */}
-                  <div className="bg-gradient-to-br from-blue-500 to-teal-500 p-6 rounded-t-2xl relative">
+                  <div className={`bg-gradient-to-br ${tc('from-blue-500 to-teal-500', 'from-blue-600 to-cyan-600')} p-6 rounded-t-2xl relative`}>
                     <button
                       onClick={() => setSelectedAvatar(null)}
                       className="absolute top-4 right-4 text-white hover:bg-white/20 p-1 rounded-full transition-colors"
@@ -2012,26 +2060,26 @@ const HamoPro = () => {
                     {/* Therapeutic Approaches */}
                     {selectedAvatar.therapeuticApproaches && selectedAvatar.therapeuticApproaches.length > 0 && (
                       <div>
-                        <h4 className="text-sm font-medium text-gray-500 mb-2">{t('therapeuticApproaches')}</h4>
-                        <p className="text-gray-800">{selectedAvatar.therapeuticApproaches.map(ap => getApproachLabel(ap)).join(' • ')}</p>
+                        <h4 className={`text-sm font-medium ${tc('text-gray-500', 'text-slate-400')} mb-2`}>{t('therapeuticApproaches')}</h4>
+                        <p className={tc('text-gray-800', 'text-white')}>{selectedAvatar.therapeuticApproaches.map(ap => getApproachLabel(ap)).join(' • ')}</p>
                       </div>
                     )}
 
                     {/* About */}
                     {selectedAvatar.about && (
                       <div>
-                        <h4 className="text-sm font-medium text-gray-500 mb-2">About</h4>
-                        <p className="text-gray-700 text-sm leading-relaxed">{selectedAvatar.about}</p>
+                        <h4 className={`text-sm font-medium ${tc('text-gray-500', 'text-slate-400')} mb-2`}>About</h4>
+                        <p className={`${tc('text-gray-700', 'text-slate-300')} text-sm leading-relaxed`}>{selectedAvatar.about}</p>
                       </div>
                     )}
 
                     {/* Experience */}
                     {(selectedAvatar.experienceYears !== undefined || selectedAvatar.experienceMonths !== undefined) && (
                       <div>
-                        <h4 className="text-sm font-medium text-gray-500 mb-2">Experience</h4>
+                        <h4 className={`text-sm font-medium ${tc('text-gray-500', 'text-slate-400')} mb-2`}>Experience</h4>
                         <div className="flex items-center space-x-2">
                           <Briefcase className="w-5 h-5 text-blue-500" />
-                          <span className="text-gray-800 font-medium">
+                          <span className={`${tc('text-gray-800', 'text-white')} font-medium`}>
                             {selectedAvatar.experienceYears || 0} years {selectedAvatar.experienceMonths || 0} months
                           </span>
                         </div>
@@ -2050,7 +2098,7 @@ const HamoPro = () => {
                     </button>
                     <button
                       onClick={() => setSelectedAvatar(null)}
-                      className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-medium hover:bg-gray-200 transition-colors"
+                      className={`flex-1 ${tc('bg-gray-100 text-gray-700 hover:bg-gray-200', 'bg-slate-700 text-slate-300 hover:bg-slate-600')} py-3 rounded-xl font-medium transition-colors`}
                     >
                       Close
                     </button>
@@ -2061,11 +2109,11 @@ const HamoPro = () => {
 
             {/* Edit Avatar Form Modal */}
             {editingAvatar && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
-                <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+              <div className={`fixed inset-0 ${tc('bg-black bg-opacity-50', 'bg-black bg-opacity-70')} flex items-center justify-center z-50 px-4`}>
+                <div className={`${tc('bg-white', 'bg-slate-800')} rounded-xl ${tc('shadow-2xl', 'shadow-2xl shadow-black/40')} max-w-lg w-full max-h-[90vh] overflow-y-auto`}>
                   <div className="p-6">
                     <div className="flex justify-between items-center mb-5">
-                      <h3 className="text-lg font-semibold">{t('editAvatar')}</h3>
+                      <h3 className={`text-lg font-semibold ${tc('', 'text-white')}`}>{t('editAvatar')}</h3>
                       <button
                         onClick={() => {
                           setEditingAvatar(null);
@@ -2082,7 +2130,7 @@ const HamoPro = () => {
                             experienceMonths: 0,
                           });
                         }}
-                        className="text-gray-400 hover:text-gray-600"
+                        className={tc('text-gray-400 hover:text-gray-600', 'text-slate-500 hover:text-slate-300')}
                       >
                         <X className="w-6 h-6" />
                       </button>
@@ -2090,30 +2138,30 @@ const HamoPro = () => {
 
                     <div className="space-y-4">
                       {/* Section 1: Basic Identity - Blue tint */}
-                      <div className="bg-blue-50/70 rounded-xl p-4 space-y-4">
+                      <div className={`${tc('bg-blue-50/70', 'bg-blue-900/20')} rounded-xl p-4 space-y-4`}>
                         <div className="flex items-center space-x-2 mb-2">
                           <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
                             <User className="w-3.5 h-3.5 text-white" />
                           </div>
-                          <span className="text-sm font-semibold text-blue-700">{t('basicInfo')}</span>
+                          <span className={`text-sm font-semibold ${tc('text-blue-700', 'text-blue-300')}`}>{t('basicInfo')}</span>
                         </div>
 
                         {/* Avatar Name + Picture */}
                         <div className="flex items-start space-x-4">
                           <div className="flex-1">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">{t('avatarName')} <span className="text-red-500">*</span></label>
+                            <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('avatarName')} <span className="text-red-500">*</span></label>
                             <input
                               type="text"
                               value={avatarForm.name}
                               onChange={(e) => setAvatarForm({ ...avatarForm, name: e.target.value })}
-                              className="w-full px-4 py-2.5 border border-blue-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all"
+                              className={`w-full px-4 py-2.5 border ${tc('border-blue-200 bg-white text-gray-900', 'border-blue-800 bg-slate-900 text-white')} rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all`}
                               placeholder={language === 'zh' ? '例如：陈医生' : 'e.g., Dr. Emily Chen'}
                             />
                           </div>
                           <div className="flex flex-col items-center">
                             <div
                               onClick={() => avatarPictureInputRef.current?.click()}
-                              className="w-20 h-20 rounded-full border-2 border-dashed border-blue-300 flex items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all overflow-hidden"
+                              className={`w-20 h-20 rounded-full border-2 border-dashed ${tc('border-blue-300 hover:border-blue-500 hover:bg-blue-50', 'border-blue-600 hover:border-blue-400 hover:bg-blue-900/30')} flex items-center justify-center cursor-pointer transition-all overflow-hidden`}
                             >
                               {avatarPicturePreview ? (
                                 <img src={avatarPicturePreview} alt="" className="w-full h-full object-cover" />
@@ -2134,11 +2182,11 @@ const HamoPro = () => {
 
                         {/* Specialty */}
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">{t('specialty')} <span className="text-red-500">*</span></label>
+                          <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('specialty')} <span className="text-red-500">*</span></label>
                           <select
                             value={avatarForm.specialty}
                             onChange={(e) => setAvatarForm({ ...avatarForm, specialty: e.target.value })}
-                            className="w-full px-4 py-2.5 border border-blue-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all"
+                            className={`w-full px-4 py-2.5 border ${tc('border-blue-200 bg-white text-gray-900', 'border-blue-800 bg-slate-900 text-white')} rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all`}
                           >
                             <option value="">{t('selectSpecialty')}</option>
                             {getSpecialtyOptions().map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
@@ -2149,7 +2197,7 @@ const HamoPro = () => {
                               type="text"
                               value={avatarForm.customSpecialty}
                               onChange={(e) => setAvatarForm({ ...avatarForm, customSpecialty: e.target.value })}
-                              className="w-full px-4 py-2.5 border border-blue-200 rounded-lg bg-white mt-2 focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all"
+                              className={`w-full px-4 py-2.5 border ${tc('border-blue-200 bg-white text-gray-900', 'border-blue-800 bg-slate-900 text-white')} rounded-lg mt-2 focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all`}
                               placeholder={language === 'zh' ? '输入自定义专业领域' : 'Enter custom specialty'}
                             />
                           )}
@@ -2157,13 +2205,13 @@ const HamoPro = () => {
                       </div>
 
                       {/* Section 2: Therapeutic Approach - Teal tint */}
-                      <div className="bg-teal-50/70 rounded-xl p-4">
+                      <div className={`${tc('bg-teal-50/70', 'bg-teal-900/20')} rounded-xl p-4`}>
                         <div className="flex items-center space-x-2 mb-3">
                           <div className="w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center">
                             <Brain className="w-3.5 h-3.5 text-white" />
                           </div>
-                          <span className="text-sm font-semibold text-teal-700">{t('therapeuticApproaches')}</span>
-                          <span className="text-xs text-teal-500 ml-1">{language === 'zh' ? '（选择1-3项）' : '(Select 1-3)'}</span>
+                          <span className={`text-sm font-semibold ${tc('text-teal-700', 'text-teal-300')}`}>{t('therapeuticApproaches')}</span>
+                          <span className={`text-xs ${tc('text-teal-500', 'text-teal-400')} ml-1`}>{language === 'zh' ? '（选择1-3项）' : '(Select 1-3)'}</span>
                         </div>
 
                         <div className="flex flex-wrap gap-2 mb-3">
@@ -2181,7 +2229,7 @@ const HamoPro = () => {
                               className={`px-3 py-1.5 rounded-full text-sm transition-all ${
                                 avatarForm.therapeuticApproaches.includes(opt.value)
                                   ? 'bg-teal-500 text-white'
-                                  : 'bg-white border border-teal-200 text-gray-700 hover:border-teal-400'
+                                  : tc('bg-white border border-teal-200 text-gray-700 hover:border-teal-400', 'bg-slate-800 border border-teal-700 text-slate-300 hover:border-teal-500')
                               }`}
                             >
                               {opt.label}
@@ -2193,57 +2241,57 @@ const HamoPro = () => {
                           type="text"
                           value={avatarForm.customApproach}
                           onChange={(e) => setAvatarForm({ ...avatarForm, customApproach: e.target.value })}
-                          className="w-full px-4 py-2.5 border border-teal-200 rounded-lg bg-white focus:ring-2 focus:ring-teal-300 focus:border-teal-300 transition-all"
+                          className={`w-full px-4 py-2.5 border ${tc('border-teal-200 bg-white text-gray-900', 'border-teal-800 bg-slate-900 text-white')} rounded-lg focus:ring-2 focus:ring-teal-300 focus:border-teal-300 transition-all`}
                           placeholder={language === 'zh' ? '或添加自定义方法' : 'Or add custom approach'}
                         />
                       </div>
 
                       {/* Section 3: About - Purple tint */}
-                      <div className="bg-purple-50/70 rounded-xl p-4">
+                      <div className={`${tc('bg-purple-50/70', 'bg-purple-900/20')} rounded-xl p-4`}>
                         <div className="flex items-center space-x-2 mb-3">
                           <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
                             <MessageSquare className="w-3.5 h-3.5 text-white" />
                           </div>
-                          <span className="text-sm font-semibold text-purple-700">{t('about')}</span>
+                          <span className={`text-sm font-semibold ${tc('text-purple-700', 'text-purple-300')}`}>{t('about')}</span>
                         </div>
 
                         <textarea
                           value={avatarForm.about}
                           onChange={(e) => setAvatarForm({ ...avatarForm, about: e.target.value.slice(0, 280) })}
-                          className="w-full px-4 py-2.5 border border-purple-200 rounded-lg bg-white h-24 resize-none focus:ring-2 focus:ring-purple-300 focus:border-purple-300 transition-all"
+                          className={`w-full px-4 py-2.5 border ${tc('border-purple-200 bg-white text-gray-900', 'border-purple-800 bg-slate-900 text-white')} rounded-lg h-24 resize-none focus:ring-2 focus:ring-purple-300 focus:border-purple-300 transition-all`}
                           placeholder={language === 'zh' ? '描述形象的专业知识和方法...' : "Describe the avatar's expertise and approach..."}
                         />
-                        <p className={`text-xs mt-1 ${avatarForm.about.length > 250 ? 'text-orange-500' : 'text-gray-400'}`}>
+                        <p className={`text-xs mt-1 ${avatarForm.about.length > 250 ? 'text-orange-500' : tc('text-gray-400', 'text-slate-500')}`}>
                           {avatarForm.about.length}/280 {language === 'zh' ? '字符' : 'characters'}
                         </p>
                       </div>
 
                       {/* Section 4: Experience - Yellow tint */}
-                      <div className="bg-yellow-50/70 rounded-xl p-4">
+                      <div className={`${tc('bg-yellow-50/70', 'bg-yellow-900/20')} rounded-xl p-4`}>
                         <div className="flex items-center space-x-2 mb-3">
                           <div className="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center">
                             <Briefcase className="w-3.5 h-3.5 text-white" />
                           </div>
-                          <span className="text-sm font-semibold text-yellow-700">{t('experience')}</span>
+                          <span className={`text-sm font-semibold ${tc('text-yellow-700', 'text-yellow-300')}`}>{t('experience')}</span>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-xs text-yellow-600 mb-1">{t('years')}</label>
+                            <label className={`block text-xs ${tc('text-yellow-600', 'text-yellow-400')} mb-1`}>{t('years')}</label>
                             <select
                               value={avatarForm.experienceYears}
                               onChange={(e) => setAvatarForm({ ...avatarForm, experienceYears: parseInt(e.target.value) })}
-                              className="w-full px-4 py-2.5 border border-yellow-200 rounded-lg bg-white focus:ring-2 focus:ring-yellow-300 focus:border-yellow-300 transition-all"
+                              className={`w-full px-4 py-2.5 border ${tc('border-yellow-200 bg-white text-gray-900', 'border-yellow-800 bg-slate-900 text-white')} rounded-lg focus:ring-2 focus:ring-yellow-300 focus:border-yellow-300 transition-all`}
                             >
                               {[...Array(51)].map((_, i) => <option key={i} value={i}>{i} {language === 'zh' ? '年' : 'years'}</option>)}
                             </select>
                           </div>
                           <div>
-                            <label className="block text-xs text-yellow-600 mb-1">{t('months')}</label>
+                            <label className={`block text-xs ${tc('text-yellow-600', 'text-yellow-400')} mb-1`}>{t('months')}</label>
                             <select
                               value={avatarForm.experienceMonths}
                               onChange={(e) => setAvatarForm({ ...avatarForm, experienceMonths: parseInt(e.target.value) })}
-                              className="w-full px-4 py-2.5 border border-yellow-200 rounded-lg bg-white focus:ring-2 focus:ring-yellow-300 focus:border-yellow-300 transition-all"
+                              className={`w-full px-4 py-2.5 border ${tc('border-yellow-200 bg-white text-gray-900', 'border-yellow-800 bg-slate-900 text-white')} rounded-lg focus:ring-2 focus:ring-yellow-300 focus:border-yellow-300 transition-all`}
                             >
                               {[...Array(12)].map((_, i) => <option key={i} value={i}>{i} {language === 'zh' ? '月' : 'months'}</option>)}
                             </select>
@@ -2274,7 +2322,7 @@ const HamoPro = () => {
                             experienceMonths: 0,
                           });
                         }}
-                        className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+                        className={`flex-1 ${tc('bg-gray-200 text-gray-700 hover:bg-gray-300', 'bg-slate-700 text-slate-300 hover:bg-slate-600')} py-3 rounded-lg font-medium transition-colors`}
                       >
                         {t('cancel')}
                       </button>
@@ -2289,28 +2337,28 @@ const HamoPro = () => {
         {activeTab === 'clients' && (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">{t('clientInstances')}</h2>
+              <h2 className={`text-xl font-semibold ${tc('', 'text-white')}`}>{t('clientInstances')}</h2>
               <button onClick={() => setShowClientForm(!showClientForm)} disabled={!avatars.length} className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-lg disabled:opacity-50"><Plus className="w-5 h-5" /><span>{t('inviteClient')}</span></button>
             </div>
-            {!avatars.length && <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">{language === 'zh' ? '请先创建一个虚拟形象' : 'Create an avatar first'}</div>}
+            {!avatars.length && <div className={`${tc('bg-yellow-50 border-yellow-200', 'bg-yellow-900/20 border-yellow-800')} border rounded-lg p-4 ${tc('', 'text-yellow-300')}`}>{language === 'zh' ? '请先创建一个虚拟形象' : 'Create an avatar first'}</div>}
             {showClientForm && avatars.length > 0 && (
-              <div className="bg-white rounded-xl shadow-md p-6 space-y-4">
-                <h3 className="text-lg font-semibold mb-4">{t('initializeAiMind')}</h3>
+              <div className={`${tc('bg-white', 'bg-slate-800')} rounded-xl ${tc('shadow-md', 'shadow-lg shadow-black/20')} p-6 space-y-4`}>
+                <h3 className={`text-lg font-semibold mb-4 ${tc('', 'text-white')}`}>{t('initializeAiMind')}</h3>
 
                 {/* Section 1: Basic Information */}
-                <div className="bg-blue-50 rounded-xl p-4 mb-4 border-l-4 border-blue-400">
+                <div className={`${tc('bg-blue-50', 'bg-blue-900/20')} rounded-xl p-4 mb-4 border-l-4 border-blue-400`}>
                   <div className="flex items-center space-x-2 mb-3">
-                    <User className="w-5 h-5 text-blue-600" />
-                    <h4 className="font-semibold text-blue-800">{t('basicInfo')}</h4>
+                    <User className={`w-5 h-5 ${tc('text-blue-600', 'text-blue-400')}`} />
+                    <h4 className={`font-semibold ${tc('text-blue-800', 'text-blue-300')}`}>{t('basicInfo')}</h4>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('clientName')}</label>
-                      <input type="text" value={clientForm.name} onChange={(e) => setClientForm({ ...clientForm, name: e.target.value })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={language === 'zh' ? '来访者姓名' : 'Client name'} />
+                      <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('clientName')}</label>
+                      <input type="text" value={clientForm.name} onChange={(e) => setClientForm({ ...clientForm, name: e.target.value })} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={language === 'zh' ? '来访者姓名' : 'Client name'} />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('sex')}</label>
-                      <select value={clientForm.sex} onChange={(e) => setClientForm({ ...clientForm, sex: e.target.value })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white">
+                      <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('sex')}</label>
+                      <select value={clientForm.sex} onChange={(e) => setClientForm({ ...clientForm, sex: e.target.value })} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`}>
                         <option value="">{language === 'zh' ? '请选择' : 'Select'}</option>
                         <option value="male">{t('male')}</option>
                         <option value="female">{t('female')}</option>
@@ -2318,12 +2366,12 @@ const HamoPro = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('age')}</label>
-                      <input type="number" value={clientForm.age} onChange={(e) => setClientForm({ ...clientForm, age: e.target.value })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('age')} />
+                      <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('age')}</label>
+                      <input type="number" value={clientForm.age} onChange={(e) => setClientForm({ ...clientForm, age: e.target.value })} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={t('age')} />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('selectAvatar')}</label>
-                      <select value={clientForm.avatarId} onChange={(e) => setClientForm({ ...clientForm, avatarId: e.target.value })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white">
+                      <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('selectAvatar')}</label>
+                      <select value={clientForm.avatarId} onChange={(e) => setClientForm({ ...clientForm, avatarId: e.target.value })} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`}>
                         <option value="">{t('selectAvatarPlaceholder')}</option>
                         {avatars.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                       </select>
@@ -2332,44 +2380,44 @@ const HamoPro = () => {
                 </div>
 
                 {/* Section 2: Therapy Goal & Principles */}
-                <div className="bg-teal-50 rounded-xl p-4 mb-4 border-l-4 border-teal-400">
+                <div className={`${tc('bg-teal-50', 'bg-teal-900/20')} rounded-xl p-4 mb-4 border-l-4 border-teal-400`}>
                   <div className="flex items-center space-x-2 mb-3">
-                    <Star className="w-5 h-5 text-teal-600" />
-                    <h4 className="font-semibold text-teal-800">{t('goalsAndPrinciples')}</h4>
+                    <Star className={`w-5 h-5 ${tc('text-teal-600', 'text-teal-400')}`} />
+                    <h4 className={`font-semibold ${tc('text-teal-800', 'text-teal-300')}`}>{t('goalsAndPrinciples')}</h4>
                   </div>
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('therapyGoals')}</label>
-                      <textarea value={clientForm.goals} onChange={(e) => setClientForm({ ...clientForm, goals: e.target.value })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" rows="2" placeholder={t('therapyGoalsPlaceholder')} />
+                      <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('therapyGoals')}</label>
+                      <textarea value={clientForm.goals} onChange={(e) => setClientForm({ ...clientForm, goals: e.target.value })} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} rows="2" placeholder={t('therapyGoalsPlaceholder')} />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('therapyPrinciples')}</label>
-                      <textarea value={clientForm.therapyPrinciples} onChange={(e) => setClientForm({ ...clientForm, therapyPrinciples: e.target.value })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" rows="2" placeholder={t('therapyPrinciplesPlaceholder')} />
+                      <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('therapyPrinciples')}</label>
+                      <textarea value={clientForm.therapyPrinciples} onChange={(e) => setClientForm({ ...clientForm, therapyPrinciples: e.target.value })} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} rows="2" placeholder={t('therapyPrinciplesPlaceholder')} />
                     </div>
                   </div>
                 </div>
 
                 {/* Section 3: Personality Traits - Key Section */}
-                <div className="bg-purple-50 rounded-xl p-4 mb-4 border-l-4 border-purple-400">
+                <div className={`${tc('bg-purple-50', 'bg-purple-900/20')} rounded-xl p-4 mb-4 border-l-4 border-purple-400`}>
                   <div className="flex items-center space-x-2 mb-3">
-                    <Brain className="w-5 h-5 text-purple-600" />
-                    <h4 className="font-semibold text-purple-800">{t('personalityTraits')}</h4>
-                    <span className="text-xs text-purple-500">({t('selectDimensions')})</span>
+                    <Brain className={`w-5 h-5 ${tc('text-purple-600', 'text-purple-400')}`} />
+                    <h4 className={`font-semibold ${tc('text-purple-800', 'text-purple-300')}`}>{t('personalityTraits')}</h4>
+                    <span className={`text-xs ${tc('text-purple-500', 'text-purple-400')}`}>({t('selectDimensions')})</span>
                   </div>
 
                   {/* Dimension Selection */}
                   <div className="mb-4">
                     {/* Dimension 1: Introverted vs Extroverted */}
                     <div className="mb-3">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('socialOrientation')}</label>
+                      <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-2`}>{t('socialOrientation')}</label>
                       <div className="flex space-x-3">
                         <button
                           type="button"
                           onClick={() => setClientForm({ ...clientForm, personalityDimension1: 'introverted', personalityTraits: [] })}
                           className={`flex-1 py-2 px-4 rounded-lg border-2 transition-all ${
                             clientForm.personalityDimension1 === 'introverted'
-                              ? 'border-purple-500 bg-purple-100 text-purple-700 font-medium'
-                              : 'border-gray-200 bg-white text-gray-600 hover:border-purple-300'
+                              ? tc('border-purple-500 bg-purple-100 text-purple-700 font-medium', 'border-purple-500 bg-purple-900/40 text-purple-300 font-medium')
+                              : tc('border-gray-200 bg-white text-gray-600 hover:border-purple-300', 'border-slate-600 bg-slate-800 text-slate-300 hover:border-purple-500')
                           }`}
                         >
                           {t('introverted')}
@@ -2379,8 +2427,8 @@ const HamoPro = () => {
                           onClick={() => setClientForm({ ...clientForm, personalityDimension1: 'extroverted', personalityTraits: [] })}
                           className={`flex-1 py-2 px-4 rounded-lg border-2 transition-all ${
                             clientForm.personalityDimension1 === 'extroverted'
-                              ? 'border-purple-500 bg-purple-100 text-purple-700 font-medium'
-                              : 'border-gray-200 bg-white text-gray-600 hover:border-purple-300'
+                              ? tc('border-purple-500 bg-purple-100 text-purple-700 font-medium', 'border-purple-500 bg-purple-900/40 text-purple-300 font-medium')
+                              : tc('border-gray-200 bg-white text-gray-600 hover:border-purple-300', 'border-slate-600 bg-slate-800 text-slate-300 hover:border-purple-500')
                           }`}
                         >
                           {t('extroverted')}
@@ -2390,15 +2438,15 @@ const HamoPro = () => {
 
                     {/* Dimension 2: Rational vs Emotional */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('decisionStyle')}</label>
+                      <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-2`}>{t('decisionStyle')}</label>
                       <div className="flex space-x-3">
                         <button
                           type="button"
                           onClick={() => setClientForm({ ...clientForm, personalityDimension2: 'rational', personalityTraits: [] })}
                           className={`flex-1 py-2 px-4 rounded-lg border-2 transition-all ${
                             clientForm.personalityDimension2 === 'rational'
-                              ? 'border-purple-500 bg-purple-100 text-purple-700 font-medium'
-                              : 'border-gray-200 bg-white text-gray-600 hover:border-purple-300'
+                              ? tc('border-purple-500 bg-purple-100 text-purple-700 font-medium', 'border-purple-500 bg-purple-900/40 text-purple-300 font-medium')
+                              : tc('border-gray-200 bg-white text-gray-600 hover:border-purple-300', 'border-slate-600 bg-slate-800 text-slate-300 hover:border-purple-500')
                           }`}
                         >
                           {t('rational')}
@@ -2408,8 +2456,8 @@ const HamoPro = () => {
                           onClick={() => setClientForm({ ...clientForm, personalityDimension2: 'emotional', personalityTraits: [] })}
                           className={`flex-1 py-2 px-4 rounded-lg border-2 transition-all ${
                             clientForm.personalityDimension2 === 'emotional'
-                              ? 'border-purple-500 bg-purple-100 text-purple-700 font-medium'
-                              : 'border-gray-200 bg-white text-gray-600 hover:border-purple-300'
+                              ? tc('border-purple-500 bg-purple-100 text-purple-700 font-medium', 'border-purple-500 bg-purple-900/40 text-purple-300 font-medium')
+                              : tc('border-gray-200 bg-white text-gray-600 hover:border-purple-300', 'border-slate-600 bg-slate-800 text-slate-300 hover:border-purple-500')
                           }`}
                         >
                           {t('emotional')}
@@ -2420,15 +2468,15 @@ const HamoPro = () => {
 
                   {/* Trait Selection - Only show when both dimensions are selected */}
                   {getPersonalityTraitOptions() && (
-                    <div className="mt-4 pt-4 border-t border-purple-200">
+                    <div className={`mt-4 pt-4 border-t ${tc('border-purple-200', 'border-purple-800')}`}>
                       <div className="flex items-center justify-between mb-3">
-                        <label className="text-sm font-medium text-gray-700">{t('selectTraits')}</label>
-                        <span className="text-xs text-purple-500">{clientForm.personalityTraits.length}/6 {t('selected')}</span>
+                        <label className={`text-sm font-medium ${tc('text-gray-700', 'text-slate-300')}`}>{t('selectTraits')}</label>
+                        <span className={`text-xs ${tc('text-purple-500', 'text-purple-400')}`}>{clientForm.personalityTraits.length}/6 {t('selected')}</span>
                       </div>
 
                       {/* Orange Block - Adaptive */}
-                      <div className="bg-orange-50 rounded-lg p-3 mb-3">
-                        <p className="text-xs text-orange-600 font-medium mb-2">{t('adaptiveTraits')}</p>
+                      <div className={`${tc('bg-orange-50', 'bg-orange-900/20')} rounded-lg p-3 mb-3`}>
+                        <p className={`text-xs ${tc('text-orange-600', 'text-orange-400')} font-medium mb-2`}>{t('adaptiveTraits')}</p>
                         <div className="flex flex-wrap gap-2">
                           {getPersonalityTraitOptions().orange.map(trait => (
                             <button
@@ -2438,7 +2486,7 @@ const HamoPro = () => {
                               className={`px-3 py-1.5 rounded-full text-sm transition-all ${
                                 clientForm.personalityTraits.includes(trait)
                                   ? 'bg-orange-500 text-white'
-                                  : 'bg-white border border-orange-300 text-orange-700 hover:bg-orange-100'
+                                  : tc('bg-white border border-orange-300 text-orange-700 hover:bg-orange-100', 'bg-slate-800 border border-orange-700 text-orange-300 hover:bg-orange-900/30')
                               }`}
                             >
                               {translateTrait(trait)}
@@ -2448,8 +2496,8 @@ const HamoPro = () => {
                       </div>
 
                       {/* Gray Block - Maladaptive Mild */}
-                      <div className="bg-gray-100 rounded-lg p-3 mb-3">
-                        <p className="text-xs text-gray-600 font-medium mb-2">{t('mildMaladaptive')}</p>
+                      <div className={`${tc('bg-gray-100', 'bg-slate-700')} rounded-lg p-3 mb-3`}>
+                        <p className={`text-xs ${tc('text-gray-600', 'text-slate-400')} font-medium mb-2`}>{t('mildMaladaptive')}</p>
                         <div className="flex flex-wrap gap-2">
                           {getPersonalityTraitOptions().gray.map(trait => (
                             <button
@@ -2459,7 +2507,7 @@ const HamoPro = () => {
                               className={`px-3 py-1.5 rounded-full text-sm transition-all ${
                                 clientForm.personalityTraits.includes(trait)
                                   ? 'bg-gray-600 text-white'
-                                  : 'bg-white border border-gray-400 text-gray-700 hover:bg-gray-200'
+                                  : tc('bg-white border border-gray-400 text-gray-700 hover:bg-gray-200', 'bg-slate-800 border border-slate-500 text-slate-300 hover:bg-slate-600')
                               }`}
                             >
                               {translateTrait(trait)}
@@ -2469,8 +2517,8 @@ const HamoPro = () => {
                       </div>
 
                       {/* Red Block - Maladaptive Severe */}
-                      <div className="bg-red-50 rounded-lg p-3">
-                        <p className="text-xs text-red-600 font-medium mb-2">{t('severeMaladaptive')}</p>
+                      <div className={`${tc('bg-red-50', 'bg-red-900/20')} rounded-lg p-3`}>
+                        <p className={`text-xs ${tc('text-red-600', 'text-red-400')} font-medium mb-2`}>{t('severeMaladaptive')}</p>
                         <div className="flex flex-wrap gap-2">
                           {getPersonalityTraitOptions().red.map(trait => (
                             <button
@@ -2480,7 +2528,7 @@ const HamoPro = () => {
                               className={`px-3 py-1.5 rounded-full text-sm transition-all ${
                                 clientForm.personalityTraits.includes(trait)
                                   ? 'bg-red-500 text-white'
-                                  : 'bg-white border border-red-300 text-red-700 hover:bg-red-100'
+                                  : tc('bg-white border border-red-300 text-red-700 hover:bg-red-100', 'bg-slate-800 border border-red-700 text-red-300 hover:bg-red-900/30')
                               }`}
                             >
                               {translateTrait(trait)}
@@ -2493,73 +2541,73 @@ const HamoPro = () => {
                 </div>
 
                 {/* Section 4: Emotion Patterns */}
-                <div className="bg-yellow-50 rounded-xl p-4 mb-4 border-l-4 border-yellow-400">
+                <div className={`${tc('bg-yellow-50', 'bg-yellow-900/20')} rounded-xl p-4 mb-4 border-l-4 border-yellow-400`}>
                   <div className="flex items-center space-x-2 mb-3">
-                    <Sparkles className="w-5 h-5 text-yellow-600" />
-                    <h4 className="font-semibold text-yellow-800">{t('emotionPatterns')}</h4>
+                    <Sparkles className={`w-5 h-5 ${tc('text-yellow-600', 'text-yellow-400')}`} />
+                    <h4 className={`font-semibold ${tc('text-yellow-800', 'text-yellow-300')}`}>{t('emotionPatterns')}</h4>
                   </div>
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('dominantEmotionsLabel')}</label>
-                      <input type="text" value={clientForm.emotion_pattern.dominant_emotions} onChange={(e) => setClientForm({ ...clientForm, emotion_pattern: { ...clientForm.emotion_pattern, dominant_emotions: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('emotionPatternsPlaceholder')} />
+                      <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('dominantEmotionsLabel')}</label>
+                      <input type="text" value={clientForm.emotion_pattern.dominant_emotions} onChange={(e) => setClientForm({ ...clientForm, emotion_pattern: { ...clientForm.emotion_pattern, dominant_emotions: e.target.value } })} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={t('emotionPatternsPlaceholder')} />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('triggersLabel')}</label>
-                      <input type="text" value={clientForm.emotion_pattern.triggers} onChange={(e) => setClientForm({ ...clientForm, emotion_pattern: { ...clientForm.emotion_pattern, triggers: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('triggersPlaceholder')} />
+                      <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('triggersLabel')}</label>
+                      <input type="text" value={clientForm.emotion_pattern.triggers} onChange={(e) => setClientForm({ ...clientForm, emotion_pattern: { ...clientForm.emotion_pattern, triggers: e.target.value } })} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={t('triggersPlaceholder')} />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('copingMechanismsLabel')}</label>
-                      <input type="text" value={clientForm.emotion_pattern.coping_mechanisms} onChange={(e) => setClientForm({ ...clientForm, emotion_pattern: { ...clientForm.emotion_pattern, coping_mechanisms: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('copingMechanismsPlaceholder')} />
+                      <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('copingMechanismsLabel')}</label>
+                      <input type="text" value={clientForm.emotion_pattern.coping_mechanisms} onChange={(e) => setClientForm({ ...clientForm, emotion_pattern: { ...clientForm.emotion_pattern, coping_mechanisms: e.target.value } })} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={t('copingMechanismsPlaceholder')} />
                     </div>
                   </div>
                 </div>
 
                 {/* Section 5: Cognition & Beliefs */}
-                <div className="bg-indigo-50 rounded-xl p-4 mb-4 border-l-4 border-indigo-400">
+                <div className={`${tc('bg-indigo-50', 'bg-indigo-900/20')} rounded-xl p-4 mb-4 border-l-4 border-indigo-400`}>
                   <div className="flex items-center space-x-2 mb-3">
-                    <Brain className="w-5 h-5 text-indigo-600" />
-                    <h4 className="font-semibold text-indigo-800">{t('cognitionBeliefs')}</h4>
+                    <Brain className={`w-5 h-5 ${tc('text-indigo-600', 'text-indigo-400')}`} />
+                    <h4 className={`font-semibold ${tc('text-indigo-800', 'text-indigo-300')}`}>{t('cognitionBeliefs')}</h4>
                   </div>
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('corebeliefsLabel')}</label>
-                      <input type="text" value={clientForm.cognition_beliefs.core_beliefs} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, core_beliefs: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('cognitionPlaceholder')} />
+                      <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('corebeliefsLabel')}</label>
+                      <input type="text" value={clientForm.cognition_beliefs.core_beliefs} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, core_beliefs: e.target.value } })} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={t('cognitionPlaceholder')} />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('cognitiveDistortionsLabel')}</label>
-                      <input type="text" value={clientForm.cognition_beliefs.cognitive_distortions} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, cognitive_distortions: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('cognitiveDistortionsPlaceholder')} />
+                      <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('cognitiveDistortionsLabel')}</label>
+                      <input type="text" value={clientForm.cognition_beliefs.cognitive_distortions} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, cognitive_distortions: e.target.value } })} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={t('cognitiveDistortionsPlaceholder')} />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('thinkingPatternsLabel')}</label>
-                      <input type="text" value={clientForm.cognition_beliefs.thinking_patterns} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, thinking_patterns: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('thinkingPatternsPlaceholder')} />
+                      <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('thinkingPatternsLabel')}</label>
+                      <input type="text" value={clientForm.cognition_beliefs.thinking_patterns} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, thinking_patterns: e.target.value } })} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={t('thinkingPatternsPlaceholder')} />
                     </div>
                     <div className="grid grid-cols-3 gap-3">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('selfPerception')}</label>
-                        <input type="text" value={clientForm.cognition_beliefs.self_perception} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, self_perception: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('selfPerceptionPlaceholder')} />
+                        <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('selfPerception')}</label>
+                        <input type="text" value={clientForm.cognition_beliefs.self_perception} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, self_perception: e.target.value } })} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={t('selfPerceptionPlaceholder')} />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('worldPerception')}</label>
-                        <input type="text" value={clientForm.cognition_beliefs.world_perception} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, world_perception: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('worldPerceptionPlaceholder')} />
+                        <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('worldPerception')}</label>
+                        <input type="text" value={clientForm.cognition_beliefs.world_perception} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, world_perception: e.target.value } })} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={t('worldPerceptionPlaceholder')} />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('futurePerception')}</label>
-                        <input type="text" value={clientForm.cognition_beliefs.future_perception} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, future_perception: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('futurePerceptionPlaceholder')} />
+                        <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('futurePerception')}</label>
+                        <input type="text" value={clientForm.cognition_beliefs.future_perception} onChange={(e) => setClientForm({ ...clientForm, cognition_beliefs: { ...clientForm.cognition_beliefs, future_perception: e.target.value } })} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={t('futurePerceptionPlaceholder')} />
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Section 6: Relationship Manipulations */}
-                <div className="bg-rose-50 rounded-xl p-4 mb-4 border-l-4 border-rose-400">
+                <div className={`${tc('bg-rose-50', 'bg-rose-900/20')} rounded-xl p-4 mb-4 border-l-4 border-rose-400`}>
                   <div className="flex items-center space-x-2 mb-3">
-                    <User className="w-5 h-5 text-rose-600" />
-                    <h4 className="font-semibold text-rose-800">{t('relationshipManipulations')}</h4>
+                    <User className={`w-5 h-5 ${tc('text-rose-600', 'text-rose-400')}`} />
+                    <h4 className={`font-semibold ${tc('text-rose-800', 'text-rose-300')}`}>{t('relationshipManipulations')}</h4>
                   </div>
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('attachmentStyle')}</label>
-                      <select value={clientForm.relationship_manipulations.attachment_style} onChange={(e) => setClientForm({ ...clientForm, relationship_manipulations: { ...clientForm.relationship_manipulations, attachment_style: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white">
+                      <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('attachmentStyle')}</label>
+                      <select value={clientForm.relationship_manipulations.attachment_style} onChange={(e) => setClientForm({ ...clientForm, relationship_manipulations: { ...clientForm.relationship_manipulations, attachment_style: e.target.value } })} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`}>
                         <option value="">--</option>
                         <option value="secure">{t('attachmentSecure')}</option>
                         <option value="anxious">{t('attachmentAnxious')}</option>
@@ -2568,23 +2616,23 @@ const HamoPro = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('relationshipPatternsLabel')}</label>
-                      <input type="text" value={clientForm.relationship_manipulations.relationship_patterns} onChange={(e) => setClientForm({ ...clientForm, relationship_manipulations: { ...clientForm.relationship_manipulations, relationship_patterns: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('relationshipPlaceholder')} />
+                      <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('relationshipPatternsLabel')}</label>
+                      <input type="text" value={clientForm.relationship_manipulations.relationship_patterns} onChange={(e) => setClientForm({ ...clientForm, relationship_manipulations: { ...clientForm.relationship_manipulations, relationship_patterns: e.target.value } })} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={t('relationshipPlaceholder')} />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('communicationStyle')}</label>
-                      <input type="text" value={clientForm.relationship_manipulations.communication_style} onChange={(e) => setClientForm({ ...clientForm, relationship_manipulations: { ...clientForm.relationship_manipulations, communication_style: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('communicationStylePlaceholder')} />
+                      <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('communicationStyle')}</label>
+                      <input type="text" value={clientForm.relationship_manipulations.communication_style} onChange={(e) => setClientForm({ ...clientForm, relationship_manipulations: { ...clientForm.relationship_manipulations, communication_style: e.target.value } })} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={t('communicationStylePlaceholder')} />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('conflictResolution')}</label>
-                      <input type="text" value={clientForm.relationship_manipulations.conflict_resolution} onChange={(e) => setClientForm({ ...clientForm, relationship_manipulations: { ...clientForm.relationship_manipulations, conflict_resolution: e.target.value } })} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('conflictResolutionPlaceholder')} />
+                      <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('conflictResolution')}</label>
+                      <input type="text" value={clientForm.relationship_manipulations.conflict_resolution} onChange={(e) => setClientForm({ ...clientForm, relationship_manipulations: { ...clientForm.relationship_manipulations, conflict_resolution: e.target.value } })} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={t('conflictResolutionPlaceholder')} />
                     </div>
                   </div>
                 </div>
 
                 <div className="flex space-x-3 pt-2">
                   <button onClick={handleCreateClient} className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">{t('initializeMind')}</button>
-                  <button onClick={() => setShowClientForm(false)} className="bg-gray-200 px-6 py-2 rounded-lg hover:bg-gray-300 transition-colors">{t('cancel')}</button>
+                  <button onClick={() => setShowClientForm(false)} className={`${tc('bg-gray-200 hover:bg-gray-300', 'bg-slate-700 text-slate-300 hover:bg-slate-600')} px-6 py-2 rounded-lg transition-colors`}>{t('cancel')}</button>
                 </div>
               </div>
             )}
@@ -2594,7 +2642,7 @@ const HamoPro = () => {
                 const isConnected = c.connectedAt || c.connected_at;
                 // Connection date now formatted inline in English
                 return (
-                  <div key={c.id} className="bg-white rounded-xl shadow-md p-4">
+                  <div key={c.id} className={`${tc('bg-white', 'bg-slate-800')} rounded-xl ${tc('shadow-md', 'shadow-lg shadow-black/20')} p-4`}>
                     {/* Top Row: Avatar (left) + Client (right) */}
                     <div className="flex justify-between items-start mb-3">
                       {/* Left: Avatar picture + name + experience */}
@@ -2602,13 +2650,13 @@ const HamoPro = () => {
                         {avatar?.avatarPicture ? (
                           <img src={avatar.avatarPicture} alt={avatar.name} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
                         ) : (
-                          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                          <div className={`w-10 h-10 rounded-full ${tc('bg-blue-100', 'bg-blue-900/30')} flex items-center justify-center flex-shrink-0`}>
                             <Brain className="w-5 h-5 text-blue-400" />
                           </div>
                         )}
                         <div className="min-w-0">
-                          <p className="font-medium text-sm truncate">{avatar?.name || (language === 'zh' ? '未分配' : 'N/A')}</p>
-                          <p className="text-xs text-gray-400">
+                          <p className={`font-medium text-sm truncate ${tc('', 'text-white')}`}>{avatar?.name || (language === 'zh' ? '未分配' : 'N/A')}</p>
+                          <p className={`text-xs ${tc('text-gray-400', 'text-slate-500')}`}>
                             {avatar ? `${avatar.experienceYears || 0}${t('years')} ${avatar.experienceMonths || 0}${t('months')}` : ''}
                           </p>
                         </div>
@@ -2616,8 +2664,8 @@ const HamoPro = () => {
                       {/* Right: Client picture (with connection status) + name + age/sex */}
                       <div className="flex items-start space-x-2 min-w-0 flex-1 justify-end">
                         <div className="text-right min-w-0">
-                          <p className="font-semibold text-sm truncate">{c.name}</p>
-                          <p className="text-xs text-gray-500">
+                          <p className={`font-semibold text-sm truncate ${tc('', 'text-white')}`}>{c.name}</p>
+                          <p className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>
                             {c.sex ? (t(c.sex) || c.sex) : ''}
                             {c.sex && c.age ? ', ' : ''}
                             {c.age ? `${c.age}${language === 'zh' ? '岁' : ''}` : ''}
@@ -2627,7 +2675,7 @@ const HamoPro = () => {
                           {c.profilePicture ? (
                             <img src={c.profilePicture} alt={c.name} className={`w-10 h-10 rounded-full object-cover ${isConnected ? 'ring-2 ring-green-400' : ''}`} />
                           ) : (
-                            <div className={`w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center ${isConnected ? 'ring-2 ring-green-400' : ''}`}>
+                            <div className={`w-10 h-10 rounded-full ${tc('bg-purple-100', 'bg-purple-900/30')} flex items-center justify-center ${isConnected ? 'ring-2 ring-green-400' : ''}`}>
                               <User className="w-5 h-5 text-purple-400" />
                             </div>
                           )}
@@ -2646,7 +2694,7 @@ const HamoPro = () => {
                     </div>
 
                     {/* Middle Row: Mini session count (left) + Last active (right) */}
-                    <div className="flex items-center justify-between text-xs text-gray-500 mb-3 py-2 border-t border-b border-gray-100">
+                    <div className={`flex items-center justify-between text-xs ${tc('text-gray-500', 'text-slate-400')} mb-3 py-2 border-t border-b ${tc('border-gray-100', 'border-slate-700')}`}>
                       <div className="flex items-center space-x-1">
                         <MessageSquare className="w-3.5 h-3.5" />
                         <span>{c.totalMiniSessions} {t('totalMiniSessions')}</span>
@@ -2663,8 +2711,8 @@ const HamoPro = () => {
 
                     {/* Bottom Row: AI Mind + Chats & Status buttons */}
                     <div className="flex space-x-2">
-                      <button onClick={() => handleViewMind(c)} className="flex-1 bg-purple-50 text-purple-600 px-2 sm:px-3 py-2 rounded-lg flex items-center justify-center space-x-1 sm:space-x-2 hover:bg-purple-100"><Sparkles className="w-4 h-4 flex-shrink-0" /><span className="text-xs sm:text-sm whitespace-nowrap">{t('aiMind')}</span></button>
-                      <button onClick={() => handleViewChats(c)} className="flex-1 bg-blue-50 text-blue-600 px-2 sm:px-3 py-2 rounded-lg flex items-center justify-center space-x-1 sm:space-x-2 hover:bg-blue-100"><Eye className="w-4 h-4 flex-shrink-0" /><span className="text-xs sm:text-sm whitespace-nowrap">{t('chatsStatus')}</span></button>
+                      <button onClick={() => handleViewMind(c)} className={`flex-1 ${tc('bg-purple-50 text-purple-600 hover:bg-purple-100', 'bg-purple-900/20 text-purple-400 hover:bg-purple-900/40')} px-2 sm:px-3 py-2 rounded-lg flex items-center justify-center space-x-1 sm:space-x-2`}><Sparkles className="w-4 h-4 flex-shrink-0" /><span className="text-xs sm:text-sm whitespace-nowrap">{t('aiMind')}</span></button>
+                      <button onClick={() => handleViewChats(c)} className={`flex-1 ${tc('bg-blue-50 text-blue-600 hover:bg-blue-100', 'bg-blue-900/20 text-blue-400 hover:bg-blue-900/40')} px-2 sm:px-3 py-2 rounded-lg flex items-center justify-center space-x-1 sm:space-x-2`}><Eye className="w-4 h-4 flex-shrink-0" /><span className="text-xs sm:text-sm whitespace-nowrap">{t('chatsStatus')}</span></button>
                     </div>
                   </div>
                 );
@@ -2672,8 +2720,8 @@ const HamoPro = () => {
             </div>
             
             {selectedMindClient && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4" onClick={() => { setSelectedMindClient(null); setMindData(null); setExpandedMindSection(null); setMindEditMode(false); setMindEditData(null); }}>
-                <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <div className={`fixed inset-0 ${tc('bg-black bg-opacity-50', 'bg-black bg-opacity-70')} flex items-center justify-center z-50 px-4`} onClick={() => { setSelectedMindClient(null); setMindData(null); setExpandedMindSection(null); setMindEditMode(false); setMindEditData(null); }}>
+                <div className={`${tc('bg-white', 'bg-slate-800')} rounded-2xl ${tc('shadow-2xl', 'shadow-2xl shadow-black/40')} max-w-lg w-full max-h-[90vh] overflow-y-auto`} onClick={(e) => e.stopPropagation()}>
                 {/* Header with gradient */}
                 <div className="bg-gradient-to-r from-purple-500 to-indigo-600 px-6 py-4 rounded-t-2xl">
                   <div className="flex justify-between items-start">
@@ -2720,7 +2768,7 @@ const HamoPro = () => {
                 </div>
 
                 {mindLoading ? (
-                  <div className="text-center py-12 text-gray-500">
+                  <div className={`text-center py-12 ${tc('text-gray-500', 'text-slate-400')}`}>
                     <div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-3"></div>
                     <p>{language === 'zh' ? '加载 AI Mind 数据中...' : 'Loading AI Mind data...'}</p>
                   </div>
@@ -2732,65 +2780,65 @@ const HamoPro = () => {
                       /* ===== EDIT MODE: Init-form-style layout ===== */
                       <div className="space-y-4">
                         {/* Basic Info (read-only) */}
-                        <div className="bg-blue-50 rounded-xl p-4 border-l-4 border-blue-400">
+                        <div className={`${tc('bg-blue-50', 'bg-blue-900/20')} rounded-xl p-4 border-l-4 border-blue-400`}>
                           <div className="flex items-center space-x-2 mb-3">
-                            <User className="w-5 h-5 text-blue-600" />
-                            <h4 className="font-semibold text-blue-800">{t('basicInfo')}</h4>
+                            <User className={`w-5 h-5 ${tc('text-blue-600', 'text-blue-400')}`} />
+                            <h4 className={`font-semibold ${tc('text-blue-800', 'text-blue-300')}`}>{t('basicInfo')}</h4>
                           </div>
                           <div className="grid grid-cols-2 gap-4">
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">{t('clientName')}</label>
-                              <div className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700">{mindData.name || selectedMindClient.name}</div>
+                              <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('clientName')}</label>
+                              <div className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-gray-50 text-gray-700', 'border-slate-600 bg-slate-700 text-slate-300')} rounded-lg`}>{mindData.name || selectedMindClient.name}</div>
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">{t('sex')}</label>
-                              <div className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700">{t(mindData.sex) || mindData.sex || '-'}</div>
+                              <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('sex')}</label>
+                              <div className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-gray-50 text-gray-700', 'border-slate-600 bg-slate-700 text-slate-300')} rounded-lg`}>{t(mindData.sex) || mindData.sex || '-'}</div>
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">{t('age')}</label>
-                              <div className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700">{mindData.age || '-'}</div>
+                              <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('age')}</label>
+                              <div className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-gray-50 text-gray-700', 'border-slate-600 bg-slate-700 text-slate-300')} rounded-lg`}>{mindData.age || '-'}</div>
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">{t('selectAvatar')}</label>
-                              <div className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700">{mindData.avatar_name || '-'}</div>
+                              <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('selectAvatar')}</label>
+                              <div className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-gray-50 text-gray-700', 'border-slate-600 bg-slate-700 text-slate-300')} rounded-lg`}>{mindData.avatar_name || '-'}</div>
                             </div>
                           </div>
                         </div>
 
                         {/* Goals & Principles */}
-                        <div className="bg-teal-50 rounded-xl p-4 border-l-4 border-teal-400">
+                        <div className={`${tc('bg-teal-50', 'bg-teal-900/20')} rounded-xl p-4 border-l-4 border-teal-400`}>
                           <div className="flex items-center space-x-2 mb-3">
-                            <Star className="w-5 h-5 text-teal-600" />
-                            <h4 className="font-semibold text-teal-800">{t('goalsAndPrinciples')}</h4>
+                            <Star className={`w-5 h-5 ${tc('text-teal-600', 'text-teal-400')}`} />
+                            <h4 className={`font-semibold ${tc('text-teal-800', 'text-teal-300')}`}>{t('goalsAndPrinciples')}</h4>
                           </div>
                           <div className="space-y-3">
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">{t('therapyGoals')}</label>
-                              <textarea value={mindEditData?.goals || ''} onChange={(e) => updateMindEditString(null, 'goals', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" rows="2" placeholder={t('therapyGoalsPlaceholder')} />
+                              <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('therapyGoals')}</label>
+                              <textarea value={mindEditData?.goals || ''} onChange={(e) => updateMindEditString(null, 'goals', e.target.value)} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} rows="2" placeholder={t('therapyGoalsPlaceholder')} />
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">{t('therapyPrinciples')}</label>
-                              <textarea value={mindEditData?.therapy_principles || ''} onChange={(e) => updateMindEditString(null, 'therapy_principles', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" rows="2" placeholder={t('therapyPrinciplesPlaceholder')} />
+                              <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('therapyPrinciples')}</label>
+                              <textarea value={mindEditData?.therapy_principles || ''} onChange={(e) => updateMindEditString(null, 'therapy_principles', e.target.value)} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} rows="2" placeholder={t('therapyPrinciplesPlaceholder')} />
                             </div>
                           </div>
                         </div>
 
                         {/* Personality Traits */}
-                        <div className="bg-purple-50 rounded-xl p-4 border-l-4 border-purple-400">
+                        <div className={`${tc('bg-purple-50', 'bg-purple-900/20')} rounded-xl p-4 border-l-4 border-purple-400`}>
                           <div className="flex items-center space-x-2 mb-3">
-                            <Brain className="w-5 h-5 text-purple-600" />
-                            <h4 className="font-semibold text-purple-800">{t('mindPersonalityTraits')}</h4>
-                            <span className="text-xs text-purple-500">({t('selectDimensions')})</span>
+                            <Brain className={`w-5 h-5 ${tc('text-purple-600', 'text-purple-400')}`} />
+                            <h4 className={`font-semibold ${tc('text-purple-800', 'text-purple-300')}`}>{t('mindPersonalityTraits')}</h4>
+                            <span className={`text-xs ${tc('text-purple-500', 'text-purple-400')}`}>({t('selectDimensions')})</span>
                           </div>
 
                           {/* Dimension 1: Social Orientation */}
                           <div className="mb-3">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">{t('socialOrientation')}</label>
+                            <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-2`}>{t('socialOrientation')}</label>
                             <div className="flex space-x-3">
-                              <button type="button" onClick={() => setMindEditData(prev => ({ ...prev, personality: { ...prev.personality, personalityDimension1: 'introverted', personalityTraits: [] } }))} className={`flex-1 py-2 px-4 rounded-lg border-2 transition-all ${mindEditData?.personality?.personalityDimension1 === 'introverted' ? 'border-purple-500 bg-purple-100 text-purple-700 font-medium' : 'border-gray-200 bg-white text-gray-600 hover:border-purple-300'}`}>
+                              <button type="button" onClick={() => setMindEditData(prev => ({ ...prev, personality: { ...prev.personality, personalityDimension1: 'introverted', personalityTraits: [] } }))} className={`flex-1 py-2 px-4 rounded-lg border-2 transition-all ${mindEditData?.personality?.personalityDimension1 === 'introverted' ? tc('border-purple-500 bg-purple-100 text-purple-700 font-medium', 'border-purple-500 bg-purple-900/40 text-purple-300 font-medium') : tc('border-gray-200 bg-white text-gray-600 hover:border-purple-300', 'border-slate-600 bg-slate-800 text-slate-300 hover:border-purple-500')}`}>
                                 {t('introverted')}
                               </button>
-                              <button type="button" onClick={() => setMindEditData(prev => ({ ...prev, personality: { ...prev.personality, personalityDimension1: 'extroverted', personalityTraits: [] } }))} className={`flex-1 py-2 px-4 rounded-lg border-2 transition-all ${mindEditData?.personality?.personalityDimension1 === 'extroverted' ? 'border-purple-500 bg-purple-100 text-purple-700 font-medium' : 'border-gray-200 bg-white text-gray-600 hover:border-purple-300'}`}>
+                              <button type="button" onClick={() => setMindEditData(prev => ({ ...prev, personality: { ...prev.personality, personalityDimension1: 'extroverted', personalityTraits: [] } }))} className={`flex-1 py-2 px-4 rounded-lg border-2 transition-all ${mindEditData?.personality?.personalityDimension1 === 'extroverted' ? tc('border-purple-500 bg-purple-100 text-purple-700 font-medium', 'border-purple-500 bg-purple-900/40 text-purple-300 font-medium') : tc('border-gray-200 bg-white text-gray-600 hover:border-purple-300', 'border-slate-600 bg-slate-800 text-slate-300 hover:border-purple-500')}`}>
                                 {t('extroverted')}
                               </button>
                             </div>
@@ -2798,12 +2846,12 @@ const HamoPro = () => {
 
                           {/* Dimension 2: Decision Style */}
                           <div className="mb-3">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">{t('decisionStyle')}</label>
+                            <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-2`}>{t('decisionStyle')}</label>
                             <div className="flex space-x-3">
-                              <button type="button" onClick={() => setMindEditData(prev => ({ ...prev, personality: { ...prev.personality, personalityDimension2: 'rational', personalityTraits: [] } }))} className={`flex-1 py-2 px-4 rounded-lg border-2 transition-all ${mindEditData?.personality?.personalityDimension2 === 'rational' ? 'border-purple-500 bg-purple-100 text-purple-700 font-medium' : 'border-gray-200 bg-white text-gray-600 hover:border-purple-300'}`}>
+                              <button type="button" onClick={() => setMindEditData(prev => ({ ...prev, personality: { ...prev.personality, personalityDimension2: 'rational', personalityTraits: [] } }))} className={`flex-1 py-2 px-4 rounded-lg border-2 transition-all ${mindEditData?.personality?.personalityDimension2 === 'rational' ? tc('border-purple-500 bg-purple-100 text-purple-700 font-medium', 'border-purple-500 bg-purple-900/40 text-purple-300 font-medium') : tc('border-gray-200 bg-white text-gray-600 hover:border-purple-300', 'border-slate-600 bg-slate-800 text-slate-300 hover:border-purple-500')}`}>
                                 {t('rational')}
                               </button>
-                              <button type="button" onClick={() => setMindEditData(prev => ({ ...prev, personality: { ...prev.personality, personalityDimension2: 'emotional', personalityTraits: [] } }))} className={`flex-1 py-2 px-4 rounded-lg border-2 transition-all ${mindEditData?.personality?.personalityDimension2 === 'emotional' ? 'border-purple-500 bg-purple-100 text-purple-700 font-medium' : 'border-gray-200 bg-white text-gray-600 hover:border-purple-300'}`}>
+                              <button type="button" onClick={() => setMindEditData(prev => ({ ...prev, personality: { ...prev.personality, personalityDimension2: 'emotional', personalityTraits: [] } }))} className={`flex-1 py-2 px-4 rounded-lg border-2 transition-all ${mindEditData?.personality?.personalityDimension2 === 'emotional' ? tc('border-purple-500 bg-purple-100 text-purple-700 font-medium', 'border-purple-500 bg-purple-900/40 text-purple-300 font-medium') : tc('border-gray-200 bg-white text-gray-600 hover:border-purple-300', 'border-slate-600 bg-slate-800 text-slate-300 hover:border-purple-500')}`}>
                                 {t('emotional')}
                               </button>
                             </div>
@@ -2815,39 +2863,39 @@ const HamoPro = () => {
                             if (!traitOptions) return null;
                             const selectedTraits = mindEditData?.personality?.personalityTraits || [];
                             return (
-                              <div className="mt-4 pt-4 border-t border-purple-200">
+                              <div className={`mt-4 pt-4 border-t ${tc('border-purple-200', 'border-purple-800')}`}>
                                 <div className="flex items-center justify-between mb-3">
-                                  <label className="text-sm font-medium text-gray-700">{t('selectTraits')}</label>
-                                  <span className="text-xs text-purple-500">{selectedTraits.length}/6 {t('selected')}</span>
+                                  <label className={`text-sm font-medium ${tc('text-gray-700', 'text-slate-300')}`}>{t('selectTraits')}</label>
+                                  <span className={`text-xs ${tc('text-purple-500', 'text-purple-400')}`}>{selectedTraits.length}/6 {t('selected')}</span>
                                 </div>
                                 {/* Adaptive Traits */}
-                                <div className="bg-orange-50 rounded-lg p-3 mb-3">
-                                  <p className="text-xs text-orange-600 font-medium mb-2">{t('adaptiveTraits')}</p>
+                                <div className={`${tc('bg-orange-50', 'bg-orange-900/20')} rounded-lg p-3 mb-3`}>
+                                  <p className={`text-xs ${tc('text-orange-600', 'text-orange-400')} font-medium mb-2`}>{t('adaptiveTraits')}</p>
                                   <div className="flex flex-wrap gap-2">
                                     {traitOptions.orange.map(trait => (
-                                      <button key={trait} type="button" onClick={() => toggleEditPersonalityTrait(trait)} className={`px-3 py-1.5 rounded-full text-sm transition-all ${selectedTraits.includes(trait) ? 'bg-orange-500 text-white' : 'bg-white border border-orange-300 text-orange-700 hover:bg-orange-100'}`}>
+                                      <button key={trait} type="button" onClick={() => toggleEditPersonalityTrait(trait)} className={`px-3 py-1.5 rounded-full text-sm transition-all ${selectedTraits.includes(trait) ? 'bg-orange-500 text-white' : tc('bg-white border border-orange-300 text-orange-700 hover:bg-orange-100', 'bg-slate-800 border border-orange-700 text-orange-300 hover:bg-orange-900/30')}`}>
                                         {translateTrait(trait)}
                                       </button>
                                     ))}
                                   </div>
                                 </div>
                                 {/* Mild Maladaptive */}
-                                <div className="bg-gray-100 rounded-lg p-3 mb-3">
-                                  <p className="text-xs text-gray-600 font-medium mb-2">{t('mildMaladaptive')}</p>
+                                <div className={`${tc('bg-gray-100', 'bg-slate-700')} rounded-lg p-3 mb-3`}>
+                                  <p className={`text-xs ${tc('text-gray-600', 'text-slate-400')} font-medium mb-2`}>{t('mildMaladaptive')}</p>
                                   <div className="flex flex-wrap gap-2">
                                     {traitOptions.gray.map(trait => (
-                                      <button key={trait} type="button" onClick={() => toggleEditPersonalityTrait(trait)} className={`px-3 py-1.5 rounded-full text-sm transition-all ${selectedTraits.includes(trait) ? 'bg-gray-600 text-white' : 'bg-white border border-gray-400 text-gray-700 hover:bg-gray-200'}`}>
+                                      <button key={trait} type="button" onClick={() => toggleEditPersonalityTrait(trait)} className={`px-3 py-1.5 rounded-full text-sm transition-all ${selectedTraits.includes(trait) ? 'bg-gray-600 text-white' : tc('bg-white border border-gray-400 text-gray-700 hover:bg-gray-200', 'bg-slate-800 border border-slate-500 text-slate-300 hover:bg-slate-600')}`}>
                                         {translateTrait(trait)}
                                       </button>
                                     ))}
                                   </div>
                                 </div>
                                 {/* Severe Maladaptive */}
-                                <div className="bg-red-50 rounded-lg p-3">
-                                  <p className="text-xs text-red-600 font-medium mb-2">{t('severeMaladaptive')}</p>
+                                <div className={`${tc('bg-red-50', 'bg-red-900/20')} rounded-lg p-3`}>
+                                  <p className={`text-xs ${tc('text-red-600', 'text-red-400')} font-medium mb-2`}>{t('severeMaladaptive')}</p>
                                   <div className="flex flex-wrap gap-2">
                                     {traitOptions.red.map(trait => (
-                                      <button key={trait} type="button" onClick={() => toggleEditPersonalityTrait(trait)} className={`px-3 py-1.5 rounded-full text-sm transition-all ${selectedTraits.includes(trait) ? 'bg-red-500 text-white' : 'bg-white border border-red-300 text-red-700 hover:bg-red-100'}`}>
+                                      <button key={trait} type="button" onClick={() => toggleEditPersonalityTrait(trait)} className={`px-3 py-1.5 rounded-full text-sm transition-all ${selectedTraits.includes(trait) ? 'bg-red-500 text-white' : tc('bg-white border border-red-300 text-red-700 hover:bg-red-100', 'bg-slate-800 border border-red-700 text-red-300 hover:bg-red-900/30')}`}>
                                         {translateTrait(trait)}
                                       </button>
                                     ))}
@@ -2860,73 +2908,73 @@ const HamoPro = () => {
                         </div>
 
                         {/* Emotion Patterns */}
-                        <div className="bg-yellow-50 rounded-xl p-4 border-l-4 border-yellow-400">
+                        <div className={`${tc('bg-yellow-50', 'bg-yellow-900/20')} rounded-xl p-4 border-l-4 border-yellow-400`}>
                           <div className="flex items-center space-x-2 mb-3">
-                            <Sparkles className="w-5 h-5 text-yellow-600" />
-                            <h4 className="font-semibold text-yellow-800">{t('mindEmotionPatterns')}</h4>
+                            <Sparkles className={`w-5 h-5 ${tc('text-yellow-600', 'text-yellow-400')}`} />
+                            <h4 className={`font-semibold ${tc('text-yellow-800', 'text-yellow-300')}`}>{t('mindEmotionPatterns')}</h4>
                           </div>
                           <div className="space-y-3">
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">{t('dominantEmotionsLabel')}</label>
-                              <input type="text" value={(mindEditData?.emotion_pattern?.dominant_emotions || []).join(', ')} onChange={(e) => updateMindEditArray('emotion_pattern', 'dominant_emotions', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('emotionPatternsPlaceholder')} />
+                              <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('dominantEmotionsLabel')}</label>
+                              <input type="text" value={(mindEditData?.emotion_pattern?.dominant_emotions || []).join(', ')} onChange={(e) => updateMindEditArray('emotion_pattern', 'dominant_emotions', e.target.value)} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={t('emotionPatternsPlaceholder')} />
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">{t('triggersLabel')}</label>
-                              <input type="text" value={(mindEditData?.emotion_pattern?.triggers || []).join(', ')} onChange={(e) => updateMindEditArray('emotion_pattern', 'triggers', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('triggersPlaceholder')} />
+                              <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('triggersLabel')}</label>
+                              <input type="text" value={(mindEditData?.emotion_pattern?.triggers || []).join(', ')} onChange={(e) => updateMindEditArray('emotion_pattern', 'triggers', e.target.value)} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={t('triggersPlaceholder')} />
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">{t('copingMechanismsLabel')}</label>
-                              <input type="text" value={(mindEditData?.emotion_pattern?.coping_mechanisms || []).join(', ')} onChange={(e) => updateMindEditArray('emotion_pattern', 'coping_mechanisms', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('copingMechanismsPlaceholder')} />
+                              <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('copingMechanismsLabel')}</label>
+                              <input type="text" value={(mindEditData?.emotion_pattern?.coping_mechanisms || []).join(', ')} onChange={(e) => updateMindEditArray('emotion_pattern', 'coping_mechanisms', e.target.value)} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={t('copingMechanismsPlaceholder')} />
                             </div>
                           </div>
                         </div>
 
                         {/* Cognition & Beliefs */}
-                        <div className="bg-indigo-50 rounded-xl p-4 border-l-4 border-indigo-400">
+                        <div className={`${tc('bg-indigo-50', 'bg-indigo-900/20')} rounded-xl p-4 border-l-4 border-indigo-400`}>
                           <div className="flex items-center space-x-2 mb-3">
-                            <Brain className="w-5 h-5 text-indigo-600" />
-                            <h4 className="font-semibold text-indigo-800">{t('mindCognitionBeliefs')}</h4>
+                            <Brain className={`w-5 h-5 ${tc('text-indigo-600', 'text-indigo-400')}`} />
+                            <h4 className={`font-semibold ${tc('text-indigo-800', 'text-indigo-300')}`}>{t('mindCognitionBeliefs')}</h4>
                           </div>
                           <div className="space-y-3">
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">{t('corebeliefsLabel')}</label>
-                              <input type="text" value={(mindEditData?.cognition_beliefs?.core_beliefs || []).join(', ')} onChange={(e) => updateMindEditArray('cognition_beliefs', 'core_beliefs', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('cognitionPlaceholder')} />
+                              <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('corebeliefsLabel')}</label>
+                              <input type="text" value={(mindEditData?.cognition_beliefs?.core_beliefs || []).join(', ')} onChange={(e) => updateMindEditArray('cognition_beliefs', 'core_beliefs', e.target.value)} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={t('cognitionPlaceholder')} />
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">{t('cognitiveDistortionsLabel')}</label>
-                              <input type="text" value={(mindEditData?.cognition_beliefs?.cognitive_distortions || []).join(', ')} onChange={(e) => updateMindEditArray('cognition_beliefs', 'cognitive_distortions', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('cognitiveDistortionsPlaceholder')} />
+                              <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('cognitiveDistortionsLabel')}</label>
+                              <input type="text" value={(mindEditData?.cognition_beliefs?.cognitive_distortions || []).join(', ')} onChange={(e) => updateMindEditArray('cognition_beliefs', 'cognitive_distortions', e.target.value)} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={t('cognitiveDistortionsPlaceholder')} />
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">{t('thinkingPatternsLabel')}</label>
-                              <input type="text" value={(mindEditData?.cognition_beliefs?.thinking_patterns || []).join(', ')} onChange={(e) => updateMindEditArray('cognition_beliefs', 'thinking_patterns', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('thinkingPatternsPlaceholder')} />
+                              <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('thinkingPatternsLabel')}</label>
+                              <input type="text" value={(mindEditData?.cognition_beliefs?.thinking_patterns || []).join(', ')} onChange={(e) => updateMindEditArray('cognition_beliefs', 'thinking_patterns', e.target.value)} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={t('thinkingPatternsPlaceholder')} />
                             </div>
                             <div className="grid grid-cols-3 gap-3">
                               <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">{t('selfPerception')}</label>
-                                <input type="text" value={mindEditData?.cognition_beliefs?.self_perception || ''} onChange={(e) => updateMindEditString('cognition_beliefs', 'self_perception', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('selfPerceptionPlaceholder')} />
+                                <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('selfPerception')}</label>
+                                <input type="text" value={mindEditData?.cognition_beliefs?.self_perception || ''} onChange={(e) => updateMindEditString('cognition_beliefs', 'self_perception', e.target.value)} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={t('selfPerceptionPlaceholder')} />
                               </div>
                               <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">{t('worldPerception')}</label>
-                                <input type="text" value={mindEditData?.cognition_beliefs?.world_perception || ''} onChange={(e) => updateMindEditString('cognition_beliefs', 'world_perception', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('worldPerceptionPlaceholder')} />
+                                <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('worldPerception')}</label>
+                                <input type="text" value={mindEditData?.cognition_beliefs?.world_perception || ''} onChange={(e) => updateMindEditString('cognition_beliefs', 'world_perception', e.target.value)} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={t('worldPerceptionPlaceholder')} />
                               </div>
                               <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">{t('futurePerception')}</label>
-                                <input type="text" value={mindEditData?.cognition_beliefs?.future_perception || ''} onChange={(e) => updateMindEditString('cognition_beliefs', 'future_perception', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('futurePerceptionPlaceholder')} />
+                                <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('futurePerception')}</label>
+                                <input type="text" value={mindEditData?.cognition_beliefs?.future_perception || ''} onChange={(e) => updateMindEditString('cognition_beliefs', 'future_perception', e.target.value)} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={t('futurePerceptionPlaceholder')} />
                               </div>
                             </div>
                           </div>
                         </div>
 
                         {/* Relationship Patterns */}
-                        <div className="bg-rose-50 rounded-xl p-4 border-l-4 border-rose-400">
+                        <div className={`${tc('bg-rose-50', 'bg-rose-900/20')} rounded-xl p-4 border-l-4 border-rose-400`}>
                           <div className="flex items-center space-x-2 mb-3">
-                            <User className="w-5 h-5 text-rose-600" />
-                            <h4 className="font-semibold text-rose-800">{t('mindRelationshipPatterns')}</h4>
+                            <User className={`w-5 h-5 ${tc('text-rose-600', 'text-rose-400')}`} />
+                            <h4 className={`font-semibold ${tc('text-rose-800', 'text-rose-300')}`}>{t('mindRelationshipPatterns')}</h4>
                           </div>
                           <div className="space-y-3">
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">{t('attachmentStyle')}</label>
-                              <select value={mindEditData?.relationship_manipulations?.attachment_style || ''} onChange={(e) => updateMindEditString('relationship_manipulations', 'attachment_style', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white">
+                              <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('attachmentStyle')}</label>
+                              <select value={mindEditData?.relationship_manipulations?.attachment_style || ''} onChange={(e) => updateMindEditString('relationship_manipulations', 'attachment_style', e.target.value)} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`}>
                                 <option value="">--</option>
                                 <option value="secure">{t('attachmentSecure')}</option>
                                 <option value="anxious">{t('attachmentAnxious')}</option>
@@ -2935,16 +2983,16 @@ const HamoPro = () => {
                               </select>
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">{t('relationshipPatternsLabel')}</label>
-                              <input type="text" value={(mindEditData?.relationship_manipulations?.relationship_patterns || []).join(', ')} onChange={(e) => updateMindEditArray('relationship_manipulations', 'relationship_patterns', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('relationshipPlaceholder')} />
+                              <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('relationshipPatternsLabel')}</label>
+                              <input type="text" value={(mindEditData?.relationship_manipulations?.relationship_patterns || []).join(', ')} onChange={(e) => updateMindEditArray('relationship_manipulations', 'relationship_patterns', e.target.value)} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={t('relationshipPlaceholder')} />
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">{t('communicationStyle')}</label>
-                              <input type="text" value={mindEditData?.relationship_manipulations?.communication_style || ''} onChange={(e) => updateMindEditString('relationship_manipulations', 'communication_style', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('communicationStylePlaceholder')} />
+                              <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('communicationStyle')}</label>
+                              <input type="text" value={mindEditData?.relationship_manipulations?.communication_style || ''} onChange={(e) => updateMindEditString('relationship_manipulations', 'communication_style', e.target.value)} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={t('communicationStylePlaceholder')} />
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">{t('conflictResolution')}</label>
-                              <input type="text" value={mindEditData?.relationship_manipulations?.conflict_resolution || ''} onChange={(e) => updateMindEditString('relationship_manipulations', 'conflict_resolution', e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white" placeholder={t('conflictResolutionPlaceholder')} />
+                              <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('conflictResolution')}</label>
+                              <input type="text" value={mindEditData?.relationship_manipulations?.conflict_resolution || ''} onChange={(e) => updateMindEditString('relationship_manipulations', 'conflict_resolution', e.target.value)} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={t('conflictResolutionPlaceholder')} />
                             </div>
                           </div>
                         </div>
@@ -2952,14 +3000,14 @@ const HamoPro = () => {
                         {/* Save / Cancel buttons */}
                         <div className="flex space-x-3 pt-2">
                           <button onClick={saveMindEdits} disabled={mindSaving} className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50">{mindSaving ? t('saving') : t('save')}</button>
-                          <button onClick={() => { setMindEditMode(false); setMindEditData(null); }} className="bg-gray-200 px-6 py-2 rounded-lg hover:bg-gray-300 transition-colors">{t('cancel')}</button>
+                          <button onClick={() => { setMindEditMode(false); setMindEditData(null); }} className={`${tc('bg-gray-200 hover:bg-gray-300', 'bg-slate-700 text-slate-300 hover:bg-slate-600')} px-6 py-2 rounded-lg transition-colors`}>{t('cancel')}</button>
                         </div>
                       </div>
                     ) : (
                       /* ===== READ MODE: Collapsible card layout ===== */
                       <>
                     {/* Client Info Card */}
-                    <div className="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-4 border border-gray-100">
+                    <div className={`bg-gradient-to-r ${tc('from-gray-50 to-slate-50 border-gray-100', 'from-slate-700 to-slate-700 border-slate-600')} rounded-xl p-4 border`}>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
                           {selectedMindClient?.profilePicture ? (
@@ -2970,8 +3018,8 @@ const HamoPro = () => {
                             </div>
                           )}
                           <div>
-                            <h4 className="font-semibold text-gray-900 text-lg">{mindData.name || selectedMindClient.name}</h4>
-                            <div className="flex items-center space-x-3 text-sm text-gray-500 mt-1">
+                            <h4 className={`font-semibold ${tc('text-gray-900', 'text-white')} text-lg`}>{mindData.name || selectedMindClient.name}</h4>
+                            <div className={`flex items-center space-x-3 text-sm ${tc('text-gray-500', 'text-slate-400')} mt-1`}>
                               {mindData.sex && <span className="capitalize">{t(mindData.sex) || mindData.sex}</span>}
                               {mindData.age && <span>• {mindData.age} {language === 'zh' ? '岁' : 'years old'}</span>}
                             </div>
@@ -2981,10 +3029,10 @@ const HamoPro = () => {
                           {mindData.avatar_name && (
                             <div className="flex items-center space-x-2 text-sm">
                               <Brain className="w-4 h-4 text-purple-500" />
-                              <span className="text-gray-600">{mindData.avatar_name}</span>
+                              <span className={tc('text-gray-600', 'text-slate-400')}>{mindData.avatar_name}</span>
                             </div>
                           )}
-                          <div className="flex items-center space-x-4 mt-2 text-xs text-gray-400">
+                          <div className={`flex items-center space-x-4 mt-2 text-xs ${tc('text-gray-400', 'text-slate-500')}`}>
                             {mindData.sessions !== undefined && (
                               <span className="flex items-center space-x-1">
                                 <MessageSquare className="w-3 h-3" />
@@ -3026,18 +3074,18 @@ const HamoPro = () => {
                           </div>
 
                           {expandedMindSection === 'goals' && (
-                            <div className="bg-white mx-2 mb-2 rounded-xl p-4" onClick={(e) => e.stopPropagation()}>
+                            <div className={`${tc('bg-white', 'bg-slate-800')} mx-2 mb-2 rounded-xl p-4`} onClick={(e) => e.stopPropagation()}>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   {mindData.goals && (
-                                    <div className="bg-green-50 rounded-lg p-3">
-                                      <span className="text-xs font-medium text-green-700 uppercase tracking-wide">{t('therapyGoals')}</span>
-                                      <p className="text-sm text-gray-700 mt-2">{mindData.goals}</p>
+                                    <div className={`${tc('bg-green-50', 'bg-green-900/20')} rounded-lg p-3`}>
+                                      <span className={`text-xs font-medium ${tc('text-green-700', 'text-green-400')} uppercase tracking-wide`}>{t('therapyGoals')}</span>
+                                      <p className={`text-sm ${tc('text-gray-700', 'text-slate-300')} mt-2`}>{mindData.goals}</p>
                                     </div>
                                   )}
                                   {mindData.therapy_principles && (
-                                    <div className="bg-green-50 rounded-lg p-3">
-                                      <span className="text-xs font-medium text-green-700 uppercase tracking-wide">{t('therapyPrinciples')}</span>
-                                      <p className="text-sm text-gray-700 mt-2">{mindData.therapy_principles}</p>
+                                    <div className={`${tc('bg-green-50', 'bg-green-900/20')} rounded-lg p-3`}>
+                                      <span className={`text-xs font-medium ${tc('text-green-700', 'text-green-400')} uppercase tracking-wide`}>{t('therapyPrinciples')}</span>
+                                      <p className={`text-sm ${tc('text-gray-700', 'text-slate-300')} mt-2`}>{mindData.therapy_principles}</p>
                                     </div>
                                   )}
                                 </div>
@@ -3077,20 +3125,20 @@ const HamoPro = () => {
                           </div>
 
                           {expandedMindSection === 'personality' && (
-                            <div className="bg-white mx-2 mb-2 rounded-xl p-4" onClick={(e) => e.stopPropagation()}>
+                            <div className={`${tc('bg-white', 'bg-slate-800')} mx-2 mb-2 rounded-xl p-4`} onClick={(e) => e.stopPropagation()}>
                                 <>
                                   {mindData.personality?.primary_traits?.length > 0 && (
                                     <div className="mb-4">
-                                      <span className="text-xs font-medium text-purple-600 uppercase tracking-wide">{t('allTraits')}</span>
+                                      <span className={`text-xs font-medium ${tc('text-purple-600', 'text-purple-400')} uppercase tracking-wide`}>{t('allTraits')}</span>
                                       <div className="flex flex-wrap gap-2 mt-2">
                                         {mindData.personality.primary_traits.map((trait, idx) => (
-                                          <span key={idx} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">{translateTrait(trait)}</span>
+                                          <span key={idx} className={`px-3 py-1 ${tc('bg-purple-100 text-purple-700', 'bg-purple-900/30 text-purple-300')} rounded-full text-sm font-medium`}>{translateTrait(trait)}</span>
                                         ))}
                                       </div>
                                     </div>
                                   )}
                                   {mindData.personality?.description && (
-                                    <p className="text-sm text-gray-600 bg-purple-50 rounded-lg p-3 italic mb-4">"{mindData.personality.description}"</p>
+                                    <p className={`text-sm ${tc('text-gray-600 bg-purple-50', 'text-slate-300 bg-purple-900/20')} rounded-lg p-3 italic mb-4`}>"{mindData.personality.description}"</p>
                                   )}
                                 </>
                             </div>
@@ -3129,29 +3177,29 @@ const HamoPro = () => {
                           </div>
 
                           {expandedMindSection === 'emotion_pattern' && (
-                            <div className="bg-white mx-2 mb-2 rounded-xl p-4" onClick={(e) => e.stopPropagation()}>
+                            <div className={`${tc('bg-white', 'bg-slate-800')} mx-2 mb-2 rounded-xl p-4`} onClick={(e) => e.stopPropagation()}>
                                 <>
                                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                     {mindData.emotion_pattern?.dominant_emotions?.length > 0 && (
-                                      <div className="bg-emerald-50 rounded-lg p-3">
-                                        <span className="text-xs font-medium text-emerald-600 uppercase tracking-wide">{t('dominantEmotions')}</span>
-                                        <div className="flex flex-wrap gap-1 mt-2">{mindData.emotion_pattern.dominant_emotions.map((emotion, idx) => (<span key={idx} className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-xs">{emotion}</span>))}</div>
+                                      <div className={`${tc('bg-emerald-50', 'bg-emerald-900/20')} rounded-lg p-3`}>
+                                        <span className={`text-xs font-medium ${tc('text-emerald-600', 'text-emerald-400')} uppercase tracking-wide`}>{t('dominantEmotions')}</span>
+                                        <div className="flex flex-wrap gap-1 mt-2">{mindData.emotion_pattern.dominant_emotions.map((emotion, idx) => (<span key={idx} className={`px-2 py-0.5 ${tc('bg-emerald-100 text-emerald-700', 'bg-emerald-900/30 text-emerald-300')} rounded text-xs`}>{emotion}</span>))}</div>
                                       </div>
                                     )}
                                     {mindData.emotion_pattern?.triggers?.length > 0 && (
-                                      <div className="bg-amber-50 rounded-lg p-3">
-                                        <span className="text-xs font-medium text-amber-600 uppercase tracking-wide">{t('triggers')}</span>
-                                        <div className="flex flex-wrap gap-1 mt-2">{mindData.emotion_pattern.triggers.map((trigger, idx) => (<span key={idx} className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-xs">{trigger}</span>))}</div>
+                                      <div className={`${tc('bg-amber-50', 'bg-amber-900/20')} rounded-lg p-3`}>
+                                        <span className={`text-xs font-medium ${tc('text-amber-600', 'text-amber-400')} uppercase tracking-wide`}>{t('triggers')}</span>
+                                        <div className="flex flex-wrap gap-1 mt-2">{mindData.emotion_pattern.triggers.map((trigger, idx) => (<span key={idx} className={`px-2 py-0.5 ${tc('bg-amber-100 text-amber-700', 'bg-amber-900/30 text-amber-300')} rounded text-xs`}>{trigger}</span>))}</div>
                                       </div>
                                     )}
                                     {mindData.emotion_pattern?.coping_mechanisms?.length > 0 && (
-                                      <div className="bg-green-50 rounded-lg p-3">
-                                        <span className="text-xs font-medium text-green-600 uppercase tracking-wide">{t('copingMechanisms')}</span>
-                                        <div className="flex flex-wrap gap-1 mt-2">{mindData.emotion_pattern.coping_mechanisms.map((mechanism, idx) => (<span key={idx} className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs">{mechanism}</span>))}</div>
+                                      <div className={`${tc('bg-green-50', 'bg-green-900/20')} rounded-lg p-3`}>
+                                        <span className={`text-xs font-medium ${tc('text-green-600', 'text-green-400')} uppercase tracking-wide`}>{t('copingMechanisms')}</span>
+                                        <div className="flex flex-wrap gap-1 mt-2">{mindData.emotion_pattern.coping_mechanisms.map((mechanism, idx) => (<span key={idx} className={`px-2 py-0.5 ${tc('bg-green-100 text-green-700', 'bg-green-900/30 text-green-300')} rounded text-xs`}>{mechanism}</span>))}</div>
                                       </div>
                                     )}
                                   </div>
-                                  {mindData.emotion_pattern?.description && (<p className="text-sm text-gray-600 bg-emerald-50 rounded-lg p-3 italic mb-4">"{mindData.emotion_pattern.description}"</p>)}
+                                  {mindData.emotion_pattern?.description && (<p className={`text-sm ${tc('text-gray-600 bg-emerald-50', 'text-slate-300 bg-emerald-900/20')} rounded-lg p-3 italic mb-4`}>"{mindData.emotion_pattern.description}"</p>)}
                                 </>
                             </div>
                           )}
@@ -3189,33 +3237,33 @@ const HamoPro = () => {
                           </div>
 
                           {expandedMindSection === 'cognition_beliefs' && (
-                            <div className="bg-white mx-2 mb-2 rounded-xl p-4" onClick={(e) => e.stopPropagation()}>
+                            <div className={`${tc('bg-white', 'bg-slate-800')} mx-2 mb-2 rounded-xl p-4`} onClick={(e) => e.stopPropagation()}>
                                 <>
                                   <div className="space-y-3 mb-4">
                                     {mindData.cognition_beliefs?.core_beliefs?.length > 0 && (
-                                      <div className="bg-amber-50 rounded-lg p-3">
-                                        <span className="text-xs font-medium text-amber-700 uppercase tracking-wide">{t('coreBeliefs')}</span>
-                                        <div className="mt-2 space-y-1">{mindData.cognition_beliefs.core_beliefs.map((belief, idx) => (<div key={idx} className="flex items-start space-x-2"><span className="text-amber-500 mt-1">•</span><span className="text-sm text-gray-700">{belief}</span></div>))}</div>
+                                      <div className={`${tc('bg-amber-50', 'bg-amber-900/20')} rounded-lg p-3`}>
+                                        <span className={`text-xs font-medium ${tc('text-amber-700', 'text-amber-400')} uppercase tracking-wide`}>{t('coreBeliefs')}</span>
+                                        <div className="mt-2 space-y-1">{mindData.cognition_beliefs.core_beliefs.map((belief, idx) => (<div key={idx} className="flex items-start space-x-2"><span className="text-amber-500 mt-1">•</span><span className={`text-sm ${tc('text-gray-700', 'text-slate-300')}`}>{belief}</span></div>))}</div>
                                       </div>
                                     )}
                                     {mindData.cognition_beliefs?.cognitive_distortions?.length > 0 && (
-                                      <div className="bg-red-50 rounded-lg p-3">
-                                        <span className="text-xs font-medium text-red-600 uppercase tracking-wide">{t('cognitiveDistortions')}</span>
-                                        <div className="flex flex-wrap gap-2 mt-2">{mindData.cognition_beliefs.cognitive_distortions.map((d, idx) => (<span key={idx} className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium">{d}</span>))}</div>
+                                      <div className={`${tc('bg-red-50', 'bg-red-900/20')} rounded-lg p-3`}>
+                                        <span className={`text-xs font-medium ${tc('text-red-600', 'text-red-400')} uppercase tracking-wide`}>{t('cognitiveDistortions')}</span>
+                                        <div className="flex flex-wrap gap-2 mt-2">{mindData.cognition_beliefs.cognitive_distortions.map((d, idx) => (<span key={idx} className={`px-2 py-1 ${tc('bg-red-100 text-red-700', 'bg-red-900/30 text-red-300')} rounded text-xs font-medium`}>{d}</span>))}</div>
                                       </div>
                                     )}
                                     {mindData.cognition_beliefs?.thinking_patterns?.length > 0 && (
-                                      <div className="bg-amber-50 rounded-lg p-3">
-                                        <span className="text-xs font-medium text-amber-700 uppercase tracking-wide">{t('thinkingPatterns')}</span>
-                                        <div className="flex flex-wrap gap-2 mt-2">{mindData.cognition_beliefs.thinking_patterns.map((p, idx) => (<span key={idx} className="px-2 py-1 bg-amber-100 text-amber-700 rounded text-xs">{p}</span>))}</div>
+                                      <div className={`${tc('bg-amber-50', 'bg-amber-900/20')} rounded-lg p-3`}>
+                                        <span className={`text-xs font-medium ${tc('text-amber-700', 'text-amber-400')} uppercase tracking-wide`}>{t('thinkingPatterns')}</span>
+                                        <div className="flex flex-wrap gap-2 mt-2">{mindData.cognition_beliefs.thinking_patterns.map((p, idx) => (<span key={idx} className={`px-2 py-1 ${tc('bg-amber-100 text-amber-700', 'bg-amber-900/30 text-amber-300')} rounded text-xs`}>{p}</span>))}</div>
                                       </div>
                                     )}
                                   </div>
                                   {(mindData.cognition_beliefs?.self_perception || mindData.cognition_beliefs?.world_perception || mindData.cognition_beliefs?.future_perception) && (
                                     <div className="grid grid-cols-3 gap-3 mb-4">
-                                      {mindData.cognition_beliefs.self_perception && (<div className="bg-gray-50 rounded-lg p-3 text-center"><div className="text-xs font-medium text-gray-600 uppercase tracking-wide mb-1">{t('selfPerception')}</div><div className="text-sm text-gray-700">{mindData.cognition_beliefs.self_perception}</div></div>)}
-                                      {mindData.cognition_beliefs.world_perception && (<div className="bg-gray-50 rounded-lg p-3 text-center"><div className="text-xs font-medium text-gray-600 uppercase tracking-wide mb-1">{t('worldPerception')}</div><div className="text-sm text-gray-700">{mindData.cognition_beliefs.world_perception}</div></div>)}
-                                      {mindData.cognition_beliefs.future_perception && (<div className="bg-gray-50 rounded-lg p-3 text-center"><div className="text-xs font-medium text-gray-600 uppercase tracking-wide mb-1">{t('futurePerception')}</div><div className="text-sm text-gray-700">{mindData.cognition_beliefs.future_perception}</div></div>)}
+                                      {mindData.cognition_beliefs.self_perception && (<div className={`${tc('bg-gray-50', 'bg-slate-700')} rounded-lg p-3 text-center`}><div className={`text-xs font-medium ${tc('text-gray-600', 'text-slate-400')} uppercase tracking-wide mb-1`}>{t('selfPerception')}</div><div className={`text-sm ${tc('text-gray-700', 'text-slate-300')}`}>{mindData.cognition_beliefs.self_perception}</div></div>)}
+                                      {mindData.cognition_beliefs.world_perception && (<div className={`${tc('bg-gray-50', 'bg-slate-700')} rounded-lg p-3 text-center`}><div className={`text-xs font-medium ${tc('text-gray-600', 'text-slate-400')} uppercase tracking-wide mb-1`}>{t('worldPerception')}</div><div className={`text-sm ${tc('text-gray-700', 'text-slate-300')}`}>{mindData.cognition_beliefs.world_perception}</div></div>)}
+                                      {mindData.cognition_beliefs.future_perception && (<div className={`${tc('bg-gray-50', 'bg-slate-700')} rounded-lg p-3 text-center`}><div className={`text-xs font-medium ${tc('text-gray-600', 'text-slate-400')} uppercase tracking-wide mb-1`}>{t('futurePerception')}</div><div className={`text-sm ${tc('text-gray-700', 'text-slate-300')}`}>{mindData.cognition_beliefs.future_perception}</div></div>)}
                                     </div>
                                   )}
                                 </>
@@ -3255,32 +3303,32 @@ const HamoPro = () => {
                           </div>
 
                           {expandedMindSection === 'relationship_manipulations' && (
-                            <div className="bg-white mx-2 mb-2 rounded-xl p-4" onClick={(e) => e.stopPropagation()}>
+                            <div className={`${tc('bg-white', 'bg-slate-800')} mx-2 mb-2 rounded-xl p-4`} onClick={(e) => e.stopPropagation()}>
                                 <>
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                     {mindData.relationship_manipulations?.attachment_style && (
-                                      <div className="bg-blue-50 rounded-lg p-3">
-                                        <span className="text-xs font-medium text-blue-600 uppercase tracking-wide">{t('attachmentStyle')}</span>
-                                        <div className="mt-1"><span className="px-3 py-1 bg-blue-200 text-blue-800 rounded-full text-sm font-semibold capitalize">{t(`attachment${mindData.relationship_manipulations.attachment_style.charAt(0).toUpperCase() + mindData.relationship_manipulations.attachment_style.slice(1)}`) || mindData.relationship_manipulations.attachment_style}</span></div>
+                                      <div className={`${tc('bg-blue-50', 'bg-blue-900/20')} rounded-lg p-3`}>
+                                        <span className={`text-xs font-medium ${tc('text-blue-600', 'text-blue-400')} uppercase tracking-wide`}>{t('attachmentStyle')}</span>
+                                        <div className="mt-1"><span className={`px-3 py-1 ${tc('bg-blue-200 text-blue-800', 'bg-blue-900/40 text-blue-300')} rounded-full text-sm font-semibold capitalize`}>{t(`attachment${mindData.relationship_manipulations.attachment_style.charAt(0).toUpperCase() + mindData.relationship_manipulations.attachment_style.slice(1)}`) || mindData.relationship_manipulations.attachment_style}</span></div>
                                       </div>
                                     )}
                                     {mindData.relationship_manipulations?.communication_style && (
-                                      <div className="bg-blue-50 rounded-lg p-3">
-                                        <span className="text-xs font-medium text-blue-600 uppercase tracking-wide">{t('communicationStyle')}</span>
-                                        <div className="text-sm text-gray-700 mt-1">{mindData.relationship_manipulations.communication_style}</div>
+                                      <div className={`${tc('bg-blue-50', 'bg-blue-900/20')} rounded-lg p-3`}>
+                                        <span className={`text-xs font-medium ${tc('text-blue-600', 'text-blue-400')} uppercase tracking-wide`}>{t('communicationStyle')}</span>
+                                        <div className={`text-sm ${tc('text-gray-700', 'text-slate-300')} mt-1`}>{mindData.relationship_manipulations.communication_style}</div>
                                       </div>
                                     )}
                                   </div>
                                   {mindData.relationship_manipulations?.relationship_patterns?.length > 0 && (
-                                    <div className="bg-blue-50 rounded-lg p-3 mb-4">
-                                      <span className="text-xs font-medium text-blue-600 uppercase tracking-wide">{t('mindRelationshipPatterns')}</span>
-                                      <div className="flex flex-wrap gap-2 mt-2">{mindData.relationship_manipulations.relationship_patterns.map((pattern, idx) => (<span key={idx} className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">{pattern}</span>))}</div>
+                                    <div className={`${tc('bg-blue-50', 'bg-blue-900/20')} rounded-lg p-3 mb-4`}>
+                                      <span className={`text-xs font-medium ${tc('text-blue-600', 'text-blue-400')} uppercase tracking-wide`}>{t('mindRelationshipPatterns')}</span>
+                                      <div className="flex flex-wrap gap-2 mt-2">{mindData.relationship_manipulations.relationship_patterns.map((pattern, idx) => (<span key={idx} className={`px-2 py-1 ${tc('bg-blue-100 text-blue-700', 'bg-blue-900/30 text-blue-300')} rounded text-xs`}>{pattern}</span>))}</div>
                                     </div>
                                   )}
                                   {mindData.relationship_manipulations?.conflict_resolution && (
-                                    <div className="bg-gray-50 rounded-lg p-3 mb-4">
-                                      <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">{t('conflictResolution')}</span>
-                                      <div className="text-sm text-gray-700 mt-1">{mindData.relationship_manipulations.conflict_resolution}</div>
+                                    <div className={`${tc('bg-gray-50', 'bg-slate-700')} rounded-lg p-3 mb-4`}>
+                                      <span className={`text-xs font-medium ${tc('text-gray-600', 'text-slate-400')} uppercase tracking-wide`}>{t('conflictResolution')}</span>
+                                      <div className={`text-sm ${tc('text-gray-700', 'text-slate-300')} mt-1`}>{mindData.relationship_manipulations.conflict_resolution}</div>
                                     </div>
                                   )}
                                 </>
@@ -3292,7 +3340,7 @@ const HamoPro = () => {
                     </div>
 
                     {/* Footer with metadata */}
-                    <div className="flex justify-between items-center text-xs text-gray-400 pt-3 border-t border-gray-100">
+                    <div className={`flex justify-between items-center text-xs ${tc('text-gray-400', 'text-slate-500')} pt-3 border-t ${tc('border-gray-100', 'border-slate-700')}`}>
                       <div className="flex items-center space-x-4">
                         {mindData.connected_at && (
                           <span className="flex items-center space-x-1">
@@ -3318,15 +3366,15 @@ const HamoPro = () => {
                     )}
                   </div>
                 ) : (
-                  <div className="text-center py-12 text-gray-500">{t('noAiMindData')}</div>
+                  <div className={`text-center py-12 ${tc('text-gray-500', 'text-slate-400')}`}>{t('noAiMindData')}</div>
                 )}
                 </div>
               </div>
             )}
 
             {selectedClient && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4" onClick={() => { setSelectedClient(null); setCurrentPsvs(null); }}>
-                <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+              <div className={`fixed inset-0 ${tc('bg-black bg-opacity-50', 'bg-black bg-opacity-70')} flex items-center justify-center z-50 px-4`} onClick={() => { setSelectedClient(null); setCurrentPsvs(null); }}>
+                <div className={`${tc('bg-white', 'bg-slate-800')} rounded-2xl ${tc('shadow-2xl', 'shadow-2xl shadow-black/40')} max-w-lg w-full max-h-[90vh] overflow-hidden`} onClick={(e) => e.stopPropagation()}>
                   {/* Header */}
                   <div className="bg-gradient-to-r from-blue-500 to-cyan-500 px-6 py-4 rounded-t-2xl">
                     <div className="flex justify-between items-center">
@@ -3364,15 +3412,15 @@ const HamoPro = () => {
 
                   {/* PSVS Status Bar - Clickable to expand detail */}
                   <div
-                    className={`border-b px-4 py-3 cursor-pointer transition-colors ${
-                      showStressDetail ? 'bg-blue-50' : 'bg-gray-50 hover:bg-gray-100'
+                    className={`border-b ${tc('', 'border-slate-700')} px-4 py-3 cursor-pointer transition-colors ${
+                      showStressDetail ? tc('bg-blue-50', 'bg-blue-900/20') : tc('bg-gray-50 hover:bg-gray-100', 'bg-slate-700 hover:bg-slate-600')
                     }`}
                     onClick={() => setShowStressDetail(!showStressDetail)}
                   >
                     <div className="flex justify-between items-center">
                       {/* Stress Level */}
                       <div className="flex-1 text-center">
-                        <p className="text-xs text-gray-500 mb-1">{t('stressLevel')}</p>
+                        <p className={`text-xs ${tc('text-gray-500', 'text-slate-400')} mb-1`}>{t('stressLevel')}</p>
                         <div className="flex items-center justify-center space-x-1">
                           <span className={`text-lg font-bold ${
                             currentPsvs?.stress_level >= 7 ? 'text-red-500' :
@@ -3385,11 +3433,11 @@ const HamoPro = () => {
                         </div>
                       </div>
 
-                      <div className="w-px h-10 bg-gray-200"></div>
+                      <div className={`w-px h-10 ${tc('bg-gray-200', 'bg-slate-600')}`}></div>
 
                       {/* Energy State */}
                       <div className="flex-1 text-center">
-                        <p className="text-xs text-gray-500 mb-1">{t('energyState')}</p>
+                        <p className={`text-xs ${tc('text-gray-500', 'text-slate-400')} mb-1`}>{t('energyState')}</p>
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                           currentPsvs?.energy_state === 'neurotic' ? 'bg-red-100 text-red-700' :
                           currentPsvs?.energy_state === 'negative' ? 'bg-yellow-100 text-yellow-700' :
@@ -3413,7 +3461,7 @@ const HamoPro = () => {
                       </div>
 
                       {/* Expand chevron */}
-                      <div className="pl-2 text-gray-400">
+                      <div className={`pl-2 ${tc('text-gray-400', 'text-slate-500')}`}>
                         {showStressDetail ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                       </div>
                     </div>
@@ -3482,11 +3530,11 @@ const HamoPro = () => {
                     const hasAWEHB = stressIndicatorsData !== null;
 
                     return (
-                      <div className="bg-white border-b px-4 py-3 max-h-[50vh] overflow-y-auto">
+                      <div className={`${tc('bg-white', 'bg-slate-800')} ${tc('border-b', 'border-b border-slate-700')} px-4 py-3 max-h-[50vh] overflow-y-auto`}>
                         {/* Stress Level History Chart */}
                         <div className="mb-4">
                           <div className="flex items-center justify-between mb-2">
-                            <h4 className="text-xs font-bold text-gray-700 uppercase">{t('stressLevelHistory')}</h4>
+                            <h4 className={`text-xs font-bold ${tc('text-gray-700', 'text-slate-300')} uppercase`}>{t('stressLevelHistory')}</h4>
                             <div className="flex items-center space-x-3 text-[10px]">
                               <span className="flex items-center"><span className="w-2 h-2 rounded-full bg-green-500 mr-1"></span>&lt;4 {t('positive')}</span>
                               <span className="flex items-center"><span className="w-2 h-2 rounded-full bg-yellow-500 mr-1"></span>4-7 {t('negative')}</span>
@@ -3529,7 +3577,7 @@ const HamoPro = () => {
                               <text x={padL + plotW} y={svgH - 4} textAnchor="end" fontSize="8" fill="#9ca3af">{`${t('latest')} \u2192`}</text>
                             </svg>
                           ) : (
-                            <div className="text-center py-4 text-gray-400 text-sm">
+                            <div className={`text-center py-4 ${tc('text-gray-400', 'text-slate-500')} text-sm`}>
                               {language === 'zh' ? '暂无压力数据' : 'No stress data available'}
                             </div>
                           )}
@@ -3537,20 +3585,20 @@ const HamoPro = () => {
                           {/* Stats row */}
                           {chartData.length > 0 && (
                             <div className="grid grid-cols-4 gap-2 mt-2">
-                              <div className="bg-gray-50 rounded-lg p-2 text-center">
-                                <p className="text-[10px] text-gray-500">{t('dataPoints')}</p>
-                                <p className="text-sm font-bold text-gray-700">{chartData.length}</p>
+                              <div className={`${tc('bg-gray-50', 'bg-slate-700')} rounded-lg p-2 text-center`}>
+                                <p className={`text-[10px] ${tc('text-gray-500', 'text-slate-400')}`}>{t('dataPoints')}</p>
+                                <p className={`text-sm font-bold ${tc('text-gray-700', 'text-slate-300')}`}>{chartData.length}</p>
                               </div>
-                              <div className="bg-gray-50 rounded-lg p-2 text-center">
-                                <p className="text-[10px] text-gray-500">{t('peakStress')}</p>
+                              <div className={`${tc('bg-gray-50', 'bg-slate-700')} rounded-lg p-2 text-center`}>
+                                <p className={`text-[10px] ${tc('text-gray-500', 'text-slate-400')}`}>{t('peakStress')}</p>
                                 <p className="text-sm font-bold text-red-500">{peakStress.toFixed(1)}</p>
                               </div>
-                              <div className="bg-gray-50 rounded-lg p-2 text-center">
-                                <p className="text-[10px] text-gray-500">{t('minStress')}</p>
+                              <div className={`${tc('bg-gray-50', 'bg-slate-700')} rounded-lg p-2 text-center`}>
+                                <p className={`text-[10px] ${tc('text-gray-500', 'text-slate-400')}`}>{t('minStress')}</p>
                                 <p className="text-sm font-bold text-green-500">{minStressVal.toFixed(1)}</p>
                               </div>
-                              <div className="bg-gray-50 rounded-lg p-2 text-center">
-                                <p className="text-[10px] text-gray-500">{t('average')}</p>
+                              <div className={`${tc('bg-gray-50', 'bg-slate-700')} rounded-lg p-2 text-center`}>
+                                <p className={`text-[10px] ${tc('text-gray-500', 'text-slate-400')}`}>{t('average')}</p>
                                 <p className="text-sm font-bold text-blue-500">{avgStress.toFixed(1)}</p>
                               </div>
                             </div>
@@ -3558,9 +3606,9 @@ const HamoPro = () => {
                         </div>
 
                         {/* Stress Indicators (A/W/E/H/B) */}
-                        <div className="border-t pt-3">
-                          <h4 className="text-xs font-bold text-gray-700 uppercase mb-1">{t('stressIndicators')}</h4>
-                          <p className="text-[10px] text-gray-400 mb-3">
+                        <div className={`border-t ${tc('', 'border-slate-700')} pt-3`}>
+                          <h4 className={`text-xs font-bold ${tc('text-gray-700', 'text-slate-300')} uppercase mb-1`}>{t('stressIndicators')}</h4>
+                          <p className={`text-[10px] ${tc('text-gray-400', 'text-slate-500')} mb-3`}>
                             {hasAWEHB
                               ? `${t('fromLatestMsg')} — Gemini AI (0-3)`
                               : (language === 'zh' ? '暂无指标数据 — 发送新消息后显示' : 'No indicator data yet — send a new message to see scores')}
@@ -3574,8 +3622,8 @@ const HamoPro = () => {
                               return (
                                 <div key={item.key} className="flex items-center gap-2">
                                   <span className="text-xs font-bold w-4" style={{ color: item.color }}>{item.letter}</span>
-                                  <span className="text-xs text-gray-500 w-20 truncate">{item.label}</span>
-                                  <div className="flex-1 h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                                  <span className={`text-xs ${tc('text-gray-500', 'text-slate-400')} w-20 truncate`}>{item.label}</span>
+                                  <div className={`flex-1 h-2.5 ${tc('bg-gray-100', 'bg-slate-700')} rounded-full overflow-hidden`}>
                                     <div
                                       className="h-full rounded-full transition-all"
                                       style={{ width: `${pct}%`, backgroundColor: val === 0 ? '#d1d5db' : item.color }}
@@ -3595,7 +3643,7 @@ const HamoPro = () => {
                         </div>
 
                         {/* Tap to close hint */}
-                        <p className="text-[10px] text-gray-400 text-center mt-3 cursor-pointer" onClick={() => setShowStressDetail(false)}>
+                        <p className={`text-[10px] ${tc('text-gray-400', 'text-slate-500')} text-center mt-3 cursor-pointer`} onClick={() => setShowStressDetail(false)}>
                           {t('tapToClose')}
                         </p>
                       </div>
@@ -3610,7 +3658,7 @@ const HamoPro = () => {
                       className="p-6 overflow-y-auto max-h-[calc(90vh-180px)]"
                     >
                     {conversationsLoading ? (
-                      <div className="text-center py-12 text-gray-500">
+                      <div className={`text-center py-12 ${tc('text-gray-500', 'text-slate-400')}`}>
                         <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-3"></div>
                         <p>{t('loadingConversations')}</p>
                       </div>
@@ -3618,11 +3666,11 @@ const HamoPro = () => {
                       conversationsData.map((conv, i) => (
                         <div key={i} className="mb-4">
                           {conv.proVisible === false ? (
-                            <div className="border-l-4 border-gray-300 pl-4 mb-4">
-                              <p className="text-sm font-medium text-gray-500 mb-3">{conv.date}</p>
-                              <div className="flex items-center gap-2 p-3 rounded-lg bg-gray-50">
-                                <EyeOff size={16} className="text-gray-400 flex-shrink-0" />
-                                <p className="text-sm text-gray-400 italic">{t('hiddenFromPro')}</p>
+                            <div className={`border-l-4 ${tc('border-gray-300', 'border-slate-600')} pl-4 mb-4`}>
+                              <p className={`text-sm font-medium ${tc('text-gray-500', 'text-slate-400')} mb-3`}>{conv.date}</p>
+                              <div className={`flex items-center gap-2 p-3 rounded-lg ${tc('bg-gray-50', 'bg-slate-700')}`}>
+                                <EyeOff size={16} className={tc('text-gray-400', 'text-slate-500')} />
+                                <p className={`text-sm ${tc('text-gray-400', 'text-slate-500')} italic`}>{t('hiddenFromPro')}</p>
                               </div>
                             </div>
                           ) : conv.miniSessionGroups && conv.miniSessionGroups.length > 0 ? (
@@ -3645,29 +3693,29 @@ const HamoPro = () => {
                                   {/* Mini session collapsed header */}
                                   {!isExpanded ? (
                                     <div
-                                      className="flex items-center justify-center cursor-pointer hover:bg-gray-50 py-2 transition-colors group"
+                                      className={`flex items-center justify-center cursor-pointer ${tc('hover:bg-gray-50', 'hover:bg-slate-700')} py-2 transition-colors group`}
                                       onClick={() => toggleMiniSession(group.miniSessionId, group.messages)}
                                     >
-                                      <div className="flex-1 border-t border-gray-200"></div>
+                                      <div className={`flex-1 border-t ${tc('border-gray-200', 'border-slate-700')}`}></div>
                                       <div className="flex items-center space-x-2 px-4">
-                                        <ChevronRight className="w-3.5 h-3.5 text-gray-400 group-hover:text-blue-500" />
-                                        <span className="text-xs text-gray-400 group-hover:text-blue-500 whitespace-nowrap">
+                                        <ChevronRight className={`w-3.5 h-3.5 ${tc('text-gray-400', 'text-slate-500')} group-hover:text-blue-500`} />
+                                        <span className={`text-xs ${tc('text-gray-400', 'text-slate-500')} group-hover:text-blue-500 whitespace-nowrap`}>
                                           {timeLabel} · {group.messageCount} {t('miniSessionMessages')}
                                         </span>
                                         {group.isActive && (
                                           <span className="text-xs text-green-500 font-medium">{t('miniSessionActive')}</span>
                                         )}
                                       </div>
-                                      <div className="flex-1 border-t border-gray-200"></div>
+                                      <div className={`flex-1 border-t ${tc('border-gray-200', 'border-slate-700')}`}></div>
                                     </div>
                                   ) : (
                                     <>
                                       {/* Expanded mini session header */}
                                       <div
-                                        className="flex items-center justify-center cursor-pointer hover:bg-blue-50 py-2 transition-colors group"
+                                        className={`flex items-center justify-center cursor-pointer ${tc('hover:bg-blue-50', 'hover:bg-slate-700')} py-2 transition-colors group`}
                                         onClick={() => toggleMiniSession(group.miniSessionId, group.messages)}
                                       >
-                                        <div className="flex-1 border-t border-blue-200"></div>
+                                        <div className={`flex-1 border-t ${tc('border-blue-200', 'border-blue-800')}`}></div>
                                         <div className="flex items-center space-x-2 px-4">
                                           <ChevronDown className="w-3.5 h-3.5 text-blue-500" />
                                           <span className="text-xs text-blue-500 font-medium whitespace-nowrap">
@@ -3677,7 +3725,7 @@ const HamoPro = () => {
                                             <span className="text-xs text-green-500 font-medium">{t('miniSessionActive')}</span>
                                           )}
                                         </div>
-                                        <div className="flex-1 border-t border-blue-200"></div>
+                                        <div className={`flex-1 border-t ${tc('border-blue-200', 'border-blue-800')}`}></div>
                                       </div>
 
                                       {/* Expanded messages */}
@@ -3690,8 +3738,8 @@ const HamoPro = () => {
                                                 selectedClient.profilePicture ? (
                                                   <img src={selectedClient.profilePicture} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0 mt-1" />
                                                 ) : (
-                                                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 mt-1">
-                                                    <User className="w-4 h-4 text-gray-500" />
+                                                  <div className={`w-8 h-8 rounded-full ${tc('bg-gray-200', 'bg-slate-600')} flex items-center justify-center flex-shrink-0 mt-1`}>
+                                                    <User className={`w-4 h-4 ${tc('text-gray-500', 'text-slate-300')}`} />
                                                   </div>
                                                 )
                                               ) : (
@@ -3700,7 +3748,7 @@ const HamoPro = () => {
                                                   return avatar?.avatarPicture ? (
                                                     <img src={avatar.avatarPicture} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0 mt-1" />
                                                   ) : (
-                                                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-1">
+                                                    <div className={`w-8 h-8 rounded-full ${tc('bg-blue-100', 'bg-blue-900/30')} flex items-center justify-center flex-shrink-0 mt-1`}>
                                                       <Brain className="w-4 h-4 text-blue-500" />
                                                     </div>
                                                   );
@@ -3712,7 +3760,7 @@ const HamoPro = () => {
                                                   data-psvs={msg.psvs_snapshot ? JSON.stringify(msg.psvs_snapshot) : null}
                                                   data-message-id={msg.id}
                                                   data-role={msg.role}
-                                                  className={`p-3 rounded-lg cursor-pointer transition-all ${msg.role === 'user' ? 'bg-gray-100 hover:bg-gray-200' : 'bg-blue-50 hover:bg-blue-100'} ${String(currentPsvs?.messageId) === String(msg.id) ? 'ring-2 ring-blue-400' : ''}`}
+                                                  className={`p-3 rounded-lg cursor-pointer transition-all ${msg.role === 'user' ? tc('bg-gray-100 hover:bg-gray-200', 'bg-slate-700 hover:bg-slate-600') : tc('bg-blue-50 hover:bg-blue-100', 'bg-blue-900/20 hover:bg-blue-900/30')} ${String(currentPsvs?.messageId) === String(msg.id) ? 'ring-2 ring-blue-400' : ''}`}
                                                   onClick={() => msg.role === 'user' && msg.psvs_snapshot && setCurrentPsvs({ ...msg.psvs_snapshot, messageId: msg.id })}
                                                 >
                                                   <div className="flex justify-between mb-1">
@@ -3725,12 +3773,12 @@ const HamoPro = () => {
                                                           'bg-green-500'
                                                         }`} title={`Stress: ${msg.psvs_snapshot.stress_level?.toFixed(1)}`}></span>
                                                       )}
-                                                      <span className="text-xs text-gray-400">
+                                                      <span className={`text-xs ${tc('text-gray-400', 'text-slate-500')}`}>
                                                         {msg.timestamp ? new Date(msg.timestamp.endsWith('Z') ? msg.timestamp : msg.timestamp + 'Z').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : ''}
                                                       </span>
                                                     </div>
                                                   </div>
-                                                  <p className="text-sm">{msg.content}</p>
+                                                  <p className={`text-sm ${tc('', 'text-slate-200')}`}>{msg.content}</p>
                                                   {/* Supervise button - only on avatar messages */}
                                                   {msg.role !== 'user' && (
                                                     <div className="flex justify-end mt-1">
@@ -3745,7 +3793,7 @@ const HamoPro = () => {
                                                             setSupervisionText(msg.supervision?.text || '');
                                                           }
                                                         }}
-                                                        className="text-xs text-gray-400 hover:text-blue-500 flex items-center space-x-1 transition-colors"
+                                                        className={`text-xs ${tc('text-gray-400', 'text-slate-500')} hover:text-blue-500 flex items-center space-x-1 transition-colors`}
                                                         title={t('superviseMessage')}
                                                       >
                                                         <Edit3 className="w-3 h-3" />
@@ -3756,18 +3804,18 @@ const HamoPro = () => {
                                                 </div>
                                                 {/* Supervision input area */}
                                                 {msg.role !== 'user' && supervisingMessageId === msg.id && (
-                                                  <div className="mt-2 ml-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                                                  <div className={`mt-2 ml-2 p-3 ${tc('bg-amber-50 border-amber-200', 'bg-amber-900/20 border-amber-800')} border rounded-lg`}>
                                                     <textarea
                                                       value={supervisionText}
                                                       onChange={(e) => setSupervisionText(e.target.value)}
                                                       placeholder={t('supervisionPlaceholder')}
-                                                      className="w-full text-sm border border-amber-300 rounded p-2 resize-none focus:outline-none focus:ring-1 focus:ring-amber-400"
+                                                      className={`w-full text-sm border ${tc('border-amber-300 bg-white text-gray-900', 'border-amber-700 bg-slate-900 text-white')} rounded p-2 resize-none focus:outline-none focus:ring-1 focus:ring-amber-400`}
                                                       rows={3}
                                                     />
                                                     <div className="flex justify-end space-x-2 mt-2">
                                                       <button
                                                         onClick={() => { setSupervisingMessageId(null); setSupervisionText(''); }}
-                                                        className="px-3 py-1 text-xs text-gray-500 hover:text-gray-700"
+                                                        className={`px-3 py-1 text-xs ${tc('text-gray-500 hover:text-gray-700', 'text-slate-400 hover:text-slate-200')}`}
                                                       >
                                                         {t('cancel')}
                                                       </button>
@@ -3784,7 +3832,7 @@ const HamoPro = () => {
                                                 )}
                                                 {/* Display saved supervision note */}
                                                 {msg.supervision?.text && supervisingMessageId !== msg.id && (
-                                                  <div className="mt-2 ml-2 p-2 bg-amber-50 border-l-4 border-amber-400 rounded-r-lg">
+                                                  <div className={`mt-2 ml-2 p-2 ${tc('bg-amber-50', 'bg-amber-900/20')} border-l-4 border-amber-400 rounded-r-lg`}>
                                                     <div className="flex items-center justify-between mb-1">
                                                       <span className="text-xs font-medium text-amber-700">{t('superviseMessage')}</span>
                                                       <span className="text-xs text-amber-500">
@@ -3807,7 +3855,7 @@ const HamoPro = () => {
                                             </div>
                                           ))
                                         ) : (
-                                          <p className="text-sm text-gray-400 italic">{t('noMessagesInSession')}</p>
+                                          <p className={`text-sm ${tc('text-gray-400', 'text-slate-500')} italic`}>{t('noMessagesInSession')}</p>
                                         )}
                                       </div>
                                     </>
@@ -3816,15 +3864,15 @@ const HamoPro = () => {
                               );
                             })
                           ) : (
-                            <div className="border-l-4 border-gray-300 pl-4">
-                              <p className="text-sm font-medium text-gray-500 mb-3">{conv.date}</p>
-                              <p className="text-sm text-gray-400 italic">{t('noMessagesInSession')}</p>
+                            <div className={`border-l-4 ${tc('border-gray-300', 'border-slate-600')} pl-4`}>
+                              <p className={`text-sm font-medium ${tc('text-gray-500', 'text-slate-400')} mb-3`}>{conv.date}</p>
+                              <p className={`text-sm ${tc('text-gray-400', 'text-slate-500')} italic`}>{t('noMessagesInSession')}</p>
                             </div>
                           )}
                         </div>
                       ))
                     ) : (
-                      <div className="text-center py-12 text-gray-500">{t('noConversationsYet')}</div>
+                      <div className={`text-center py-12 ${tc('text-gray-500', 'text-slate-400')}`}>{t('noConversationsYet')}</div>
                     )}
                     </div>
 
@@ -3850,34 +3898,37 @@ const HamoPro = () => {
         {activeTab === 'settings' && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">{t('settings')}</h2>
-              <LanguageToggle />
+              <h2 className={`text-xl font-semibold ${tc('', 'text-white')}`}>{t('settings')}</h2>
+              <div className="flex items-center space-x-3">
+                <ThemeToggle />
+                <LanguageToggle />
+              </div>
             </div>
 
             {/* Profile Settings */}
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">{t('profileSettings')}</h3>
+            <div className={`${tc('bg-white', 'bg-slate-800')} rounded-xl ${tc('shadow-md', 'shadow-lg shadow-black/20')} p-6`}>
+              <h3 className={`text-lg font-semibold ${tc('text-gray-900', 'text-white')} mb-6`}>{t('profileSettings')}</h3>
 
               <div className="space-y-4">
                 {/* Nickname */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('nickname')}</label>
+                  <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('nickname')}</label>
                   <input
                     type="text"
                     value={profileForm.full_name}
                     onChange={(e) => setProfileForm({ ...profileForm, full_name: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className={`w-full px-4 py-3 border ${tc('border-gray-300 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
                     placeholder={t('nickname')}
                   />
                 </div>
 
                 {/* Sex */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('sex')}</label>
+                  <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('sex')}</label>
                   <select
                     value={profileForm.sex}
                     onChange={(e) => setProfileForm({ ...profileForm, sex: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+                    className={`w-full px-4 py-3 border ${tc('border-gray-300 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
                   >
                     <option value="">{t('sex')}</option>
                     <option value="male">{t('male')}</option>
@@ -3888,12 +3939,12 @@ const HamoPro = () => {
 
                 {/* Age */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('age')}</label>
+                  <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('age')}</label>
                   <input
                     type="number"
                     value={profileForm.age}
                     onChange={(e) => setProfileForm({ ...profileForm, age: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className={`w-full px-4 py-3 border ${tc('border-gray-300 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
                     placeholder={t('age')}
                     min="1"
                     max="150"
@@ -3902,35 +3953,35 @@ const HamoPro = () => {
 
                 {/* Email */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('email')}</label>
+                  <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('email')}</label>
                   <input
                     type="email"
                     defaultValue={currentUser?.email || ''}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                    className={`w-full px-4 py-3 border ${tc('border-gray-300 bg-gray-50 text-gray-500', 'border-slate-600 bg-slate-700 text-slate-400')} rounded-lg`}
                     disabled
                   />
                 </div>
 
                 {/* Current Password */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('currentPassword')}</label>
+                  <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('currentPassword')}</label>
                   <input
                     type="password"
                     value={profileForm.currentPassword}
                     onChange={(e) => setProfileForm({ ...profileForm, currentPassword: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className={`w-full px-4 py-3 border ${tc('border-gray-300 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
                     placeholder="••••••••"
                   />
                 </div>
 
                 {/* New Password */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('newPassword')}</label>
+                  <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('newPassword')}</label>
                   <input
                     type="password"
                     value={profileForm.newPassword}
                     onChange={(e) => setProfileForm({ ...profileForm, newPassword: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className={`w-full px-4 py-3 border ${tc('border-gray-300 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
                     placeholder="••••••••"
                   />
                 </div>
@@ -3953,11 +4004,11 @@ const HamoPro = () => {
             </div>
 
             {/* Account Actions */}
-            <div className="bg-white rounded-xl shadow-md p-4 space-y-3">
+            <div className={`${tc('bg-white', 'bg-slate-800')} rounded-xl ${tc('shadow-md', 'shadow-lg shadow-black/20')} p-4 space-y-3`}>
               {/* Log Out */}
               <button
                 onClick={handleSignOut}
-                className="w-full flex items-center justify-center space-x-2 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                className={`w-full flex items-center justify-center space-x-2 py-3 border ${tc('border-gray-300 text-gray-700 hover:bg-gray-50', 'border-slate-600 text-slate-300 hover:bg-slate-700')} rounded-lg transition-colors`}
               >
                 <LogOut className="w-5 h-5" />
                 <span>{t('signOut')}</span>
@@ -3966,7 +4017,7 @@ const HamoPro = () => {
               {/* Delete Account */}
               <button
                 onClick={() => setShowDeleteConfirm(true)}
-                className="w-full flex items-center justify-center space-x-2 py-3 border border-red-300 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+                className={`w-full flex items-center justify-center space-x-2 py-3 border ${tc('border-red-300 text-red-600 hover:bg-red-50', 'border-red-800 text-red-400 hover:bg-red-900/20')} rounded-lg transition-colors`}
               >
                 <Trash2 className="w-5 h-5" />
                 <span>{t('deleteAccount')}</span>
@@ -3974,12 +4025,12 @@ const HamoPro = () => {
             </div>
 
             {/* Contributors Section */}
-            <div className="bg-white rounded-xl shadow-md p-4">
-              <h3 className="text-sm font-medium text-gray-500 mb-3">{t('contributors')}</h3>
+            <div className={`${tc('bg-white', 'bg-slate-800')} rounded-xl ${tc('shadow-md', 'shadow-lg shadow-black/20')} p-4`}>
+              <h3 className={`text-sm font-medium ${tc('text-gray-500', 'text-slate-400')} mb-3`}>{t('contributors')}</h3>
               <div className="overflow-hidden">
                 <div className="flex animate-marquee whitespace-nowrap">
                   {[...contributors, ...contributors].map((name, index) => (
-                    <span key={index} className="mx-4 text-gray-400 font-medium">{name}</span>
+                    <span key={index} className={`mx-4 ${tc('text-gray-400', 'text-slate-500')} font-medium`}>{name}</span>
                   ))}
                 </div>
               </div>
@@ -3998,30 +4049,30 @@ const HamoPro = () => {
 
         {/* Version number at the bottom of scrollable content */}
         <div className="text-center py-6">
-          <p className="text-xs text-gray-400">{t('version')} {APP_VERSION}</p>
+          <p className={`text-xs ${tc('text-gray-400', 'text-slate-500')}`}>{t('version')} {APP_VERSION}</p>
         </div>
       </div>
 
       {/* Fixed Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40">
+      <nav className={`fixed bottom-0 left-0 right-0 ${tc('bg-white border-t border-gray-200', 'bg-slate-800 border-t border-slate-700')} z-40`}>
         <div className="max-w-7xl mx-auto flex items-center py-3 pb-6">
           <button
             onClick={() => setActiveTab('avatars')}
-            className={`flex-1 flex flex-col items-center justify-center py-2 ${activeTab === 'avatars' ? 'text-blue-500' : 'text-gray-400'}`}
+            className={`flex-1 flex flex-col items-center justify-center py-2 ${activeTab === 'avatars' ? 'text-blue-500' : tc('text-gray-400', 'text-slate-500')}`}
           >
             <Brain className="w-6 h-6" />
             <span className="text-xs mt-1 font-medium">{t('aiAvatars')}</span>
           </button>
           <button
             onClick={() => { setActiveTab('clients'); loadUserData(); }}
-            className={`flex-1 flex flex-col items-center justify-center py-2 ${activeTab === 'clients' ? 'text-blue-500' : 'text-gray-400'}`}
+            className={`flex-1 flex flex-col items-center justify-center py-2 ${activeTab === 'clients' ? 'text-blue-500' : tc('text-gray-400', 'text-slate-500')}`}
           >
             <User className="w-6 h-6" />
             <span className="text-xs mt-1 font-medium">{t('clients')}</span>
           </button>
           <button
             onClick={() => setActiveTab('settings')}
-            className={`flex-1 flex flex-col items-center justify-center py-2 ${activeTab === 'settings' ? 'text-purple-500' : 'text-gray-400'}`}
+            className={`flex-1 flex flex-col items-center justify-center py-2 ${activeTab === 'settings' ? 'text-purple-500' : tc('text-gray-400', 'text-slate-500')}`}
           >
             <Settings className="w-6 h-6" />
             <span className="text-xs mt-1 font-medium">{t('settings')}</span>
