@@ -42,6 +42,7 @@ export const translations = {
     currentPassword: 'Current Password',
     newPassword: 'New Password',
     saveChanges: 'Save Changes',
+    savedSuccessfully: 'Saved successfully',
 
     // Avatars
     avatarTherapists: 'Avatar Therapists',
@@ -58,6 +59,19 @@ export const translations = {
     save: 'Save',
     cancel: 'Cancel',
     noAvatarsYet: 'No avatars yet. Create your first AI Avatar therapist!',
+    avatarNamePlaceholder: 'e.g., Dr. Emily Chen',
+    uploadPhoto: 'Upload Photo',
+    changePhoto: 'Change Photo',
+    otherCustom: 'Other (Custom)',
+    customSpecialtyPlaceholder: 'Enter custom specialty',
+    selectUpTo3: '(Select 1-3)',
+    customApproachPlaceholder: 'Or add custom approach',
+    aboutPlaceholder: "Describe the avatar's expertise and approach...",
+    characters: 'characters',
+    yearUnit: 'year',
+    yearsUnit: 'years',
+    monthUnit: 'month',
+    monthsUnit: 'months',
 
     // Specialties
     depressionAnxiety: 'Depression & Anxiety',
@@ -91,6 +105,12 @@ export const translations = {
     noActivity: 'No activity yet',
     aiMind: 'AI Mind',
     chatsStatus: 'Chats & Status',
+    createAvatarFirst: 'Create an avatar first',
+    clientNamePlaceholder: 'Client name',
+    selectDefault: 'Select',
+    unassigned: 'N/A',
+    ageUnit: '',
+    yearsOld: 'years old',
 
     // Initialize AI Mind
     initializeAiMind: 'Initialize AI Mind for the Client',
@@ -131,6 +151,8 @@ export const translations = {
     conflictResolutionPlaceholder: 'e.g. avoidance, compromise, confrontation',
     initializeMind: 'Initialize AI Mind',
     initializing: 'Initializing...',
+    processing: 'Processing...',
+    loadingAiMind: 'Loading AI Mind data...',
 
     // Invitation
     invitationCode: 'Invitation Code',
@@ -139,6 +161,10 @@ export const translations = {
     expiresIn: 'Expires in 24 hours',
     done: 'Done',
     generatingCode: 'Generating code...',
+    validFor24Hours: 'Valid for 24 hours',
+    clientLabel: 'Client',
+    unknown: 'Unknown',
+    registrationInstructions: 'Visit client.hamo.ai to register and enter code',
 
     // AI Mind Panel
     psychologicalProfile: 'Psychological Profile Analysis',
@@ -263,6 +289,7 @@ export const translations = {
     neurotic: 'Neurotic',
     noMessagesInSession: 'No messages in this session',
     hiddenFromPro: 'The client has turned on "Hidden from Pro". This conversation is not viewable.',
+    newMessages: 'New Messages',
     noConversationsYet: 'No conversations yet',
     loadingConversations: 'Loading conversations...',
     miniSessionMessages: 'messages',
@@ -290,6 +317,10 @@ export const translations = {
     raisesStress: 'Raises stress',
     stronglyRaises: 'Strongly raises',
     tapToClose: 'Tap to close',
+    noStressData: 'No stress data available',
+    noIndicatorData: 'No indicator data yet \u2014 send a new message to see scores',
+    monthSuffix: '/',
+    daySuffix: ' ',
 
     // Dashboard
     noClientData: 'No client data available',
@@ -305,6 +336,17 @@ export const translations = {
     loginFailed: 'Login failed. Please check your credentials.',
     registrationFailed: 'Registration failed. Please try again.',
     somethingWentWrong: 'Something went wrong. Please try again.',
+    fillAllRequired: 'Please fill in all required fields',
+    max3Approaches: 'Maximum 3 therapeutic approaches allowed',
+    aboutMaxChars: 'About section must be 280 characters or less',
+    failedCreateMind: 'Failed to create AI Mind',
+    failedCreateMindDetail: 'Please check:\n1. Backend API is running\n2. Avatar exists and belongs to you\n3. You are logged in as a therapist',
+    failedGenerateInvitation: 'Failed to generate invitation code',
+    failedGenerateInvitationDetail: 'Please check:\n1. Backend API is running\n2. AI Mind exists in database\n3. You are logged in as the correct therapist',
+    failedGenerateInvitationConnection: 'Please check your connection and try again.',
+    failedToSave: 'Failed to save',
+    failedToSaveSupervision: 'Failed to save supervision',
+    failedToDeleteSupervision: 'Failed to delete supervision',
 
     // Language
     language: 'Language',
@@ -352,6 +394,7 @@ export const translations = {
     currentPassword: '当前密码',
     newPassword: '新密码',
     saveChanges: '保存更改',
+    savedSuccessfully: '保存成功',
 
     // Avatars
     avatarTherapists: '虚拟咨询师',
@@ -368,6 +411,19 @@ export const translations = {
     save: '保存',
     cancel: '取消',
     noAvatarsYet: '暂无形象。创建您的第一个 AI 虚拟咨询师！',
+    avatarNamePlaceholder: '例如：陈医生',
+    uploadPhoto: '上传头像',
+    changePhoto: '更换头像',
+    otherCustom: '其他（自定义）',
+    customSpecialtyPlaceholder: '输入自定义专业领域',
+    selectUpTo3: '（选择1-3项）',
+    customApproachPlaceholder: '或添加自定义方法',
+    aboutPlaceholder: '描述形象的专业知识和方法...',
+    characters: '字符',
+    yearUnit: '年',
+    yearsUnit: '年',
+    monthUnit: '月',
+    monthsUnit: '月',
 
     // Specialties
     depressionAnxiety: '抑郁与焦虑',
@@ -401,6 +457,12 @@ export const translations = {
     noActivity: '暂无活跃',
     aiMind: 'AI Mind',
     chatsStatus: '对话与状态',
+    createAvatarFirst: '请先创建一个虚拟形象',
+    clientNamePlaceholder: '来访者姓名',
+    selectDefault: '请选择',
+    unassigned: '未分配',
+    ageUnit: '岁',
+    yearsOld: '岁',
 
     // Initialize AI Mind
     initializeAiMind: '为来访者初始化 AI Mind',
@@ -441,6 +503,8 @@ export const translations = {
     conflictResolutionPlaceholder: '如：回避，妥协，对抗',
     initializeMind: '初始化 AI Mind',
     initializing: '初始化中...',
+    processing: '处理中...',
+    loadingAiMind: '加载 AI Mind 数据中...',
 
     // Invitation
     invitationCode: '邀请码',
@@ -449,6 +513,10 @@ export const translations = {
     expiresIn: '24小时内有效',
     done: '完成',
     generatingCode: '生成邀请码中...',
+    validFor24Hours: '24小时内有效',
+    clientLabel: '来访者',
+    unknown: '未知',
+    registrationInstructions: '访问 client.hamo.ai 注册，输入邀请码',
 
     // AI Mind Panel
     psychologicalProfile: '心理档案分析',
@@ -573,6 +641,7 @@ export const translations = {
     neurotic: '神经质',
     noMessagesInSession: '该会话暂无消息',
     hiddenFromPro: '来访者已开启"对咨询师隐藏"。无法查看此对话。',
+    newMessages: '新消息',
     noConversationsYet: '暂无对话记录',
     loadingConversations: '加载对话中...',
     miniSessionMessages: '条消息',
@@ -600,6 +669,10 @@ export const translations = {
     raisesStress: '升高压力',
     stronglyRaises: '强烈升高',
     tapToClose: '点击收起',
+    noStressData: '暂无压力数据',
+    noIndicatorData: '暂无指标数据 \u2014 发送新消息后显示',
+    monthSuffix: '月',
+    daySuffix: '日 ',
 
     // Dashboard
     noClientData: '暂无来访者数据',
@@ -615,6 +688,17 @@ export const translations = {
     loginFailed: '登录失败，请检查您的账号密码。',
     registrationFailed: '注册失败，请重试。',
     somethingWentWrong: '出错了，请重试。',
+    fillAllRequired: '请填写所有必填项',
+    max3Approaches: '最多允许3种咨询方法',
+    aboutMaxChars: '简介不得超过280个字符',
+    failedCreateMind: '创建 AI Mind 失败',
+    failedCreateMindDetail: '请检查：\n1. 后端 API 是否运行\n2. 形象是否存在并属于您\n3. 您是否以咨询师身份登录',
+    failedGenerateInvitation: '生成邀请码失败',
+    failedGenerateInvitationDetail: '请检查：\n1. 后端 API 是否运行\n2. AI Mind 是否存在于数据库中\n3. 您是否以正确的咨询师身份登录',
+    failedGenerateInvitationConnection: '请检查您的网络连接后重试。',
+    failedToSave: '保存失败',
+    failedToSaveSupervision: '保存督导失败',
+    failedToDeleteSupervision: '删除督导失败',
 
     // Language
     language: '语言',

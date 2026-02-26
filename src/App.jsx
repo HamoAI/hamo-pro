@@ -676,17 +676,17 @@ const HamoPro = () => {
 
     if (!avatarForm.name || !specialty || approaches.length === 0 || !avatarForm.about ||
         (avatarForm.experienceYears === 0 && avatarForm.experienceMonths === 0)) {
-      alert('Please fill in all required fields');
+      alert(t('fillAllRequired'));
       return;
     }
 
     if (approaches.length > 3) {
-      alert('Maximum 3 therapeutic approaches allowed');
+      alert(t('max3Approaches'));
       return;
     }
 
     if (avatarForm.about.length > 280) {
-      alert('About section must be 280 characters or less');
+      alert(t('aboutMaxChars'));
       return;
     }
 
@@ -780,17 +780,17 @@ const HamoPro = () => {
 
     if (!avatarForm.name || !specialty || approaches.length === 0 || !avatarForm.about ||
         (avatarForm.experienceYears === 0 && avatarForm.experienceMonths === 0)) {
-      alert('Please fill in all required fields');
+      alert(t('fillAllRequired'));
       return;
     }
 
     if (approaches.length > 3) {
-      alert('Maximum 3 therapeutic approaches allowed');
+      alert(t('max3Approaches'));
       return;
     }
 
     if (avatarForm.about.length > 280) {
-      alert('About section must be 280 characters or less');
+      alert(t('aboutMaxChars'));
       return;
     }
 
@@ -980,7 +980,7 @@ const HamoPro = () => {
         console.log('✅ AI Mind created with ID:', result.mind.id);
       } else {
         // Show error message - DO NOT create fake clients
-        alert(`Failed to create AI Mind:\n${result.error}\n\nPlease check:\n1. Backend API is running\n2. Avatar exists and belongs to you\n3. You are logged in as a therapist`);
+        alert(`${t('failedCreateMind')}:\n${result.error}\n\n${t('failedCreateMindDetail')}`);
         console.error('❌ AI Mind creation failed:', result.error);
       }
 
@@ -1013,11 +1013,11 @@ const HamoPro = () => {
         setShowInvitationCard(client);
       } else {
         // Show error message to user
-        alert(`Failed to generate invitation code:\n${result.error}\n\nPlease check:\n1. Backend API is running\n2. AI Mind exists in database\n3. You are logged in as the correct therapist`);
+        alert(`${t('failedGenerateInvitation')}:\n${result.error}\n\n${t('failedGenerateInvitationDetail')}`);
         console.error('❌ Invitation generation failed:', result.error);
       }
     } catch (error) {
-      alert(`Failed to generate invitation code:\n${error.message}\n\nPlease check your connection and try again.`);
+      alert(`${t('failedGenerateInvitation')}:\n${error.message}\n\n${t('failedGenerateInvitationConnection')}`);
       console.error('❌ Failed to generate invitation code:', error);
     } finally {
       setInvitationLoading(false);
@@ -1124,11 +1124,11 @@ const HamoPro = () => {
         setMindEditMode(false);
         setMindEditData(null);
       } else {
-        alert(result.error || 'Failed to save');
+        alert(result.error || t('failedToSave'));
       }
     } catch (error) {
       console.error('Failed to save AI Mind:', error);
-      alert('Failed to save');
+      alert(t('failedToSave'));
     } finally {
       setMindSaving(false);
     }
@@ -1486,7 +1486,7 @@ const HamoPro = () => {
         setSupervisingMessageId(null);
         setSupervisionText('');
       } else {
-        alert(result.error || 'Failed to save supervision');
+        alert(result.error || t('failedToSaveSupervision'));
       }
     } catch (error) {
       console.error('Failed to supervise message:', error);
@@ -1512,7 +1512,7 @@ const HamoPro = () => {
           }))
         })));
       } else {
-        alert(result.error || 'Failed to delete supervision');
+        alert(result.error || t('failedToDeleteSupervision'));
       }
     } catch (error) {
       console.error('Failed to delete supervision:', error);
@@ -1545,13 +1545,11 @@ const HamoPro = () => {
     ctx.roundRect(10, 10, 380, 480, 16);
     ctx.fill();
 
-    const isZh = language === 'zh';
-
     // Draw title
     ctx.fillStyle = '#1F2937';
     ctx.font = 'bold 24px system-ui, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(isZh ? '邀请码' : 'Invitation Code', 200, 60);
+    ctx.fillText(t('invitationCode'), 200, 60);
 
     // Draw Hamo Pro badge
     ctx.fillStyle = '#3B82F6';
@@ -1566,7 +1564,7 @@ const HamoPro = () => {
     // Draw validity notice
     ctx.fillStyle = '#F97316';
     ctx.font = '16px system-ui, sans-serif';
-    ctx.fillText(isZh ? '24小时内有效' : 'Valid for 24 hours', 200, 230);
+    ctx.fillText(t('validFor24Hours'), 200, 230);
 
     // Draw divider line
     ctx.strokeStyle = '#E5E7EB';
@@ -1580,7 +1578,7 @@ const HamoPro = () => {
     const avatar = avatars.find(a => String(a.id) === String(showInvitationCard.avatarId) || String(a.id) === String(showInvitationCard.avatar_id));
     ctx.fillStyle = '#6B7280';
     ctx.font = '14px system-ui, sans-serif';
-    ctx.fillText(isZh ? '来访者' : 'Client', 200, 310);
+    ctx.fillText(t('clientLabel'), 200, 310);
     ctx.fillStyle = '#1F2937';
     ctx.font = 'bold 18px system-ui, sans-serif';
     ctx.fillText(showInvitationCard.name, 200, 340);
@@ -1590,12 +1588,12 @@ const HamoPro = () => {
     ctx.fillText('AI Avatar', 200, 390);
     ctx.fillStyle = '#1F2937';
     ctx.font = 'bold 18px system-ui, sans-serif';
-    ctx.fillText(avatar?.name || (isZh ? '未知' : 'Unknown'), 200, 420);
+    ctx.fillText(avatar?.name || t('unknown'), 200, 420);
 
     // Draw footer
     ctx.fillStyle = '#3B82F6';
     ctx.font = 'bold 14px system-ui, sans-serif';
-    ctx.fillText(isZh ? '访问 client.hamo.ai 注册，输入邀请码' : 'Visit client.hamo.ai to register and enter code', 200, 470);
+    ctx.fillText(t('registrationInstructions'), 200, 470);
 
     // Download the image
     const link = document.createElement('a');
@@ -1701,7 +1699,7 @@ const HamoPro = () => {
                 className="w-full bg-blue-500 text-white py-3 rounded-lg font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={authLoading}
               >
-                {authLoading ? (language === 'zh' ? '处理中...' : 'Processing...') : (authMode === 'signin' ? t('signIn') : t('createAccount'))}
+                {authLoading ? t('processing') : (authMode === 'signin' ? t('signIn') : t('createAccount'))}
               </button>
             </div>
 
@@ -1769,18 +1767,18 @@ const HamoPro = () => {
 
                 <div className={`border-t pt-4 mb-6 ${tc('border-gray-200', 'border-slate-700')}`}>
                   <div className="mb-3">
-                    <p className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>{language === 'zh' ? '来访者' : 'Client'}</p>
+                    <p className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>{t('clientLabel')}</p>
                     <p className={`font-semibold ${tc('text-gray-900', 'text-white')}`}>{showInvitationCard.name}</p>
                   </div>
                   <div>
                     <p className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>AI Avatar</p>
                     <p className={`font-semibold ${tc('text-gray-900', 'text-white')}`}>
-                      {avatars.find(a => String(a.id) === String(showInvitationCard.avatarId) || String(a.id) === String(showInvitationCard.avatar_id))?.name || (language === 'zh' ? '未知' : 'Unknown')}
+                      {avatars.find(a => String(a.id) === String(showInvitationCard.avatarId) || String(a.id) === String(showInvitationCard.avatar_id))?.name || t('unknown')}
                     </p>
                   </div>
                 </div>
 
-                <p className={`text-sm font-medium mb-6 ${tc('text-blue-500', 'text-blue-400')}`}>{language === 'zh' ? '访问 client.hamo.ai 注册，输入邀请码' : 'Visit client.hamo.ai to register and enter code'}</p>
+                <p className={`text-sm font-medium mb-6 ${tc('text-blue-500', 'text-blue-400')}`}>{t('registrationInstructions')}</p>
               </div>
 
               <div className="flex space-x-3">
@@ -1833,7 +1831,7 @@ const HamoPro = () => {
                           value={avatarForm.name}
                           onChange={(e) => setAvatarForm({ ...avatarForm, name: e.target.value })}
                           className={`w-full px-4 py-2.5 border ${tc('border-blue-200 bg-white text-gray-900', 'border-blue-800 bg-slate-900 text-white')} rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all`}
-                          placeholder={language === 'zh' ? '例如：陈医生' : 'e.g., Dr. Emily Chen'}
+                          placeholder={t('avatarNamePlaceholder')}
                         />
                       </div>
                       <div className="flex flex-col items-center">
@@ -1847,7 +1845,7 @@ const HamoPro = () => {
                             <Upload className="w-6 h-6 text-blue-400" />
                           )}
                         </div>
-                        <span className="text-xs text-blue-500 mt-1">{language === 'zh' ? '上传头像' : 'Upload Photo'}</span>
+                        <span className="text-xs text-blue-500 mt-1">{t('uploadPhoto')}</span>
                         <input
                           ref={avatarPictureInputRef}
                           type="file"
@@ -1868,7 +1866,7 @@ const HamoPro = () => {
                       >
                         <option value="">{t('selectSpecialty')}</option>
                         {getSpecialtyOptions().map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-                        <option value="custom">{language === 'zh' ? '其他（自定义）' : 'Other (Custom)'}</option>
+                        <option value="custom">{t('otherCustom')}</option>
                       </select>
                       {avatarForm.specialty === 'custom' && (
                         <input
@@ -1876,7 +1874,7 @@ const HamoPro = () => {
                           value={avatarForm.customSpecialty}
                           onChange={(e) => setAvatarForm({ ...avatarForm, customSpecialty: e.target.value })}
                           className={`w-full px-4 py-2.5 border ${tc('border-blue-200 bg-white text-gray-900', 'border-blue-800 bg-slate-900 text-white')} rounded-lg mt-2 focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all`}
-                          placeholder={language === 'zh' ? '输入自定义专业领域' : 'Enter custom specialty'}
+                          placeholder={t('customSpecialtyPlaceholder')}
                         />
                       )}
                     </div>
@@ -1889,7 +1887,7 @@ const HamoPro = () => {
                         <Brain className="w-3.5 h-3.5 text-white" />
                       </div>
                       <span className={`text-sm font-semibold ${tc('text-teal-700', 'text-teal-300')}`}>{t('therapeuticApproaches')}</span>
-                      <span className={`text-xs ${tc('text-teal-500', 'text-teal-400')} ml-1`}>{language === 'zh' ? '（选择1-3项）' : '(Select 1-3)'}</span>
+                      <span className={`text-xs ${tc('text-teal-500', 'text-teal-400')} ml-1`}>{t('selectUpTo3')}</span>
                     </div>
 
                     <div className="flex flex-wrap gap-2 mb-3">
@@ -1915,7 +1913,7 @@ const HamoPro = () => {
                       value={avatarForm.customApproach}
                       onChange={(e) => setAvatarForm({ ...avatarForm, customApproach: e.target.value })}
                       className={`w-full px-4 py-2.5 border ${tc('border-teal-200 bg-white text-gray-900', 'border-teal-800 bg-slate-900 text-white')} rounded-lg focus:ring-2 focus:ring-teal-300 focus:border-teal-300 transition-all`}
-                      placeholder={language === 'zh' ? '或添加自定义方法' : 'Or add custom approach'}
+                      placeholder={t('customApproachPlaceholder')}
                     />
                   </div>
 
@@ -1933,9 +1931,9 @@ const HamoPro = () => {
                       onChange={(e) => setAvatarForm({ ...avatarForm, about: e.target.value.slice(0, 280) })}
                       className={`w-full px-4 py-2.5 border ${tc('border-purple-200 bg-white text-gray-900', 'border-purple-800 bg-slate-900 text-white')} rounded-lg focus:ring-2 focus:ring-purple-300 focus:border-purple-300 transition-all resize-none`}
                       rows="3"
-                      placeholder={language === 'zh' ? '描述形象的专业知识和方法...' : "Describe the avatar's expertise and approach..."}
+                      placeholder={t('aboutPlaceholder')}
                     />
-                    <p className={`text-xs ${tc('text-purple-400', 'text-purple-500')} mt-1.5`}>{avatarForm.about.length}/280 {language === 'zh' ? '字符' : 'characters'}</p>
+                    <p className={`text-xs ${tc('text-purple-400', 'text-purple-500')} mt-1.5`}>{avatarForm.about.length}/280 {t('characters')}</p>
                   </div>
 
                   {/* Section 4: Experience - Amber tint */}
@@ -1955,7 +1953,7 @@ const HamoPro = () => {
                           onChange={(e) => setAvatarForm({ ...avatarForm, experienceYears: parseInt(e.target.value) })}
                           className={`w-full px-4 py-2.5 border ${tc('border-amber-200 bg-white text-gray-900', 'border-amber-800 bg-slate-900 text-white')} rounded-lg focus:ring-2 focus:ring-amber-300 focus:border-amber-300 transition-all`}
                         >
-                          {[...Array(51)].map((_, i) => <option key={i} value={i}>{i} {language === 'zh' ? '年' : (i === 1 ? 'year' : 'years')}</option>)}
+                          {[...Array(51)].map((_, i) => <option key={i} value={i}>{i} {i === 1 ? t('yearUnit') : t('yearsUnit')}</option>)}
                         </select>
                       </div>
                       <div className="flex-1">
@@ -1965,7 +1963,7 @@ const HamoPro = () => {
                           onChange={(e) => setAvatarForm({ ...avatarForm, experienceMonths: parseInt(e.target.value) })}
                           className={`w-full px-4 py-2.5 border ${tc('border-amber-200 bg-white text-gray-900', 'border-amber-800 bg-slate-900 text-white')} rounded-lg focus:ring-2 focus:ring-amber-300 focus:border-amber-300 transition-all`}
                         >
-                          {[...Array(12)].map((_, i) => <option key={i} value={i}>{i} {language === 'zh' ? '月' : (i === 1 ? 'month' : 'months')}</option>)}
+                          {[...Array(12)].map((_, i) => <option key={i} value={i}>{i} {i === 1 ? t('monthUnit') : t('monthsUnit')}</option>)}
                         </select>
                       </div>
                     </div>
@@ -2163,7 +2161,7 @@ const HamoPro = () => {
                               value={avatarForm.name}
                               onChange={(e) => setAvatarForm({ ...avatarForm, name: e.target.value })}
                               className={`w-full px-4 py-2.5 border ${tc('border-blue-200 bg-white text-gray-900', 'border-blue-800 bg-slate-900 text-white')} rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all`}
-                              placeholder={language === 'zh' ? '例如：陈医生' : 'e.g., Dr. Emily Chen'}
+                              placeholder={t('avatarNamePlaceholder')}
                             />
                           </div>
                           <div className="flex flex-col items-center">
@@ -2177,7 +2175,7 @@ const HamoPro = () => {
                                 <Upload className="w-6 h-6 text-blue-400" />
                               )}
                             </div>
-                            <span className="text-xs text-blue-500 mt-1">{language === 'zh' ? '更换头像' : 'Change Photo'}</span>
+                            <span className="text-xs text-blue-500 mt-1">{t('changePhoto')}</span>
                             <input
                               ref={avatarPictureInputRef}
                               type="file"
@@ -2198,7 +2196,7 @@ const HamoPro = () => {
                           >
                             <option value="">{t('selectSpecialty')}</option>
                             {getSpecialtyOptions().map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-                            <option value="custom">{language === 'zh' ? '其他（自定义）' : 'Other (Custom)'}</option>
+                            <option value="custom">{t('otherCustom')}</option>
                           </select>
                           {avatarForm.specialty === 'custom' && (
                             <input
@@ -2206,7 +2204,7 @@ const HamoPro = () => {
                               value={avatarForm.customSpecialty}
                               onChange={(e) => setAvatarForm({ ...avatarForm, customSpecialty: e.target.value })}
                               className={`w-full px-4 py-2.5 border ${tc('border-blue-200 bg-white text-gray-900', 'border-blue-800 bg-slate-900 text-white')} rounded-lg mt-2 focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all`}
-                              placeholder={language === 'zh' ? '输入自定义专业领域' : 'Enter custom specialty'}
+                              placeholder={t('customSpecialtyPlaceholder')}
                             />
                           )}
                         </div>
@@ -2219,7 +2217,7 @@ const HamoPro = () => {
                             <Brain className="w-3.5 h-3.5 text-white" />
                           </div>
                           <span className={`text-sm font-semibold ${tc('text-teal-700', 'text-teal-300')}`}>{t('therapeuticApproaches')}</span>
-                          <span className={`text-xs ${tc('text-teal-500', 'text-teal-400')} ml-1`}>{language === 'zh' ? '（选择1-3项）' : '(Select 1-3)'}</span>
+                          <span className={`text-xs ${tc('text-teal-500', 'text-teal-400')} ml-1`}>{t('selectUpTo3')}</span>
                         </div>
 
                         <div className="flex flex-wrap gap-2 mb-3">
@@ -2250,7 +2248,7 @@ const HamoPro = () => {
                           value={avatarForm.customApproach}
                           onChange={(e) => setAvatarForm({ ...avatarForm, customApproach: e.target.value })}
                           className={`w-full px-4 py-2.5 border ${tc('border-teal-200 bg-white text-gray-900', 'border-teal-800 bg-slate-900 text-white')} rounded-lg focus:ring-2 focus:ring-teal-300 focus:border-teal-300 transition-all`}
-                          placeholder={language === 'zh' ? '或添加自定义方法' : 'Or add custom approach'}
+                          placeholder={t('customApproachPlaceholder')}
                         />
                       </div>
 
@@ -2267,10 +2265,10 @@ const HamoPro = () => {
                           value={avatarForm.about}
                           onChange={(e) => setAvatarForm({ ...avatarForm, about: e.target.value.slice(0, 280) })}
                           className={`w-full px-4 py-2.5 border ${tc('border-purple-200 bg-white text-gray-900', 'border-purple-800 bg-slate-900 text-white')} rounded-lg h-24 resize-none focus:ring-2 focus:ring-purple-300 focus:border-purple-300 transition-all`}
-                          placeholder={language === 'zh' ? '描述形象的专业知识和方法...' : "Describe the avatar's expertise and approach..."}
+                          placeholder={t('aboutPlaceholder')}
                         />
                         <p className={`text-xs mt-1 ${avatarForm.about.length > 250 ? 'text-orange-500' : tc('text-gray-400', 'text-slate-500')}`}>
-                          {avatarForm.about.length}/280 {language === 'zh' ? '字符' : 'characters'}
+                          {avatarForm.about.length}/280 {t('characters')}
                         </p>
                       </div>
 
@@ -2291,7 +2289,7 @@ const HamoPro = () => {
                               onChange={(e) => setAvatarForm({ ...avatarForm, experienceYears: parseInt(e.target.value) })}
                               className={`w-full px-4 py-2.5 border ${tc('border-yellow-200 bg-white text-gray-900', 'border-yellow-800 bg-slate-900 text-white')} rounded-lg focus:ring-2 focus:ring-yellow-300 focus:border-yellow-300 transition-all`}
                             >
-                              {[...Array(51)].map((_, i) => <option key={i} value={i}>{i} {language === 'zh' ? '年' : 'years'}</option>)}
+                              {[...Array(51)].map((_, i) => <option key={i} value={i}>{i} {i === 1 ? t('yearUnit') : t('yearsUnit')}</option>)}
                             </select>
                           </div>
                           <div>
@@ -2301,7 +2299,7 @@ const HamoPro = () => {
                               onChange={(e) => setAvatarForm({ ...avatarForm, experienceMonths: parseInt(e.target.value) })}
                               className={`w-full px-4 py-2.5 border ${tc('border-yellow-200 bg-white text-gray-900', 'border-yellow-800 bg-slate-900 text-white')} rounded-lg focus:ring-2 focus:ring-yellow-300 focus:border-yellow-300 transition-all`}
                             >
-                              {[...Array(12)].map((_, i) => <option key={i} value={i}>{i} {language === 'zh' ? '月' : 'months'}</option>)}
+                              {[...Array(12)].map((_, i) => <option key={i} value={i}>{i} {i === 1 ? t('monthUnit') : t('monthsUnit')}</option>)}
                             </select>
                           </div>
                         </div>
@@ -2348,7 +2346,7 @@ const HamoPro = () => {
               <h2 className={`text-xl font-semibold ${tc('', 'text-white')}`}>{t('clientInstances')}</h2>
               <button onClick={() => setShowClientForm(!showClientForm)} disabled={!avatars.length} className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-lg disabled:opacity-50"><Plus className="w-5 h-5" /><span>{t('inviteClient')}</span></button>
             </div>
-            {!avatars.length && <div className={`${tc('bg-yellow-50 border-yellow-200', 'bg-yellow-900/20 border-yellow-800')} border rounded-lg p-4 ${tc('', 'text-yellow-300')}`}>{language === 'zh' ? '请先创建一个虚拟形象' : 'Create an avatar first'}</div>}
+            {!avatars.length && <div className={`${tc('bg-yellow-50 border-yellow-200', 'bg-yellow-900/20 border-yellow-800')} border rounded-lg p-4 ${tc('', 'text-yellow-300')}`}>{t('createAvatarFirst')}</div>}
             {showClientForm && avatars.length > 0 && (
               <div className={`${tc('bg-white', 'bg-slate-800')} rounded-xl ${tc('shadow-md', 'shadow-lg shadow-black/20')} p-6 space-y-4`}>
                 <h3 className={`text-lg font-semibold mb-4 ${tc('', 'text-white')}`}>{t('initializeAiMind')}</h3>
@@ -2362,12 +2360,12 @@ const HamoPro = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('clientName')}</label>
-                      <input type="text" value={clientForm.name} onChange={(e) => setClientForm({ ...clientForm, name: e.target.value })} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={language === 'zh' ? '来访者姓名' : 'Client name'} />
+                      <input type="text" value={clientForm.name} onChange={(e) => setClientForm({ ...clientForm, name: e.target.value })} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`} placeholder={t('clientNamePlaceholder')} />
                     </div>
                     <div>
                       <label className={`block text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-1`}>{t('sex')}</label>
                       <select value={clientForm.sex} onChange={(e) => setClientForm({ ...clientForm, sex: e.target.value })} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`}>
-                        <option value="">{language === 'zh' ? '请选择' : 'Select'}</option>
+                        <option value="">{t('selectDefault')}</option>
                         <option value="male">{t('male')}</option>
                         <option value="female">{t('female')}</option>
                         <option value="other">{t('other')}</option>
@@ -2663,7 +2661,7 @@ const HamoPro = () => {
                           </div>
                         )}
                         <div className="min-w-0">
-                          <p className={`font-medium text-sm truncate ${tc('', 'text-white')}`}>{avatar?.name || (language === 'zh' ? '未分配' : 'N/A')}</p>
+                          <p className={`font-medium text-sm truncate ${tc('', 'text-white')}`}>{avatar?.name || t('unassigned')}</p>
                           <p className={`text-xs ${tc('text-gray-400', 'text-slate-500')}`}>
                             {avatar ? `${avatar.experienceYears || 0}${t('years')} ${avatar.experienceMonths || 0}${t('months')}` : ''}
                           </p>
@@ -2676,7 +2674,7 @@ const HamoPro = () => {
                           <p className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>
                             {c.sex ? (t(c.sex) || c.sex) : ''}
                             {c.sex && c.age ? ', ' : ''}
-                            {c.age ? `${c.age}${language === 'zh' ? '岁' : ''}` : ''}
+                            {c.age ? `${c.age}${t('ageUnit')}` : ''}
                           </p>
                         </div>
                         <div className="flex flex-col items-center flex-shrink-0">
@@ -2778,7 +2776,7 @@ const HamoPro = () => {
                 {mindLoading ? (
                   <div className={`text-center py-12 ${tc('text-gray-500', 'text-slate-400')}`}>
                     <div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-3"></div>
-                    <p>{language === 'zh' ? '加载 AI Mind 数据中...' : 'Loading AI Mind data...'}</p>
+                    <p>{t('loadingAiMind')}</p>
                   </div>
                 ) : mindData?.error ? (
                   <div className="text-center py-12 text-red-500">{mindData.error}</div>
@@ -3029,7 +3027,7 @@ const HamoPro = () => {
                             <h4 className={`font-semibold ${tc('text-gray-900', 'text-white')} text-lg`}>{mindData.name || selectedMindClient.name}</h4>
                             <div className={`flex items-center space-x-3 text-sm ${tc('text-gray-500', 'text-slate-400')} mt-1`}>
                               {mindData.sex && <span className="capitalize">{t(mindData.sex) || mindData.sex}</span>}
-                              {mindData.age && <span>• {mindData.age} {language === 'zh' ? '岁' : 'years old'}</span>}
+                              {mindData.age && <span>• {mindData.age} {t('yearsOld')}</span>}
                             </div>
                           </div>
                         </div>
@@ -3580,13 +3578,13 @@ const HamoPro = () => {
                               {/* X axis labels */}
                               <text x={padL} y={svgH - 4} fontSize="8" fill="#9ca3af">{`\u2190 ${t('earlier')}`}</text>
                               <text x={padL + plotW / 2} y={svgH - 4} textAnchor="middle" fontSize="8" fill="#9ca3af">
-                                {chartData.length} {language === 'zh' ? '条消息' : 'messages'}
+                                {chartData.length} {t('miniSessionMessages')}
                               </text>
                               <text x={padL + plotW} y={svgH - 4} textAnchor="end" fontSize="8" fill="#9ca3af">{`${t('latest')} \u2192`}</text>
                             </svg>
                           ) : (
                             <div className={`text-center py-4 ${tc('text-gray-400', 'text-slate-500')} text-sm`}>
-                              {language === 'zh' ? '暂无压力数据' : 'No stress data available'}
+                              {t('noStressData')}
                             </div>
                           )}
 
@@ -3619,7 +3617,7 @@ const HamoPro = () => {
                           <p className={`text-[10px] ${tc('text-gray-400', 'text-slate-500')} mb-3`}>
                             {hasAWEHB
                               ? `${t('fromLatestMsg')} — Gemini AI (0-3)`
-                              : (language === 'zh' ? '暂无指标数据 — 发送新消息后显示' : 'No indicator data yet — send a new message to see scores')}
+                              : t('noIndicatorData')}
                           </p>
 
                           <div className="space-y-2.5">
@@ -3693,7 +3691,7 @@ const HamoPro = () => {
                                 return isNaN(d.getTime()) ? new Date(ts) : d;
                               })();
                               const timeLabel = msTime && !isNaN(msTime.getTime())
-                                ? `${msTime.getMonth() + 1}${language === 'zh' ? '月' : '/'}${msTime.getDate()}${language === 'zh' ? '日 ' : ' '}${String(msTime.getHours()).padStart(2, '0')}:${String(msTime.getMinutes()).padStart(2, '0')}`
+                                ? `${msTime.getMonth() + 1}${t('monthSuffix')}${msTime.getDate()}${t('daySuffix')}${String(msTime.getHours()).padStart(2, '0')}:${String(msTime.getMinutes()).padStart(2, '0')}`
                                 : '';
 
                               return (
@@ -3892,7 +3890,7 @@ const HamoPro = () => {
                           className="pointer-events-auto bg-blue-500 text-white px-4 py-2 rounded-full shadow-lg flex items-center space-x-2 hover:bg-blue-600 transition-colors animate-bounce"
                         >
                           <ArrowDown className="w-4 h-4" />
-                          <span className="text-sm font-medium">{language === 'zh' ? '新消息' : 'New Messages'}</span>
+                          <span className="text-sm font-medium">{t('newMessages')}</span>
                         </button>
                       </div>
                     )}
@@ -3997,7 +3995,7 @@ const HamoPro = () => {
                 {/* Success/Error Message */}
                 {profileMessage && (
                   <p className={`text-sm text-center ${profileMessage === 'success' ? 'text-green-600' : 'text-red-600'}`}>
-                    {profileMessage === 'success' ? (language === 'zh' ? '保存成功' : 'Saved successfully') : profileMessage}
+                    {profileMessage === 'success' ? t('savedSuccessfully') : profileMessage}
                   </p>
                 )}
 
