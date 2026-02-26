@@ -2005,8 +2005,8 @@ const HamoPro = () => {
                           <p className={`text-sm ${tc('text-blue-600', 'text-blue-400')}`}>{getSpecialtyLabel(a.specialty) || a.specialty || a.theory}</p>
                         </div>
                         <div className="flex items-center space-x-1">
-                          <Heart className={`w-4 h-4 ${a.likeCount > 0 ? tc('text-gray-400 fill-current', 'text-slate-500 fill-current') : tc('text-gray-300', 'text-slate-600')}`} />
-                          <span className={`text-sm font-medium ${tc('text-gray-500', 'text-slate-400')}`}>{a.likeCount || 0}</span>
+                          <Heart className={`w-4 h-4 ${a.likeCount > 0 ? 'text-purple-500 fill-current' : tc('text-purple-300', 'text-purple-400')}`} />
+                          <span className={`text-sm font-medium ${tc('text-purple-500', 'text-purple-400')}`}>{a.likeCount || 0}</span>
                         </div>
                       </div>
 
@@ -2057,7 +2057,7 @@ const HamoPro = () => {
 
                       {/* Like Count */}
                       <div className="flex items-center space-x-1 mt-2">
-                        <Heart className={`w-5 h-5 ${selectedAvatar.likeCount > 0 ? 'text-gray-200 fill-current' : 'text-gray-400'}`} />
+                        <Heart className={`w-5 h-5 ${selectedAvatar.likeCount > 0 ? 'text-purple-300 fill-current' : 'text-purple-400'}`} />
                         <span className="text-white text-sm">{selectedAvatar.likeCount || 0}</span>
                       </div>
                     </div>
