@@ -1918,7 +1918,8 @@ const HamoPro = () => {
                       type="text"
                       value={avatarForm.customApproach}
                       onChange={(e) => setAvatarForm({ ...avatarForm, customApproach: e.target.value })}
-                      className={`w-full px-4 py-2.5 border ${tc('border-teal-200 bg-white text-gray-900', 'border-teal-800 bg-slate-900 text-white')} rounded-lg focus:ring-2 focus:ring-teal-300 focus:border-teal-300 transition-all`}
+                      disabled={avatarForm.therapeuticApproaches.length >= 3}
+                      className={`w-full px-4 py-2.5 border rounded-lg transition-all ${avatarForm.therapeuticApproaches.length >= 3 ? tc('border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed', 'border-slate-700 bg-slate-800 text-slate-500 cursor-not-allowed') : tc('border-teal-200 bg-white text-gray-900', 'border-teal-800 bg-slate-900 text-white') + ' focus:ring-2 focus:ring-teal-300 focus:border-teal-300'}`}
                       placeholder={t('customApproachPlaceholder')}
                     />
                   </div>
@@ -2253,7 +2254,8 @@ const HamoPro = () => {
                           type="text"
                           value={avatarForm.customApproach}
                           onChange={(e) => setAvatarForm({ ...avatarForm, customApproach: e.target.value })}
-                          className={`w-full px-4 py-2.5 border ${tc('border-teal-200 bg-white text-gray-900', 'border-teal-800 bg-slate-900 text-white')} rounded-lg focus:ring-2 focus:ring-teal-300 focus:border-teal-300 transition-all`}
+                          disabled={avatarForm.therapeuticApproaches.length >= 3}
+                          className={`w-full px-4 py-2.5 border rounded-lg transition-all ${avatarForm.therapeuticApproaches.length >= 3 ? tc('border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed', 'border-slate-700 bg-slate-800 text-slate-500 cursor-not-allowed') : tc('border-teal-200 bg-white text-gray-900', 'border-teal-800 bg-slate-900 text-white') + ' focus:ring-2 focus:ring-teal-300 focus:border-teal-300'}`}
                           placeholder={t('customApproachPlaceholder')}
                         />
                       </div>
