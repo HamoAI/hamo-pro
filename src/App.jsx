@@ -753,14 +753,20 @@ const HamoPro = () => {
     const knownSpecialtyIds = getSpecialtyOptions().map(opt => opt.value);
     const isCustomSpecialty = avatar.specialty && !knownSpecialtyIds.includes(avatar.specialty) && !specialtyOptions.includes(avatar.specialty);
 
+    // Separate predefined and custom therapeutic approaches
+    const allApproaches = Array.isArray(avatar.therapeuticApproaches)
+      ? avatar.therapeuticApproaches
+      : (avatar.therapeuticApproaches ? String(avatar.therapeuticApproaches).split(',').map(s => s.trim()) : []);
+    const knownApproachIds = getTherapeuticApproachOptions().map(opt => opt.value);
+    const predefinedApproaches = allApproaches.filter(a => knownApproachIds.includes(a));
+    const customApproaches = allApproaches.filter(a => !knownApproachIds.includes(a));
+
     setAvatarForm({
       name: avatar.name || '',
       specialty: isCustomSpecialty ? 'custom' : (avatar.specialty || ''),
       customSpecialty: isCustomSpecialty ? avatar.specialty : '',
-      therapeuticApproaches: Array.isArray(avatar.therapeuticApproaches)
-        ? avatar.therapeuticApproaches
-        : (avatar.therapeuticApproaches ? String(avatar.therapeuticApproaches).split(',').map(s => s.trim()) : []),
-      customApproach: '',
+      therapeuticApproaches: predefinedApproaches,
+      customApproach: customApproaches.join(', '),
       about: avatar.about || '',
       experienceYears: avatar.experienceYears || 0,
       experienceMonths: avatar.experienceMonths || 0,
