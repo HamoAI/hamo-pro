@@ -830,15 +830,8 @@ const HamoPro = () => {
       console.log('✅ Avatar updated:', editingAvatar.id);
     } else {
       console.warn('⚠️ API failed to update avatar:', result.error);
-      setAvatars(avatars.map(a => a.id === editingAvatar.id ? {
-        ...a,
-        name: avatarForm.name,
-        specialty: specialty,
-        therapeuticApproaches: approaches,
-        about: avatarForm.about,
-        experienceYears: avatarForm.experienceYears,
-        experienceMonths: avatarForm.experienceMonths,
-      } : a));
+      alert(t('failedToSave'));
+      return;
     }
 
     // Reset form and close edit mode
