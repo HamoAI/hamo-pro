@@ -2568,7 +2568,7 @@ const HamoPro = () => {
                             <div className="flex items-center space-x-2">
                               <button
                                 type="button"
-                                onClick={() => handlePreviewVoice(editingAvatar)}
+                                onClick={() => handlePreviewVoice(editingAvatar.id)}
                                 className={`flex items-center space-x-1 px-3 py-1.5 text-sm rounded-lg transition-colors ${tc('bg-rose-100 text-rose-700 hover:bg-rose-200', 'bg-rose-900/40 text-rose-300 hover:bg-rose-900/60')}`}
                               >
                                 <Play className="w-3.5 h-3.5" />
@@ -2576,7 +2576,7 @@ const HamoPro = () => {
                               </button>
                               <button
                                 type="button"
-                                onClick={() => handleDeleteVoice(editingAvatar)}
+                                onClick={() => handleDeleteVoice(editingAvatar.id)}
                                 className={`flex items-center space-x-1 px-3 py-1.5 text-sm rounded-lg transition-colors ${tc('bg-red-100 text-red-600 hover:bg-red-200', 'bg-red-900/30 text-red-400 hover:bg-red-900/50')}`}
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
