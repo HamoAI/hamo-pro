@@ -383,6 +383,15 @@ export const translations = {
     privacyPolicy: 'Privacy Policy',
     pleaseAgreeToTerms: 'Please agree to the Terms of Service and Privacy Policy',
 
+    // Error messages
+    errorCurrentPasswordIncorrect: 'Current password is incorrect',
+    errorCurrentPasswordRequired: 'Current password is required',
+    errorEmailAlreadyRegistered: 'Email already registered',
+    errorInvalidCredentials: 'Invalid email or password',
+    errorFillAllFields: 'Please fill in all fields',
+    errorEnterEmailPassword: 'Please enter email and password',
+    errorFailedToSaveProfile: 'Failed to save profile',
+
     // Language
     language: 'Language',
     chinese: '中文',
@@ -769,6 +778,15 @@ export const translations = {
     and: '和',
     privacyPolicy: '《隐私政策》',
     pleaseAgreeToTerms: '请先同意《用户服务协议》和《隐私政策》',
+
+    // Error messages
+    errorCurrentPasswordIncorrect: '当前密码不正确',
+    errorCurrentPasswordRequired: '设置新密码需要输入当前密码',
+    errorEmailAlreadyRegistered: '该邮箱已注册',
+    errorInvalidCredentials: '邮箱或密码错误',
+    errorFillAllFields: '请填写所有字段',
+    errorEnterEmailPassword: '请输入邮箱和密码',
+    errorFailedToSaveProfile: '保存个人信息失败',
 
     // Language
     language: '语言',

@@ -550,7 +550,7 @@ const HamoPro = () => {
     if (!agreedToTerms) { setAuthError(t('pleaseAgreeToTerms')); return; }
 
     if (!authForm.email || !authForm.password || !authForm.fullName || !authForm.profession) {
-      setAuthError('Please fill in all fields');
+      setAuthError(t('errorFillAllFields'));
       return;
     }
 
@@ -573,10 +573,10 @@ const HamoPro = () => {
         // Load user's avatars and clients (likely empty for new user)
         await loadUserData();
       } else {
-        setAuthError(result.error || 'Registration failed');
+        setAuthError(mapApiError(result.error) || result.error);
       }
     } catch (error) {
-      setAuthError('Registration failed. Please try again.');
+      setAuthError(t('errorFillAllFields'));
     } finally {
       setAuthLoading(false);
     }
@@ -587,7 +587,7 @@ const HamoPro = () => {
     if (!agreedToTerms) { setAuthError(t('pleaseAgreeToTerms')); return; }
 
     if (!authForm.email || !authForm.password) {
-      setAuthError('Please enter email and password');
+      setAuthError(t('errorEnterEmailPassword'));
       return;
     }
 
@@ -608,10 +608,10 @@ const HamoPro = () => {
         // Load user's avatars and clients from API
         await loadUserData();
       } else {
-        setAuthError(result.error || 'Invalid email or password');
+        setAuthError(mapApiError(result.error) || t('errorInvalidCredentials'));
       }
     } catch (error) {
-      setAuthError('Login failed. Please try again.');
+      setAuthError(t('errorInvalidCredentials'));
     } finally {
       setAuthLoading(false);
     }
@@ -637,6 +637,16 @@ const HamoPro = () => {
     setShowDeleteConfirm(false);
   };
 
+  const mapApiError = (msg) => {
+    const errorMap = {
+      'Current password is incorrect': 'errorCurrentPasswordIncorrect',
+      'Current password is required to set new password': 'errorCurrentPasswordRequired',
+      'Email already registered as Pro': 'errorEmailAlreadyRegistered',
+      'Invalid email or password': 'errorInvalidCredentials',
+    };
+    return errorMap[msg] ? t(errorMap[msg]) : msg;
+  };
+
   const handleSaveProfile = async () => {
     setProfileSaving(true);
     setProfileMessage('');
@@ -656,10 +666,10 @@ const HamoPro = () => {
         setProfileMessage('success');
         setTimeout(() => setProfileMessage(''), 3000);
       } else {
-        setProfileMessage(result.error || 'Failed to save');
+        setProfileMessage(mapApiError(result.error) || t('errorFailedToSaveProfile'));
       }
     } catch (error) {
-      setProfileMessage('Failed to save profile');
+      setProfileMessage(t('errorFailedToSaveProfile'));
     } finally {
       setProfileSaving(false);
     }
