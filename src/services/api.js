@@ -880,6 +880,60 @@ class ApiService {
       return { success: false, error: error.message, sessions: [] };
     }
   }
+
+  // ── Crisis Alerts ──────────────────────────────────────────
+
+  /**
+   * Open an SSE stream to receive real-time crisis alerts.
+   * Returns the EventSource instance — caller must call .close() on logout.
+   */
+  subscribeToCrisisAlerts(onAlert, onConnected, onError) {
+    const token = this.getAccessToken()
+    if (!token) return null
+    const es = new EventSource(`${this.baseURL}/pro/alerts/stream?token=${encodeURIComponent(token)}`)
+    es.onmessage = (e) => {
+      try {
+        const data = JSON.parse(e.data)
+        if (data.type === 'connected') {
+          onConnected && onConnected()
+        } else if (data.type === 'crisis_alert') {
+          onAlert && onAlert(data.alert)
+        }
+      } catch (err) {
+        console.error('❌ SSE parse error:', err)
+      }
+    }
+    es.onerror = (err) => {
+      console.error('❌ SSE error:', err)
+      onError && onError(err)
+    }
+    return es
+  }
+
+  /** Load all crisis alerts on login (for initial unread count). */
+  async getCrisisAlerts() {
+    try {
+      const response = await this.request('/pro/alerts')
+      if (!response.ok) throw new Error('Failed to load alerts')
+      const data = await response.json()
+      return { success: true, alerts: data.alerts || [] }
+    } catch (error) {
+      console.error('❌ Failed to load crisis alerts:', error.message)
+      return { success: false, alerts: [] }
+    }
+  }
+
+  /** Acknowledge (dismiss) a crisis alert. */
+  async acknowledgeCrisisAlert(alertId) {
+    try {
+      const response = await this.request(`/pro/alerts/${alertId}/acknowledge`, { method: 'POST' })
+      if (!response.ok) throw new Error('Failed to acknowledge alert')
+      return { success: true }
+    } catch (error) {
+      console.error('❌ Failed to acknowledge alert:', error.message)
+      return { success: false }
+    }
+  }
 }
 
 // Export singleton instance

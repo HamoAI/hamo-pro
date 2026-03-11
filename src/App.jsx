@@ -223,6 +223,10 @@ const HamoPro = () => {
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authMode, setAuthMode] = useState('signin');
+  // Crisis alerts
+  const [crisisAlerts, setCrisisAlerts] = useState([]);
+  const [showAlertPanel, setShowAlertPanel] = useState(false);
+  const crisisEsRef = useRef(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [profileForm, setProfileForm] = useState({ full_name: '', sex: '', age: '', currentPassword: '', newPassword: '' });
   const [profileSaving, setProfileSaving] = useState(false);
@@ -361,6 +365,34 @@ const HamoPro = () => {
     };
     checkAuth();
   }, []);
+
+  // Crisis alert SSE connection — open when authenticated, close on logout
+  useEffect(() => {
+    if (!isAuthenticated) {
+      if (crisisEsRef.current) {
+        crisisEsRef.current.close();
+        crisisEsRef.current = null;
+      }
+      return;
+    }
+    // Load existing unread alerts
+    apiService.getCrisisAlerts().then(({ alerts }) => {
+      if (alerts.length > 0) setCrisisAlerts(alerts);
+    });
+    // Open SSE stream
+    const es = apiService.subscribeToCrisisAlerts(
+      (alert) => {
+        setCrisisAlerts(prev => [alert, ...prev]);
+        setShowAlertPanel(true); // auto-open panel on new alert
+      },
+      () => console.log('✅ Crisis alert SSE connected'),
+      (err) => console.error('Crisis alert SSE error:', err),
+    );
+    crisisEsRef.current = es;
+    return () => {
+      if (es) es.close();
+    };
+  }, [isAuthenticated]);
 
   // Sync profileForm when currentUser changes
   useEffect(() => {
@@ -1940,13 +1972,94 @@ const HamoPro = () => {
                 <p className={`text-sm ${tc('text-gray-500', 'text-slate-400')}`}>{t('tagline')}</p>
               </div>
             </div>
-            <div className="text-right">
-              <div className={`flex items-center space-x-2 text-sm font-medium ${tc('', 'text-white')}`}><span>{currentUser?.full_name || currentUser?.fullName}</span></div>
-              <p className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>{getProfessionLabel(currentUser?.profession)}</p>
+            <div className="flex items-center space-x-4">
+              {/* Crisis alert bell */}
+              {crisisAlerts.filter(a => !a.acknowledged).length > 0 && (
+                <button
+                  onClick={() => setShowAlertPanel(true)}
+                  className="relative p-2 rounded-full bg-red-50 hover:bg-red-100 transition-colors"
+                  title="Crisis alerts"
+                >
+                  <svg className="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
+                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {crisisAlerts.filter(a => !a.acknowledged).length}
+                  </span>
+                </button>
+              )}
+              <div className="text-right">
+                <div className={`flex items-center space-x-2 text-sm font-medium ${tc('', 'text-white')}`}><span>{currentUser?.full_name || currentUser?.fullName}</span></div>
+                <p className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>{getProfessionLabel(currentUser?.profession)}</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Crisis Alert Panel */}
+      {showAlertPanel && (
+        <div className="fixed inset-0 bg-black/50 flex items-start justify-center z-50 pt-16 px-4" onClick={() => setShowAlertPanel(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[70vh] overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="bg-red-600 text-white px-6 py-4 flex items-center justify-between rounded-t-2xl">
+              <div className="flex items-center space-x-2">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span className="font-bold text-lg">Crisis Alerts</span>
+                {crisisAlerts.filter(a => !a.acknowledged).length > 0 && (
+                  <span className="bg-white text-red-600 text-xs font-bold px-2 py-0.5 rounded-full">
+                    {crisisAlerts.filter(a => !a.acknowledged).length} unread
+                  </span>
+                )}
+              </div>
+              <button onClick={() => setShowAlertPanel(false)} className="text-white/80 hover:text-white text-xl font-bold">✕</button>
+            </div>
+            <div className="overflow-y-auto max-h-[calc(70vh-64px)]">
+              {crisisAlerts.length === 0 ? (
+                <div className="p-8 text-center text-gray-400">No crisis alerts</div>
+              ) : (
+                crisisAlerts.map(alert => {
+                  const crisisLabels = {
+                    suicidal_ideation: '🆘 Suicidal Ideation',
+                    self_harm: '⚠️ Self-Harm Intent',
+                    dangerous_drug_use: '💊 Dangerous Drug Use',
+                  };
+                  const label = crisisLabels[alert.crisis_type] || alert.crisis_type;
+                  const date = alert.created_at ? new Date(alert.created_at).toLocaleString() : '';
+                  return (
+                    <div key={alert.id} className={`border-b border-gray-100 p-4 ${alert.acknowledged ? 'opacity-50' : 'bg-red-50'}`}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-semibold text-gray-900">{alert.client_name}</span>
+                            <span className="text-xs font-medium text-red-700 bg-red-100 px-2 py-0.5 rounded-full">{label}</span>
+                          </div>
+                          {alert.message_excerpt && (
+                            <p className="text-sm text-gray-600 mt-1 italic">"{alert.message_excerpt}"</p>
+                          )}
+                          <p className="text-xs text-gray-400 mt-1">{date}</p>
+                        </div>
+                        {!alert.acknowledged && (
+                          <button
+                            onClick={async () => {
+                              await apiService.acknowledgeCrisisAlert(alert.id);
+                              setCrisisAlerts(prev => prev.map(a => a.id === alert.id ? { ...a, acknowledged: true } : a));
+                            }}
+                            className="shrink-0 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-full transition-colors"
+                          >
+                            Dismiss
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {showDeleteConfirm && (
         <div className={`fixed inset-0 flex items-center justify-center z-50 px-4 ${tc('bg-black bg-opacity-50', 'bg-black bg-opacity-70')}`}>
