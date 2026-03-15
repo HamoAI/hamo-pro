@@ -950,7 +950,7 @@ const HamoPro = () => {
       about: '',
       experienceYears: 0,
       experienceMonths: 0,
-      voiceType: 'standard_female',
+      voiceType: currentUser?.sex === 'male' ? 'standard_male' : 'standard_female',
     });
     setAvatarPictureFile(null);
     setAvatarPicturePreview(null);
@@ -1079,7 +1079,7 @@ const HamoPro = () => {
       about: '',
       experienceYears: 0,
       experienceMonths: 0,
-      voiceType: 'standard_female',
+      voiceType: currentUser?.sex === 'male' ? 'standard_male' : 'standard_female',
     });
     setAvatarPictureFile(null);
     setAvatarPicturePreview(null);
@@ -2144,7 +2144,7 @@ const HamoPro = () => {
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className={`text-xl font-semibold ${tc('', 'text-white')}`}>{t('avatarTherapists')}</h2>
-              <button onClick={() => { if (!currentUser?.sex) { alert(t('pleaseSetSexFirst')); setActiveTab('settings'); return; } if (avatars.length >= 3) { alert(t('maxAvatarsReached')); return; } setShowAvatarForm(!showAvatarForm); }} className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-lg"><Plus className="w-5 h-5" /><span>{t('createAvatar')}</span></button>
+              <button onClick={() => { if (!currentUser?.sex) { alert(t('pleaseSetSexFirst')); setActiveTab('settings'); return; } if (avatars.length >= 3) { alert(t('maxAvatarsReached')); return; } if (!showAvatarForm) { setAvatarForm(prev => ({ ...prev, voiceType: currentUser?.sex === 'male' ? 'standard_male' : 'standard_female' })); } setShowAvatarForm(!showAvatarForm); }} className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-lg"><Plus className="w-5 h-5" /><span>{t('createAvatar')}</span></button>
             </div>
             {showAvatarForm && (
               <div className={`${tc('bg-white', 'bg-slate-800')} rounded-xl ${tc('shadow-md', 'shadow-lg shadow-black/20')} p-6`}>
@@ -2592,7 +2592,7 @@ const HamoPro = () => {
                             about: '',
                             experienceYears: 0,
                             experienceMonths: 0,
-                            voiceType: 'standard_female',
+                            voiceType: currentUser?.sex === 'male' ? 'standard_male' : 'standard_female',
                           });
                         }}
                         className={tc('text-gray-400 hover:text-gray-600', 'text-slate-500 hover:text-slate-300')}
@@ -2922,7 +2922,7 @@ const HamoPro = () => {
                             about: '',
                             experienceYears: 0,
                             experienceMonths: 0,
-                            voiceType: 'standard_female',
+                            voiceType: currentUser?.sex === 'male' ? 'standard_male' : 'standard_female',
                           });
                         }}
                         className={`flex-1 ${tc('bg-gray-200 text-gray-700 hover:bg-gray-300', 'bg-slate-700 text-slate-300 hover:bg-slate-600')} py-3 rounded-lg font-medium transition-colors`}
