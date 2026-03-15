@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { User, Brain, Settings, Plus, Ticket, Eye, EyeOff, Clock, MessageSquare, LogOut, Trash2, Download, CheckCircle, Calendar, Sparkles, Send, Star, Heart, X, Briefcase, ChevronRight, ChevronDown, ChevronUp, Globe, Upload, RefreshCw, ArrowDown, Edit3, Save, Sun, Moon, Mic, Volume2, Square, Play, Pause } from 'lucide-react';
+import { User, Brain, Settings, Plus, Ticket, Eye, EyeOff, Clock, MessageSquare, LogOut, Trash2, Download, CheckCircle, Calendar, Sparkles, Send, Star, Heart, X, Briefcase, ChevronRight, ChevronDown, ChevronUp, Globe, Upload, RefreshCw, ArrowDown, Edit3, Save, Sun, Moon, Mic, Volume2, Square, Play, Pause, Wallet } from 'lucide-react';
 import apiService from './services/api';
 import { translations } from './i18n/translations';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.8.2";
+  const APP_VERSION = "1.9.0";
 
   // Language state - default to browser language or English
   const [language, setLanguage] = useState(() => {
@@ -231,6 +231,9 @@ const HamoPro = () => {
   const [profileForm, setProfileForm] = useState({ full_name: '', sex: '', age: '', currentPassword: '', newPassword: '' });
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMessage, setProfileMessage] = useState('');
+  const [commissions, setCommissions] = useState([]);
+  const [totalCommission, setTotalCommission] = useState(0);
+  const [commissionsLoaded, setCommissionsLoaded] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [authForm, setAuthForm] = useState({ email: '', password: '', fullName: '', profession: '' });
   const [authError, setAuthError] = useState('');
@@ -671,6 +674,15 @@ const HamoPro = () => {
     setAvatars([]);
     setClients([]);
     setShowDeleteConfirm(false);
+  };
+
+  const loadCommissions = async () => {
+    const result = await apiService.getCommissions();
+    if (result.success) {
+      setCommissions(result.commissions || []);
+      setTotalCommission(result.total_commission || 0);
+      setCommissionsLoaded(true);
+    }
   };
 
   const mapApiError = (msg) => {
@@ -4632,6 +4644,45 @@ const HamoPro = () => {
               </div>
             </div>
 
+            {/* Account - Commissions */}
+            <div className={`${tc('bg-white', 'bg-slate-800')} rounded-xl ${tc('shadow-md', 'shadow-lg shadow-black/20')} p-6`}>
+              <div className="flex items-center space-x-2 mb-4">
+                <Wallet className={`w-5 h-5 ${tc('text-purple-600', 'text-purple-400')}`} />
+                <h3 className={`text-lg font-semibold ${tc('text-gray-900', 'text-white')}`}>{t('account')}</h3>
+              </div>
+
+              {/* Total Commission */}
+              <div className={`flex items-center justify-between p-3 rounded-lg mb-4 ${tc('bg-purple-50', 'bg-purple-900/20')}`}>
+                <span className={`text-sm font-medium ${tc('text-purple-700', 'text-purple-300')}`}>{t('totalCommission')}</span>
+                <span className={`text-lg font-bold ${tc('text-purple-700', 'text-purple-300')}`}>¥{totalCommission.toFixed(2)}</span>
+              </div>
+
+              {/* Commission Records */}
+              <h4 className={`text-sm font-medium ${tc('text-gray-500', 'text-slate-400')} mb-3`}>{t('commissionRecords')}</h4>
+              {commissions.length === 0 ? (
+                <p className={`text-sm text-center py-4 ${tc('text-gray-400', 'text-slate-500')}`}>{t('noCommissionRecords')}</p>
+              ) : (
+                <div className="space-y-3">
+                  {commissions.map((c, idx) => (
+                    <div key={idx} className={`p-3 rounded-lg border ${tc('border-gray-200 bg-gray-50', 'border-slate-700 bg-slate-900')}`}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className={`text-sm font-medium ${tc('text-gray-900', 'text-white')}`}>{c.client_name}</span>
+                        <span className={`text-sm font-bold text-green-500`}>+¥{parseFloat(c.commission_amount || 0).toFixed(2)}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>{c.created_at?.split('T')[0]}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${tc('bg-blue-100 text-blue-700', 'bg-blue-900/30 text-blue-300')}`}>{c.plan_label}</span>
+                      </div>
+                      <div className="flex items-center justify-between mt-1">
+                        <span className={`text-xs ${tc('text-gray-400', 'text-slate-500')}`}>{t('referralCommission')}</span>
+                        <span className={`text-xs ${tc('text-gray-400', 'text-slate-500')}`}>¥{parseFloat(c.order_amount || 0).toFixed(2)} × {((c.commission_rate || 0.1) * 100).toFixed(0)}%</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Account Actions */}
             <div className={`${tc('bg-white', 'bg-slate-800')} rounded-xl ${tc('shadow-md', 'shadow-lg shadow-black/20')} p-4 space-y-3`}>
               {/* Log Out */}
@@ -4700,7 +4751,7 @@ const HamoPro = () => {
             <span className="text-xs mt-1 font-medium">{t('clients')}</span>
           </button>
           <button
-            onClick={() => setActiveTab('settings')}
+            onClick={() => { setActiveTab('settings'); if (!commissionsLoaded) loadCommissions(); }}
             className={`flex-1 flex flex-col items-center justify-center py-2 ${activeTab === 'settings' ? 'text-purple-500' : tc('text-gray-400', 'text-slate-500')}`}
           >
             <Settings className="w-6 h-6" />

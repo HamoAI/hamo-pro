@@ -393,6 +393,20 @@ export const translations = {
     errorFailedToSaveProfile: 'Failed to save profile',
     pleaseSetSexFirst: 'Please set your gender in Settings before creating an Avatar',
 
+    // Account & Commissions
+    account: 'Account',
+    commissionRecords: 'Commission Records',
+    totalCommission: 'Total Commission',
+    noCommissionRecords: 'No commission records yet',
+    clientName: 'Client',
+    commissionDate: 'Date',
+    commissionType: 'Type',
+    planLabel: 'Plan',
+    orderAmount: 'Order Amount',
+    commissionRate: 'Rate',
+    commissionAmount: 'Commission',
+    referralCommission: 'Referral Commission',
+
     // Language
     language: 'Language',
     chinese: '中文',
@@ -789,6 +803,20 @@ export const translations = {
     errorEnterEmailPassword: '请输入邮箱和密码',
     errorFailedToSaveProfile: '保存个人信息失败',
     pleaseSetSexFirst: '请先在设置中选择您的性别，然后再创建虚拟咨询师',
+
+    // Account & Commissions
+    account: '账户',
+    commissionRecords: '佣金记录',
+    totalCommission: '佣金总额',
+    noCommissionRecords: '暂无佣金记录',
+    clientName: '来访者',
+    commissionDate: '日期',
+    commissionType: '类型',
+    planLabel: '套餐',
+    orderAmount: '订单金额',
+    commissionRate: '佣金比例',
+    commissionAmount: '佣金',
+    referralCommission: '邀请佣金',
 
     // Language
     language: '语言',

@@ -235,6 +235,16 @@ class ApiService {
     }
   }
 
+  // Get commission records for the Pro user
+  async getCommissions() {
+    try {
+      const response = await this.request('/pro/commissions');
+      return { success: true, ...response };
+    } catch (error) {
+      return { success: false, error: error.message, commissions: [], total_commission: 0, total_records: 0 };
+    }
+  }
+
   // Create a new avatar for the Pro user
   // Returns the avatar with backend-generated ID
   async createAvatar(avatarData) {
