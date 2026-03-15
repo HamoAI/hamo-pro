@@ -391,6 +391,7 @@ export const translations = {
     errorFillAllFields: 'Please fill in all fields',
     errorEnterEmailPassword: 'Please enter email and password',
     errorFailedToSaveProfile: 'Failed to save profile',
+    pleaseSetSexFirst: 'Please set your gender in Settings before creating an Avatar',
 
     // Language
     language: 'Language',
@@ -787,6 +788,7 @@ export const translations = {
     errorFillAllFields: '请填写所有字段',
     errorEnterEmailPassword: '请输入邮箱和密码',
     errorFailedToSaveProfile: '保存个人信息失败',
+    pleaseSetSexFirst: '请先在设置中选择您的性别，然后再创建虚拟咨询师',
 
     // Language
     language: '语言',
