@@ -4359,155 +4359,155 @@ const HamoPro = () => {
                                       {/* Expanded messages */}
                                       <div className="border-l-4 border-blue-500 pl-4 mt-1 mb-2">
                                         {group.messages && group.messages.length > 0 ? (
-                                          group.messages.map((msg, j) => (
-                                            <div key={j} className="flex items-start space-x-2 mb-2">
-                                              {/* Avatar */}
-                                              {msg.role === 'user' ? (
-                                                selectedClient.profilePicture ? (
-                                                  <img src={selectedClient.profilePicture} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0 mt-1" />
-                                                ) : (
-                                                  <div className={`w-8 h-8 rounded-full ${tc('bg-gray-200', 'bg-slate-600')} flex items-center justify-center flex-shrink-0 mt-1`}>
-                                                    <User className={`w-4 h-4 ${tc('text-gray-500', 'text-slate-300')}`} />
+                                          (() => {
+                                            // Group consecutive assistant messages into blocks
+                                            const msgGroups = [];
+                                            let currentAssistantBlock = null;
+                                            group.messages.forEach(msg => {
+                                              if (msg.role === 'assistant') {
+                                                if (!currentAssistantBlock) currentAssistantBlock = [];
+                                                currentAssistantBlock.push(msg);
+                                              } else {
+                                                if (currentAssistantBlock) { msgGroups.push({ role: 'assistant', msgs: currentAssistantBlock }); currentAssistantBlock = null; }
+                                                msgGroups.push({ role: 'user', msgs: [msg] });
+                                              }
+                                            });
+                                            if (currentAssistantBlock) msgGroups.push({ role: 'assistant', msgs: currentAssistantBlock });
+
+                                            return msgGroups.map((block, bIdx) => {
+                                              if (block.role === 'user') {
+                                                const msg = block.msgs[0];
+                                                return (
+                                                  <div key={`u-${bIdx}`} className="flex items-start space-x-2 mb-2">
+                                                    {selectedClient.profilePicture ? (
+                                                      <img src={selectedClient.profilePicture} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0 mt-1" />
+                                                    ) : (
+                                                      <div className={`w-8 h-8 rounded-full ${tc('bg-gray-200', 'bg-slate-600')} flex items-center justify-center flex-shrink-0 mt-1`}>
+                                                        <User className={`w-4 h-4 ${tc('text-gray-500', 'text-slate-300')}`} />
+                                                      </div>
+                                                    )}
+                                                    <div className="flex-1">
+                                                      <div
+                                                        data-psvs={msg.psvs_snapshot ? JSON.stringify(msg.psvs_snapshot) : null}
+                                                        data-message-id={msg.id}
+                                                        data-role={msg.role}
+                                                        className={`p-3 rounded-lg cursor-pointer transition-all ${tc('bg-gray-100 hover:bg-gray-200', 'bg-slate-700 hover:bg-slate-600')} ${String(currentPsvs?.messageId) === String(msg.id) ? 'ring-2 ring-blue-400' : ''}`}
+                                                        onClick={() => msg.psvs_snapshot && setCurrentPsvs({ ...msg.psvs_snapshot, messageId: msg.id })}
+                                                      >
+                                                        <div className="flex justify-between mb-1">
+                                                          <span className={`text-xs font-medium ${tc('', 'text-white')}`}>{selectedClient.name}</span>
+                                                          <div className="flex items-center space-x-2">
+                                                            {msg.psvs_snapshot && (
+                                                              <span className={`w-2 h-2 rounded-full ${
+                                                                msg.psvs_snapshot.energy_state === 'neurotic' ? 'bg-red-500' :
+                                                                msg.psvs_snapshot.energy_state === 'negative' ? 'bg-yellow-500' : 'bg-green-500'
+                                                              }`} title={`Stress: ${msg.psvs_snapshot.stress_level?.toFixed(1)}`}></span>
+                                                            )}
+                                                            <span className={`text-xs ${tc('text-gray-400', 'text-slate-500')}`}>
+                                                              {msg.timestamp ? new Date(msg.timestamp.endsWith('Z') ? msg.timestamp : msg.timestamp + 'Z').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : ''}
+                                                            </span>
+                                                          </div>
+                                                        </div>
+                                                        <p className={`text-sm ${tc('', 'text-slate-200')}`}>{msg.content}</p>
+                                                      </div>
+                                                    </div>
                                                   </div>
-                                                )
-                                              ) : (
-                                                (() => {
-                                                  const avatar = avatars.find(a => String(a.id) === String(selectedClient.avatarId));
-                                                  return avatar?.avatarPicture ? (
-                                                    <img src={avatar.avatarPicture} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0 mt-1" />
+                                                );
+                                              }
+                                              // Assistant block: group 1-3 messages in one bubble
+                                              const avatarData = avatars.find(a => String(a.id) === String(selectedClient.avatarId));
+                                              const lastMsg = block.msgs[block.msgs.length - 1];
+                                              return (
+                                                <div key={`a-${bIdx}`} className="flex items-start space-x-2 mb-2">
+                                                  {avatarData?.avatarPicture ? (
+                                                    <img src={avatarData.avatarPicture} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0 mt-1" />
                                                   ) : (
                                                     <div className={`w-8 h-8 rounded-full ${tc('bg-blue-100', 'bg-blue-900/30')} flex items-center justify-center flex-shrink-0 mt-1`}>
                                                       <Brain className="w-4 h-4 text-blue-500" />
                                                     </div>
-                                                  );
-                                                })()
-                                              )}
-                                              {/* Message bubble + supervision */}
-                                              <div className="flex-1">
-                                                <div
-                                                  data-psvs={msg.psvs_snapshot ? JSON.stringify(msg.psvs_snapshot) : null}
-                                                  data-message-id={msg.id}
-                                                  data-role={msg.role}
-                                                  className={`p-3 rounded-lg cursor-pointer transition-all ${msg.role === 'user' ? tc('bg-gray-100 hover:bg-gray-200', 'bg-slate-700 hover:bg-slate-600') : tc('bg-blue-50 hover:bg-blue-100', 'bg-blue-900/20 hover:bg-blue-900/30')} ${String(currentPsvs?.messageId) === String(msg.id) ? 'ring-2 ring-blue-400' : ''}`}
-                                                  onClick={() => msg.role === 'user' && msg.psvs_snapshot && setCurrentPsvs({ ...msg.psvs_snapshot, messageId: msg.id })}
-                                                >
-                                                  <div className="flex justify-between mb-1">
-                                                    <span className={`text-xs font-medium ${tc('', 'text-white')}`}>{msg.role === 'user' ? selectedClient.name : (avatars.find(a => String(a.id) === String(selectedClient.avatarId))?.name || 'Avatar')}</span>
-                                                    <div className="flex items-center space-x-2">
-                                                      {msg.psvs_snapshot && (
-                                                        <span className={`w-2 h-2 rounded-full ${
-                                                          msg.psvs_snapshot.energy_state === 'neurotic' ? 'bg-red-500' :
-                                                          msg.psvs_snapshot.energy_state === 'negative' ? 'bg-yellow-500' :
-                                                          'bg-green-500'
-                                                        }`} title={`Stress: ${msg.psvs_snapshot.stress_level?.toFixed(1)}`}></span>
-                                                      )}
-                                                      <span className={`text-xs ${tc('text-gray-400', 'text-slate-500')}`}>
-                                                        {msg.timestamp ? new Date(msg.timestamp.endsWith('Z') ? msg.timestamp : msg.timestamp + 'Z').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : ''}
-                                                      </span>
+                                                  )}
+                                                  <div className="flex-1">
+                                                    <div className={`p-3 rounded-lg transition-all ${tc('bg-blue-50', 'bg-blue-900/20')}`}>
+                                                      <div className="flex justify-between mb-1">
+                                                        <span className={`text-xs font-medium ${tc('', 'text-white')}`}>{avatarData?.name || 'Avatar'}</span>
+                                                        <span className={`text-xs ${tc('text-gray-400', 'text-slate-500')}`}>
+                                                          {lastMsg.timestamp ? new Date(lastMsg.timestamp.endsWith('Z') ? lastMsg.timestamp : lastMsg.timestamp + 'Z').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : ''}
+                                                        </span>
+                                                      </div>
+                                                      {block.msgs.map((msg, mi) => (
+                                                        <p key={mi} className={`text-sm ${tc('', 'text-slate-200')} ${mi > 0 ? 'mt-2' : ''}`}>{msg.content}</p>
+                                                      ))}
                                                     </div>
-                                                  </div>
-                                                  <p className={`text-sm ${tc('', 'text-slate-200')}`}>{msg.content}</p>
-                                                  {/* Play audio + Supervise button - only on avatar messages */}
-                                                  {msg.role !== 'user' && (
+                                                    {/* Supervise buttons per message */}
+                                                    {block.msgs.map((msg, mi) => (
+                                                      <React.Fragment key={`sv-${mi}`}>
+                                                        {supervisingMessageId === msg.id && (
+                                                          <div className={`mt-2 ml-2 p-3 ${tc('bg-amber-50 border-amber-200', 'bg-amber-900/20 border-amber-800')} border rounded-lg`}>
+                                                            <textarea
+                                                              value={supervisionText}
+                                                              onChange={(e) => setSupervisionText(e.target.value)}
+                                                              placeholder={t('supervisionPlaceholder')}
+                                                              className={`w-full text-sm border ${tc('border-amber-300 bg-white text-gray-900', 'border-amber-700 bg-slate-900 text-white')} rounded p-2 resize-none focus:outline-none focus:ring-1 focus:ring-amber-400`}
+                                                              rows={3}
+                                                            />
+                                                            <div className="flex justify-end space-x-2 mt-2">
+                                                              <button onClick={() => { setSupervisingMessageId(null); setSupervisionText(''); }} className={`px-3 py-1 text-xs ${tc('text-gray-500 hover:text-gray-700', 'text-slate-400 hover:text-slate-200')}`}>{t('cancel')}</button>
+                                                              <button onClick={handleMessageSupervise} disabled={supervisionSaving || !supervisionText.trim()} className="px-3 py-1 text-xs bg-amber-500 text-white rounded hover:bg-amber-600 disabled:opacity-50 flex items-center space-x-1">
+                                                                {supervisionSaving ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                                                                <span>{t('save')}</span>
+                                                              </button>
+                                                            </div>
+                                                          </div>
+                                                        )}
+                                                        {msg.supervision?.text && supervisingMessageId !== msg.id && (
+                                                          <div className={`mt-2 ml-2 p-2 ${tc('bg-amber-50', 'bg-amber-900/20')} border-l-4 border-amber-400 rounded-r-lg`}>
+                                                            <div className="flex items-center justify-between mb-1">
+                                                              <span className="text-xs font-medium text-amber-700">{t('superviseMessage')}</span>
+                                                              <span className="text-xs text-amber-500">{msg.supervision.created_at ? new Date(msg.supervision.created_at).toLocaleDateString() : ''}</span>
+                                                            </div>
+                                                            <p className="text-sm text-amber-900">{msg.supervision.text}</p>
+                                                            <div className="flex justify-end mt-1">
+                                                              <button onClick={() => handleDeleteSupervision(msg.id)} className="text-amber-400 hover:text-red-500 transition-colors" title="Delete"><Trash2 className="w-3 h-3" /></button>
+                                                            </div>
+                                                          </div>
+                                                        )}
+                                                      </React.Fragment>
+                                                    ))}
+                                                    {/* Shared action row for assistant block */}
                                                     <div className="flex justify-end mt-1 space-x-3">
-                                                      {avatars.find(a => String(a.id) === String(selectedClient?.avatarId))?.voiceId && (
+                                                      {avatarData?.voiceId && (
                                                         <button
-                                                          onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handlePlayMessageAudio(msg.id);
-                                                          }}
-                                                          disabled={loadingAudioId === msg.id}
+                                                          onClick={(e) => { e.stopPropagation(); handlePlayMessageAudio(block.msgs[0].id); }}
+                                                          disabled={block.msgs.some(m => loadingAudioId === m.id)}
                                                           className={`text-xs flex items-center space-x-1 transition-colors ${
-                                                            loadingAudioId === msg.id
-                                                              ? tc('text-gray-300', 'text-slate-600')
-                                                              : playingAudioId === msg.id
-                                                                ? 'text-rose-500 hover:text-rose-600'
-                                                                : tc('text-gray-400 hover:text-rose-500', 'text-slate-500 hover:text-rose-400')
+                                                            block.msgs.some(m => loadingAudioId === m.id) ? tc('text-gray-300', 'text-slate-600')
+                                                            : block.msgs.some(m => playingAudioId === m.id) ? 'text-rose-500 hover:text-rose-600'
+                                                            : tc('text-gray-400 hover:text-rose-500', 'text-slate-500 hover:text-rose-400')
                                                           }`}
-                                                          title={playingAudioId === msg.id ? t('pause') : t('playAudio')}
                                                         >
-                                                          {loadingAudioId === msg.id ? (
-                                                            <RefreshCw className="w-3 h-3 animate-spin" />
-                                                          ) : playingAudioId === msg.id ? (
-                                                            <Pause className="w-3 h-3" />
-                                                          ) : (
-                                                            <Play className="w-3 h-3" />
-                                                          )}
-                                                          <span>{loadingAudioId === msg.id ? '...' : playingAudioId === msg.id ? t('pause') : t('playAudio')}</span>
+                                                          {block.msgs.some(m => loadingAudioId === m.id) ? <RefreshCw className="w-3 h-3 animate-spin" />
+                                                            : block.msgs.some(m => playingAudioId === m.id) ? <Pause className="w-3 h-3" />
+                                                            : <Play className="w-3 h-3" />}
                                                         </button>
                                                       )}
                                                       <button
                                                         onClick={(e) => {
                                                           e.stopPropagation();
-                                                          if (supervisingMessageId === msg.id) {
-                                                            setSupervisingMessageId(null);
-                                                            setSupervisionText('');
-                                                          } else {
-                                                            setSupervisingMessageId(msg.id);
-                                                            setSupervisionText(msg.supervision?.text || '');
-                                                          }
+                                                          const targetMsg = block.msgs[0];
+                                                          if (supervisingMessageId === targetMsg.id) { setSupervisingMessageId(null); setSupervisionText(''); }
+                                                          else { setSupervisingMessageId(targetMsg.id); setSupervisionText(targetMsg.supervision?.text || ''); }
                                                         }}
                                                         className={`text-xs ${tc('text-gray-400', 'text-slate-500')} hover:text-blue-500 flex items-center space-x-1 transition-colors`}
-                                                        title={t('superviseMessage')}
                                                       >
                                                         <Edit3 className="w-3 h-3" />
                                                         <span>{t('superviseMessage')}</span>
                                                       </button>
                                                     </div>
-                                                  )}
+                                                  </div>
                                                 </div>
-                                                {/* Supervision input area */}
-                                                {msg.role !== 'user' && supervisingMessageId === msg.id && (
-                                                  <div className={`mt-2 ml-2 p-3 ${tc('bg-amber-50 border-amber-200', 'bg-amber-900/20 border-amber-800')} border rounded-lg`}>
-                                                    <textarea
-                                                      value={supervisionText}
-                                                      onChange={(e) => setSupervisionText(e.target.value)}
-                                                      placeholder={t('supervisionPlaceholder')}
-                                                      className={`w-full text-sm border ${tc('border-amber-300 bg-white text-gray-900', 'border-amber-700 bg-slate-900 text-white')} rounded p-2 resize-none focus:outline-none focus:ring-1 focus:ring-amber-400`}
-                                                      rows={3}
-                                                    />
-                                                    <div className="flex justify-end space-x-2 mt-2">
-                                                      <button
-                                                        onClick={() => { setSupervisingMessageId(null); setSupervisionText(''); }}
-                                                        className={`px-3 py-1 text-xs ${tc('text-gray-500 hover:text-gray-700', 'text-slate-400 hover:text-slate-200')}`}
-                                                      >
-                                                        {t('cancel')}
-                                                      </button>
-                                                      <button
-                                                        onClick={handleMessageSupervise}
-                                                        disabled={supervisionSaving || !supervisionText.trim()}
-                                                        className="px-3 py-1 text-xs bg-amber-500 text-white rounded hover:bg-amber-600 disabled:opacity-50 flex items-center space-x-1"
-                                                      >
-                                                        {supervisionSaving ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
-                                                        <span>{t('save')}</span>
-                                                      </button>
-                                                    </div>
-                                                  </div>
-                                                )}
-                                                {/* Display saved supervision note */}
-                                                {msg.supervision?.text && supervisingMessageId !== msg.id && (
-                                                  <div className={`mt-2 ml-2 p-2 ${tc('bg-amber-50', 'bg-amber-900/20')} border-l-4 border-amber-400 rounded-r-lg`}>
-                                                    <div className="flex items-center justify-between mb-1">
-                                                      <span className="text-xs font-medium text-amber-700">{t('superviseMessage')}</span>
-                                                      <span className="text-xs text-amber-500">
-                                                        {msg.supervision.created_at ? new Date(msg.supervision.created_at).toLocaleDateString() : ''}
-                                                      </span>
-                                                    </div>
-                                                    <p className="text-sm text-amber-900">{msg.supervision.text}</p>
-                                                    <div className="flex justify-end mt-1">
-                                                      <button
-                                                        onClick={() => handleDeleteSupervision(msg.id)}
-                                                        className="text-amber-400 hover:text-red-500 transition-colors"
-                                                        title="Delete"
-                                                      >
-                                                        <Trash2 className="w-3 h-3" />
-                                                      </button>
-                                                    </div>
-                                                  </div>
-                                                )}
-                                              </div>
-                                            </div>
-                                          ))
+                                              );
+                                            });
+                                          })()
                                         ) : (
                                           <p className={`text-sm ${tc('text-gray-400', 'text-slate-500')} italic`}>{t('noMessagesInSession')}</p>
                                         )}
