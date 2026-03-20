@@ -1298,13 +1298,48 @@ const HamoPro = () => {
     try {
       const result = await apiService.getMind(client.id);
       if (result.success) {
-        setMindData(result.mind);
+        const mind = result.mind;
+        setMindData(mind);
         // Sync client card with fresh backend data (name/sex/age may have been updated by Discover user)
         setClients(prev => prev.map(c =>
           c.id === client.id
-            ? { ...c, name: result.mind.name || c.name, sex: result.mind.sex ?? c.sex, age: result.mind.age ?? c.age }
+            ? { ...c, name: mind.name || c.name, sex: mind.sex ?? c.sex, age: mind.age ?? c.age }
             : c
         ));
+        // Auto-enter edit mode
+        const parsed = parsePrimaryTraits(mind.personality?.primary_traits);
+        setMindEditData({
+          goals: mind.goals || '',
+          therapy_principles: mind.therapy_principles || '',
+          personality: {
+            primary_traits: mind.personality?.primary_traits || [],
+            description: mind.personality?.description || '',
+            personalityDimension1: parsed.dimension1,
+            personalityDimension2: parsed.dimension2,
+            personalityTraits: parsed.traits,
+          },
+          emotion_pattern: {
+            dominant_emotions: mind.emotion_pattern?.dominant_emotions || [],
+            triggers: mind.emotion_pattern?.triggers || [],
+            coping_mechanisms: mind.emotion_pattern?.coping_mechanisms || [],
+            description: mind.emotion_pattern?.description || '',
+          },
+          cognition_beliefs: {
+            core_beliefs: mind.cognition_beliefs?.core_beliefs || [],
+            cognitive_distortions: mind.cognition_beliefs?.cognitive_distortions || [],
+            thinking_patterns: mind.cognition_beliefs?.thinking_patterns || [],
+            self_perception: mind.cognition_beliefs?.self_perception || '',
+            world_perception: mind.cognition_beliefs?.world_perception || '',
+            future_perception: mind.cognition_beliefs?.future_perception || '',
+          },
+          relationship_manipulations: {
+            attachment_style: mind.relationship_manipulations?.attachment_style || '',
+            relationship_patterns: mind.relationship_manipulations?.relationship_patterns || [],
+            communication_style: mind.relationship_manipulations?.communication_style || '',
+            conflict_resolution: mind.relationship_manipulations?.conflict_resolution || '',
+          },
+        });
+        setMindEditMode(true);
       } else {
         setMindData({ error: result.error || 'Failed to load AI Mind data' });
       }
