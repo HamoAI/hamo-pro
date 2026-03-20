@@ -741,6 +741,49 @@ class ApiService {
     }
   }
 
+  // Supervision Directives (Policy Network)
+  async getDirectives(mindId) {
+    try {
+      const response = await this.request(`/mind/${mindId}/directives`);
+      return { success: true, directives: response.directives || [] };
+    } catch (error) {
+      return { success: false, error: error.message, directives: [] };
+    }
+  }
+
+  async createDirective(mindId, directiveType, text) {
+    try {
+      const response = await this.request(`/mind/${mindId}/directives`, {
+        method: 'POST',
+        body: JSON.stringify({ directive_type: directiveType, text }),
+      });
+      return { success: true, directive: response.directive };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  async updateDirective(directiveId, directiveType, text) {
+    try {
+      const response = await this.request(`/directives/${directiveId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ directive_type: directiveType, text }),
+      });
+      return { success: true, directive: response.directive };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  async deleteDirective(directiveId) {
+    try {
+      await this.request(`/directives/${directiveId}`, { method: 'DELETE' });
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
   // Get all specialties with i18n names
   async getSpecialties() {
     try {

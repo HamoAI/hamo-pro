@@ -299,6 +299,18 @@ export const translations = {
     superviseMessage: 'Supervise',
     supervisionPlaceholder: 'How would you respond better?',
 
+    // Supervision Directives
+    directives: 'Directives',
+    directivesDescription: 'Guide how the avatar responds to this client',
+    addDirective: 'Add Directive',
+    directiveStrategy: 'Strategy',
+    directiveAvoid: 'Avoid',
+    directiveFocus: 'Focus',
+    directivePlaceholder: 'e.g., Use more Socratic questioning',
+    noDirectives: 'No active directives',
+    directiveAdded: 'Directive added',
+    directiveDeleted: 'Directive removed',
+
     // Stress Detail Panel
     stressLevelHistory: 'STRESS LEVEL HISTORY',
     earlier: 'Earlier',
@@ -713,6 +725,18 @@ export const translations = {
     currentSession: '当前会话',
     superviseMessage: '督导',
     supervisionPlaceholder: '您会如何更好地回应？',
+
+    // Supervision Directives
+    directives: '督导指令',
+    directivesDescription: '指导 Avatar 如何回应此来访者',
+    addDirective: '添加指令',
+    directiveStrategy: '策略',
+    directiveAvoid: '禁止',
+    directiveFocus: '关注',
+    directivePlaceholder: '例如：多用苏格拉底式提问',
+    noDirectives: '暂无活跃指令',
+    directiveAdded: '指令已添加',
+    directiveDeleted: '指令已删除',
 
     // Stress Detail Panel
     stressLevelHistory: '压力等级历史',

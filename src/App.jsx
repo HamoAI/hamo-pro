@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { User, Brain, Settings, Plus, Ticket, Eye, EyeOff, Clock, MessageSquare, LogOut, Trash2, Download, CheckCircle, Calendar, Sparkles, Send, Star, Heart, X, Briefcase, ChevronRight, ChevronDown, ChevronUp, Globe, Upload, RefreshCw, ArrowDown, Edit3, Save, Sun, Moon, Mic, Volume2, Square, Play, Pause, Wallet, Lightbulb } from 'lucide-react';
+import { User, Brain, Settings, Plus, Ticket, Eye, EyeOff, Clock, MessageSquare, LogOut, Trash2, Download, CheckCircle, Calendar, Sparkles, Send, Star, Heart, X, Briefcase, ChevronRight, ChevronDown, ChevronUp, Globe, Upload, RefreshCw, ArrowDown, Edit3, Save, Sun, Moon, Mic, Volume2, Square, Play, Pause, Wallet, Lightbulb, Target } from 'lucide-react';
 import apiService from './services/api';
 import { translations } from './i18n/translations';
 
@@ -257,6 +257,10 @@ const HamoPro = () => {
   const [hasNewMessages, setHasNewMessages] = useState(false); // Show "new messages" indicator
   const lastMessageCountRef = useRef(0); // Track message count for detecting new messages
   const [showStressDetail, setShowStressDetail] = useState(false); // Toggle stress detail panel
+  const [directives, setDirectives] = useState([]); // Supervision directives for selected client
+  const [showDirectives, setShowDirectives] = useState(false); // Toggle directives panel
+  const [newDirectiveText, setNewDirectiveText] = useState('');
+  const [newDirectiveType, setNewDirectiveType] = useState('strategy');
   const [stressIndicatorsData, setStressIndicatorsData] = useState(null); // A/W/E/H/B from portal API
   const [expandedMiniSessions, setExpandedMiniSessions] = useState(new Set()); // Track which mini sessions are expanded
   const [supervisingMessageId, setSupervisingMessageId] = useState(null); // Which message is being supervised
@@ -1420,12 +1424,18 @@ const HamoPro = () => {
     setExpandedMiniSessions(new Set());
 
     try {
-      // Fetch sessions, PSVS profile, and portal messages (for A/W/E/H/B) in parallel
-      const [sessionsResult, psvsResult, portalResult] = await Promise.all([
+      // Fetch sessions, PSVS profile, portal messages, and directives in parallel
+      const [sessionsResult, psvsResult, portalResult, directivesResult] = await Promise.all([
         apiService.getSessions(client.id),
         apiService.getPsvsProfile(client.id),
-        apiService.getPortalMessages(client.id)
+        apiService.getPortalMessages(client.id),
+        apiService.getDirectives(client.id)
       ]);
+
+      // Load directives
+      if (directivesResult.success) {
+        setDirectives(directivesResult.directives);
+      }
 
       // Extract last A/W/E/H/B indicators from portal messages
       if (portalResult.success && portalResult.sessions) {
@@ -4277,6 +4287,102 @@ const HamoPro = () => {
                       </div>
                     );
                   })()}
+
+                  {/* Supervision Directives Section */}
+                  <div className={`border-b ${tc('border-gray-200', 'border-slate-700')}`}>
+                    <div
+                      className={`px-4 py-2.5 cursor-pointer flex items-center justify-between transition-colors ${tc('hover:bg-gray-50', 'hover:bg-slate-700')}`}
+                      onClick={() => setShowDirectives(!showDirectives)}
+                    >
+                      <div className="flex items-center space-x-2">
+                        <Target className={`w-4 h-4 ${tc('text-amber-500', 'text-amber-400')}`} />
+                        <span className={`text-sm font-medium ${tc('text-gray-700', 'text-slate-300')}`}>{t('directives')}</span>
+                        {directives.length > 0 && (
+                          <span className="bg-amber-500 text-white text-xs px-1.5 py-0.5 rounded-full">{directives.length}</span>
+                        )}
+                      </div>
+                      {showDirectives ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+                    </div>
+                    {showDirectives && (
+                      <div className={`px-4 pb-3 ${tc('bg-gray-50', 'bg-slate-800')}`}>
+                        <p className={`text-xs ${tc('text-gray-400', 'text-slate-500')} mb-2`}>{t('directivesDescription')}</p>
+                        {/* Existing directives */}
+                        {directives.length > 0 ? (
+                          <div className="space-y-1.5 mb-2">
+                            {directives.map(d => (
+                              <div key={d.id} className={`flex items-start justify-between p-2 rounded-lg ${tc('bg-white border border-gray-200', 'bg-slate-700 border border-slate-600')}`}>
+                                <div className="flex-1 min-w-0">
+                                  <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
+                                    d.directive_type === 'avoid' ? 'bg-red-100 text-red-700' :
+                                    d.directive_type === 'focus' ? 'bg-blue-100 text-blue-700' :
+                                    'bg-amber-100 text-amber-700'
+                                  }`}>
+                                    {d.directive_type === 'avoid' ? t('directiveAvoid') : d.directive_type === 'focus' ? t('directiveFocus') : t('directiveStrategy')}
+                                  </span>
+                                  <p className={`text-sm mt-1 ${tc('text-gray-700', 'text-slate-300')}`}>{d.text}</p>
+                                </div>
+                                <button
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    const result = await apiService.deleteDirective(d.id);
+                                    if (result.success) setDirectives(prev => prev.filter(x => x.id !== d.id));
+                                  }}
+                                  className="ml-2 text-gray-400 hover:text-red-500 flex-shrink-0"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className={`text-xs ${tc('text-gray-400', 'text-slate-500')} italic mb-2`}>{t('noDirectives')}</p>
+                        )}
+                        {/* Add new directive */}
+                        <div className="flex items-center space-x-1.5">
+                          <select
+                            value={newDirectiveType}
+                            onChange={(e) => setNewDirectiveType(e.target.value)}
+                            className={`text-xs px-1.5 py-1.5 rounded border ${tc('border-gray-300 bg-white', 'border-slate-600 bg-slate-700 text-white')}`}
+                          >
+                            <option value="strategy">{t('directiveStrategy')}</option>
+                            <option value="avoid">{t('directiveAvoid')}</option>
+                            <option value="focus">{t('directiveFocus')}</option>
+                          </select>
+                          <input
+                            type="text"
+                            value={newDirectiveText}
+                            onChange={(e) => setNewDirectiveText(e.target.value)}
+                            onKeyDown={async (e) => {
+                              if (e.key === 'Enter' && newDirectiveText.trim()) {
+                                const result = await apiService.createDirective(selectedClient.id, newDirectiveType, newDirectiveText.trim());
+                                if (result.success) {
+                                  setDirectives(prev => [result.directive, ...prev]);
+                                  setNewDirectiveText('');
+                                }
+                              }
+                            }}
+                            placeholder={t('directivePlaceholder')}
+                            maxLength={200}
+                            className={`flex-1 text-xs px-2 py-1.5 rounded border ${tc('border-gray-300 bg-white', 'border-slate-600 bg-slate-700 text-white')} focus:outline-none focus:ring-1 focus:ring-amber-400`}
+                          />
+                          <button
+                            onClick={async () => {
+                              if (!newDirectiveText.trim()) return;
+                              const result = await apiService.createDirective(selectedClient.id, newDirectiveType, newDirectiveText.trim());
+                              if (result.success) {
+                                setDirectives(prev => [result.directive, ...prev]);
+                                setNewDirectiveText('');
+                              }
+                            }}
+                            disabled={!newDirectiveText.trim()}
+                            className="px-2 py-1.5 text-xs bg-amber-500 text-white rounded hover:bg-amber-600 disabled:opacity-50 flex-shrink-0"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
                   {/* Content wrapper with new message indicator */}
                   <div className="relative">
