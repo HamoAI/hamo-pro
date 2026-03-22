@@ -1970,9 +1970,6 @@ const HamoPro = () => {
 
   // Save invitation card as image to local device
   const handleSaveInvitationCard = async () => {
-    const card = document.getElementById('invitation-card-content');
-    if (!card) return;
-
     const avatar = avatars.find(a => String(a.id) === String(showInvitationCard.avatarId) || String(a.id) === String(showInvitationCard.avatar_id));
 
     // Pre-load avatar image via proxy (same approach as batch invitation)
