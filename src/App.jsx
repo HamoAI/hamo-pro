@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { User, Brain, Settings, Plus, Ticket, Eye, EyeOff, Clock, MessageSquare, LogOut, Trash2, Download, CheckCircle, Calendar, Sparkles, Send, Star, Heart, X, Briefcase, ChevronRight, ChevronDown, ChevronUp, Globe, Upload, RefreshCw, ArrowDown, Edit3, Save, Sun, Moon, Mic, Volume2, Square, Play, Pause, Wallet, Lightbulb, Target, Share2 } from 'lucide-react';
+import { User, Users, Brain, Settings, Plus, Ticket, Eye, EyeOff, Clock, MessageSquare, LogOut, Trash2, Download, CheckCircle, Calendar, Sparkles, Send, Star, Heart, X, Briefcase, ChevronRight, ChevronDown, ChevronUp, Globe, Upload, RefreshCw, ArrowDown, Edit3, Save, Sun, Moon, Mic, Volume2, Square, Play, Pause, Wallet, Lightbulb, Target } from 'lucide-react';
 import apiService from './services/api';
 import { translations } from './i18n/translations';
 
@@ -2743,17 +2743,21 @@ const HamoPro = () => {
                             <Mic className="w-3.5 h-3.5 text-rose-500" />
                           </div>
                         )}
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleGenerateBatchInvitation(a); }}
-                          disabled={batchInviteLoading}
-                          className="flex items-center space-x-1 text-blue-400 hover:text-blue-300 transition-colors ml-auto"
-                          title={t('batchInvite')}
-                        >
-                          <Share2 className="w-4 h-4" />
-                        </button>
                       </div>
 
                     </div>
+                  </div>
+                  {/* Batch Invite Button - card bottom right */}
+                  <div className="flex justify-end mt-2">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleGenerateBatchInvitation(a); }}
+                      disabled={batchInviteLoading}
+                      className="flex items-center space-x-1 text-blue-500 hover:text-blue-400 disabled:opacity-50 transition-colors"
+                    >
+                      <Ticket className="w-3.5 h-3.5" />
+                      <Users className="w-3.5 h-3.5" />
+                      <span className="text-xs">{t('batchInvite')}</span>
+                    </button>
                   </div>
                 </div>
               ))}
