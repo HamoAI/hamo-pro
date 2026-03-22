@@ -1969,82 +1969,128 @@ const HamoPro = () => {
   };
 
   // Save invitation card as image to local device
-  const handleSaveInvitationCard = () => {
+  const handleSaveInvitationCard = async () => {
     const card = document.getElementById('invitation-card-content');
     if (!card) return;
 
-    // Create canvas and draw the card
+    const avatar = avatars.find(a => String(a.id) === String(showInvitationCard.avatarId) || String(a.id) === String(showInvitationCard.avatar_id));
+
+    // Pre-load avatar image via proxy
+    let avatarImg = null;
+    if (avatar?.avatarPicture) {
+      try {
+        const resp = await fetch(`https://api.hamo.ai/api/image-proxy?url=${encodeURIComponent(avatar.avatarPicture)}`);
+        if (resp.ok) {
+          const blob = await resp.blob();
+          avatarImg = await createImageBitmap(blob);
+        }
+      } catch (e) { /* skip avatar image */ }
+    }
+
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
+    const W = 400;
+    const H = 550;
+    canvas.width = W;
+    canvas.height = H;
 
-    // Set canvas size
-    canvas.width = 400;
-    canvas.height = 500;
-
-    // Draw gradient background
-    const gradient = ctx.createLinearGradient(0, 0, 400, 500);
-    gradient.addColorStop(0, '#3B82F6');
-    gradient.addColorStop(1, '#14B8A6');
-    ctx.fillStyle = gradient;
-    ctx.roundRect(0, 0, 400, 500, 20);
+    // Dark background with border
+    ctx.fillStyle = '#0F172A';
+    ctx.roundRect(0, 0, W, H, 20);
     ctx.fill();
-
-    // Draw white card background
-    ctx.fillStyle = '#FFFFFF';
-    ctx.roundRect(10, 10, 380, 480, 16);
-    ctx.fill();
-
-    // Draw title
-    ctx.fillStyle = '#1F2937';
-    ctx.font = 'bold 24px system-ui, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(t('invitationCode'), 200, 60);
-
-    // Draw Hamo Pro badge
-    ctx.fillStyle = '#3B82F6';
-    ctx.font = '14px system-ui, sans-serif';
-    ctx.fillText('Hamo Pro', 200, 90);
-
-    // Draw invitation code
-    ctx.fillStyle = '#1F2937';
-    ctx.font = 'bold 36px monospace';
-    ctx.fillText(invitationCode, 200, 180);
-
-    // Draw validity notice
-    ctx.fillStyle = '#F97316';
-    ctx.font = '16px system-ui, sans-serif';
-    ctx.fillText(t('validFor24Hours'), 200, 230);
-
-    // Draw divider line
-    ctx.strokeStyle = '#E5E7EB';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(40, 270);
-    ctx.lineTo(360, 270);
+    ctx.strokeStyle = '#0EA5E9';
+    ctx.lineWidth = 2;
+    ctx.roundRect(8, 8, W - 16, H - 16, 16);
     ctx.stroke();
 
-    // Draw client info
-    const avatar = avatars.find(a => String(a.id) === String(showInvitationCard.avatarId) || String(a.id) === String(showInvitationCard.avatar_id));
-    ctx.fillStyle = '#6B7280';
-    ctx.font = '14px system-ui, sans-serif';
-    ctx.fillText(t('clientLabel'), 200, 310);
-    ctx.fillStyle = '#1F2937';
+    let y = 40;
+
+    // Avatar picture
+    if (avatarImg) {
+      const size = 72;
+      const cx = W / 2;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, y + size / 2, size / 2, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(avatarImg, cx - size / 2, y, size, size);
+      ctx.restore();
+      // Border
+      ctx.strokeStyle = '#3B82F6';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(cx, y + size / 2, size / 2, 0, Math.PI * 2);
+      ctx.stroke();
+      y += size + 12;
+    }
+
+    // Avatar name
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#F59E0B';
     ctx.font = 'bold 18px system-ui, sans-serif';
-    ctx.fillText(showInvitationCard.name, 200, 340);
+    ctx.fillText(avatar?.name || t('unknown'), W / 2, y + 16);
+    y += 40;
 
-    ctx.fillStyle = '#6B7280';
+    // Hamo AI title
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 20px system-ui, sans-serif';
+    ctx.fillText('Hamo AI', W / 2, y);
+    y += 22;
+    ctx.fillStyle = '#94A3B8';
+    ctx.font = '13px system-ui, sans-serif';
+    ctx.fillText('Hamo AI：你的虚拟咨询师', W / 2, y);
+    y += 30;
+
+    // Code box
+    ctx.fillStyle = '#1E293B';
+    ctx.roundRect(40, y, W - 80, 56, 12);
+    ctx.fill();
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 30px monospace';
+    ctx.fillText(invitationCode, W / 2, y + 38);
+    y += 76;
+
+    // Validity
+    ctx.fillStyle = '#F59E0B';
     ctx.font = '14px system-ui, sans-serif';
-    ctx.fillText('AI Avatar', 200, 390);
-    ctx.fillStyle = '#1F2937';
-    ctx.font = 'bold 18px system-ui, sans-serif';
-    ctx.fillText(avatar?.name || t('unknown'), 200, 420);
+    ctx.fillText(t('validFor24Hours'), W / 2, y);
+    y += 30;
 
-    // Draw footer
-    ctx.fillStyle = '#3B82F6';
-    ctx.font = 'bold 14px system-ui, sans-serif';
-    ctx.fillText(t('registrationInstructions'), 200, 470);
+    // Divider
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(40, y);
+    ctx.lineTo(W - 40, y);
+    ctx.stroke();
+    y += 20;
 
-    // Download the image
+    // Client info
+    ctx.fillStyle = '#94A3B8';
+    ctx.font = '13px system-ui, sans-serif';
+    ctx.fillText(t('clientLabel'), W / 2, y);
+    y += 22;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 16px system-ui, sans-serif';
+    ctx.fillText(showInvitationCard.name, W / 2, y);
+    y += 30;
+
+    ctx.fillStyle = '#94A3B8';
+    ctx.font = '13px system-ui, sans-serif';
+    ctx.fillText('AI Avatar', W / 2, y);
+    y += 22;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 16px system-ui, sans-serif';
+    ctx.fillText(avatar?.name || t('unknown'), W / 2, y);
+    y += 40;
+
+    // Footer
+    ctx.fillStyle = '#38BDF8';
+    ctx.font = 'bold 13px system-ui, sans-serif';
+    ctx.fillText(t('registrationInstructions'), W / 2, y);
+
+    // Download
     const link = document.createElement('a');
     link.download = `hamo-invitation-${invitationCode}.png`;
     link.href = canvas.toDataURL('image/png');
@@ -2299,9 +2345,16 @@ const HamoPro = () => {
           <div className={`rounded-2xl p-1 shadow-2xl ${tc('bg-gradient-to-br from-blue-500 to-teal-500', 'bg-gradient-to-br from-blue-600 to-cyan-600')}`}>
             <div id="invitation-card-content" className={`rounded-2xl p-8 w-80 ${tc('bg-white', 'bg-slate-800')}`}>
               <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-teal-500 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <Ticket className="w-8 h-8 text-white" />
-                </div>
+                {(() => {
+                  const invAvatar = avatars.find(a => String(a.id) === String(showInvitationCard.avatarId) || String(a.id) === String(showInvitationCard.avatar_id));
+                  return invAvatar?.avatarPicture ? (
+                    <img src={invAvatar.avatarPicture} alt="" className="w-16 h-16 rounded-full object-cover mx-auto mb-4 border-2 border-blue-500" />
+                  ) : (
+                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Ticket className="w-8 h-8 text-white" />
+                    </div>
+                  );
+                })()}
                 <h3 className={`text-xl font-bold mb-1 ${tc('text-gray-900', 'text-white')}`}>{t('invitationCode')}</h3>
                 <p className={`text-sm mb-6 ${tc('text-blue-500', 'text-blue-400')}`}>Hamo Pro</p>
 
@@ -2336,13 +2389,13 @@ const HamoPro = () => {
                   className="flex-1 bg-blue-500 text-white px-4 py-3 rounded-lg font-medium hover:bg-blue-600 flex items-center justify-center space-x-2"
                 >
                   <Download className="w-4 h-4" />
-                  <span>{t('save')}</span>
+                  <span>{t('invitationCardBtn')}</span>
                 </button>
                 <button
                   onClick={() => setShowInvitationCard(null)}
                   className={`flex-1 px-4 py-3 rounded-lg font-medium ${tc('bg-gray-200 text-gray-700 hover:bg-gray-300', 'bg-slate-700 text-slate-300 hover:bg-slate-600')}`}
                 >
-                  {t('done')}
+                  {t('confirm')}
                 </button>
               </div>
             </div>
