@@ -1314,20 +1314,20 @@ const HamoPro = () => {
     if (!result.success) alert(`Failed to update: ${result.error}`);
   };
 
-  const handleSaveBatchInvitationCard = () => {
+  const handleSaveBatchInvitationCard = async () => {
     const avatar = showBatchInvitation;
     if (!avatar) return;
     const canvas = document.createElement('canvas');
     canvas.width = 400;
-    canvas.height = 500;
+    canvas.height = 520;
     const ctx = canvas.getContext('2d');
 
     // Background
-    const bgGrad = ctx.createLinearGradient(0, 0, 400, 500);
+    const bgGrad = ctx.createLinearGradient(0, 0, 400, 520);
     bgGrad.addColorStop(0, '#1e293b');
     bgGrad.addColorStop(1, '#0f172a');
     ctx.fillStyle = bgGrad;
-    ctx.fillRect(0, 0, 400, 500);
+    ctx.fillRect(0, 0, 400, 520);
 
     // Border glow
     const borderGrad = ctx.createLinearGradient(0, 0, 400, 0);
@@ -1335,79 +1335,80 @@ const HamoPro = () => {
     borderGrad.addColorStop(1, '#06b6d4');
     ctx.strokeStyle = borderGrad;
     ctx.lineWidth = 3;
-    ctx.strokeRect(10, 10, 380, 480);
+    ctx.strokeRect(10, 10, 380, 500);
 
-    const drawContent = () => {
-      // "Hamo AI" title
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 22px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('Hamo AI', 200, 150);
-      // Subtitle
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '14px sans-serif';
-      ctx.fillText(t('hamoAiSubtitle'), 200, 175);
-
-      // Invitation code box
-      ctx.fillStyle = '#1e3a5f';
-      ctx.beginPath();
-      ctx.roundRect(60, 200, 280, 60, 12);
-      ctx.fill();
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 32px monospace';
-      ctx.fillText(batchInviteCode, 200, 240);
-
-      // Avatar name
-      ctx.fillStyle = '#60a5fa';
-      ctx.font = '16px sans-serif';
-      ctx.fillText(avatar.name, 200, 300);
-
-      // Validity info
-      ctx.fillStyle = '#f59e0b';
-      ctx.font = '13px sans-serif';
-      ctx.fillText(`${t('expiryDays')}: ${batchExpiresDays}`, 200, 340);
-
-      // Registration instructions
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '12px sans-serif';
-      ctx.fillText(t('registrationInstructions'), 200, 400);
-
-      // Download
-      const link = document.createElement('a');
-      link.download = `hamo-batch-${batchInviteCode}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    };
-
-    // Draw avatar picture as circle
+    // Load avatar image via fetch (bypass CORS)
+    let avatarImg = null;
     if (avatar.avatarPicture) {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        try {
-          ctx.save();
-          ctx.beginPath();
-          ctx.arc(200, 70, 45, 0, Math.PI * 2);
-          ctx.closePath();
-          ctx.clip();
-          ctx.drawImage(img, 155, 25, 90, 90);
-          ctx.restore();
-          // Circle border
-          ctx.beginPath();
-          ctx.arc(200, 70, 45, 0, Math.PI * 2);
-          ctx.strokeStyle = '#3b82f6';
-          ctx.lineWidth = 2;
-          ctx.stroke();
-        } catch (e) {
-          // CORS issue — draw without avatar
-        }
-        drawContent();
-      };
-      img.onerror = () => drawContent();
-      img.src = avatar.avatarPicture;
-    } else {
-      drawContent();
+      try {
+        const resp = await fetch(avatar.avatarPicture);
+        const blob = await resp.blob();
+        const bitmapUrl = URL.createObjectURL(blob);
+        avatarImg = await new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = () => resolve(null);
+          img.src = bitmapUrl;
+        });
+      } catch (e) { /* skip avatar image */ }
     }
+
+    // Draw avatar circle
+    if (avatarImg) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(200, 70, 45, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(avatarImg, 155, 25, 90, 90);
+      ctx.restore();
+      ctx.beginPath();
+      ctx.arc(200, 70, 45, 0, Math.PI * 2);
+      ctx.strokeStyle = '#3b82f6';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    ctx.textAlign = 'center';
+
+    // Avatar name (right below avatar image)
+    ctx.fillStyle = '#60a5fa';
+    ctx.font = 'bold 18px sans-serif';
+    ctx.fillText(avatar.name, 200, 140);
+
+    // "Hamo AI" title
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 20px sans-serif';
+    ctx.fillText('Hamo AI', 200, 175);
+    // Subtitle
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '13px sans-serif';
+    ctx.fillText(t('hamoAiSubtitle'), 200, 195);
+
+    // Invitation code box
+    ctx.fillStyle = '#1e3a5f';
+    ctx.beginPath();
+    ctx.roundRect(60, 220, 280, 60, 12);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 32px monospace';
+    ctx.fillText(batchInviteCode, 200, 260);
+
+    // Validity info
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = '13px sans-serif';
+    ctx.fillText(`${t('expiryDays')}: ${batchExpiresDays}`, 200, 320);
+
+    // Registration instructions
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '12px sans-serif';
+    ctx.fillText(t('registrationInstructions'), 200, 420);
+
+    // Download
+    const link = document.createElement('a');
+    link.download = `hamo-batch-${batchInviteCode}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
   };
 
   // Fetch and display AI Mind for a client
