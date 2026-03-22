@@ -634,6 +634,15 @@ class ApiService {
     }
   }
 
+  async getBatchInvitation(avatarId) {
+    try {
+      const response = await this.request(`/pro/invitation/batch/${avatarId}`, { method: 'GET' });
+      return response;
+    } catch (error) {
+      return { found: false };
+    }
+  }
+
   async generateBatchInvitation(avatarId, maxUses = 10, expiresDays = 7) {
     try {
       const response = await this.request('/pro/invitation/generate-batch', {

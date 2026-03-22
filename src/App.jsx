@@ -289,6 +289,8 @@ const HamoPro = () => {
   const [batchInviteLoading, setBatchInviteLoading] = useState(false);
   const [batchMaxUses, setBatchMaxUses] = useState(10);
   const [batchExpiresDays, setBatchExpiresDays] = useState(7);
+  const [batchUseCount, setBatchUseCount] = useState(0);
+  const [batchDaysLeft, setBatchDaysLeft] = useState(null);
   const [selectedAvatar, setSelectedAvatar] = useState(null);
   const [editingAvatar, setEditingAvatar] = useState(null);
   const [avatarForm, setAvatarForm] = useState({
@@ -1285,21 +1287,35 @@ const HamoPro = () => {
     }
   };
 
-  // Generate batch invitation code for an Avatar (promotional use)
+  // Open batch invitation for an Avatar — reuse existing or generate new
   const handleGenerateBatchInvitation = async (avatar) => {
     setBatchInviteLoading(true);
-    setBatchMaxUses(10);
-    setBatchExpiresDays(7);
     try {
-      const result = await apiService.generateBatchInvitation(avatar.id, 10, 7);
-      if (result.success) {
-        setBatchInviteCode(result.invitationCode);
+      // Check for existing active batch invitation
+      const existing = await apiService.getBatchInvitation(avatar.id);
+      if (existing.found) {
+        setBatchInviteCode(existing.invitation_code);
+        setBatchMaxUses(existing.max_uses);
+        setBatchExpiresDays(existing.expires_days);
+        setBatchUseCount(existing.use_count);
+        setBatchDaysLeft(existing.days_left);
         setShowBatchInvitation(avatar);
       } else {
-        alert(`Failed to generate batch invitation: ${result.error}`);
+        // No active batch invitation — generate new
+        const result = await apiService.generateBatchInvitation(avatar.id, 10, 7);
+        if (result.success) {
+          setBatchInviteCode(result.invitationCode);
+          setBatchMaxUses(10);
+          setBatchExpiresDays(7);
+          setBatchUseCount(0);
+          setBatchDaysLeft(7);
+          setShowBatchInvitation(avatar);
+        } else {
+          alert(`Failed to generate batch invitation: ${result.error}`);
+        }
       }
     } catch (error) {
-      alert(`Failed to generate batch invitation: ${error.message}`);
+      alert(`Failed: ${error.message}`);
     } finally {
       setBatchInviteLoading(false);
     }
@@ -2356,31 +2372,43 @@ const HamoPro = () => {
                   <p className={`text-3xl font-bold font-mono tracking-wider ${tc('text-gray-900', 'text-white')}`}>{batchInviteCode}</p>
                 </div>
 
-                {/* Editable Settings */}
+                {/* Settings & Status */}
                 <div className="space-y-3 mb-5">
                   <div className="flex items-center justify-between">
                     <span className={`text-sm ${tc('text-gray-600', 'text-slate-400')}`}><Clock className="w-4 h-4 inline mr-1" />{t('expiryDays')}</span>
-                    <input
-                      type="number"
-                      min="1"
-                      max="90"
-                      value={batchExpiresDays}
-                      onChange={(e) => setBatchExpiresDays(Math.max(1, parseInt(e.target.value) || 7))}
-                      onBlur={handleSaveBatchSettings}
-                      className={`w-16 text-center text-sm border rounded-lg py-1 ${tc('border-gray-300 bg-white text-gray-900', 'border-slate-600 bg-slate-700 text-white')}`}
-                    />
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="number"
+                        min="1"
+                        max="90"
+                        value={batchExpiresDays}
+                        onChange={(e) => setBatchExpiresDays(Math.max(1, parseInt(e.target.value) || 7))}
+                        onBlur={handleSaveBatchSettings}
+                        className={`w-16 text-center text-sm border rounded-lg py-1 ${tc('border-gray-300 bg-white text-gray-900', 'border-slate-600 bg-slate-700 text-white')}`}
+                      />
+                      {batchDaysLeft !== null && (
+                        <span className={`text-xs ${batchDaysLeft <= 2 ? 'text-red-400' : 'text-green-400'}`}>
+                          ({language === 'zh' ? `剩${batchDaysLeft}天` : `${batchDaysLeft}d left`})
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className={`text-sm ${tc('text-gray-600', 'text-slate-400')}`}><User className="w-4 h-4 inline mr-1" />{t('maxInvitees')}</span>
-                    <input
-                      type="number"
-                      min="1"
-                      max="100"
-                      value={batchMaxUses}
-                      onChange={(e) => setBatchMaxUses(Math.max(1, parseInt(e.target.value) || 10))}
-                      onBlur={handleSaveBatchSettings}
-                      className={`w-16 text-center text-sm border rounded-lg py-1 ${tc('border-gray-300 bg-white text-gray-900', 'border-slate-600 bg-slate-700 text-white')}`}
-                    />
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="number"
+                        min="1"
+                        max="100"
+                        value={batchMaxUses}
+                        onChange={(e) => setBatchMaxUses(Math.max(1, parseInt(e.target.value) || 10))}
+                        onBlur={handleSaveBatchSettings}
+                        className={`w-16 text-center text-sm border rounded-lg py-1 ${tc('border-gray-300 bg-white text-gray-900', 'border-slate-600 bg-slate-700 text-white')}`}
+                      />
+                      <span className={`text-xs ${tc('text-gray-400', 'text-slate-500')}`}>
+                        ({language === 'zh' ? `已用${batchUseCount}` : `${batchUseCount} used`})
+                      </span>
+                    </div>
                   </div>
                 </div>
 
