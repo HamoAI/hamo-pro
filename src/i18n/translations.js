@@ -44,6 +44,20 @@ export const translations = {
     saveChanges: 'Save Changes',
     savedSuccessfully: 'Saved successfully',
 
+    // Verification
+    verification: 'Verify',
+    identityVerification: 'Identity Verification',
+    realName: 'Legal Name',
+    realNamePlaceholder: 'Name on ID / Passport',
+    alipayAccount: 'Alipay Account',
+    wechatId: 'WeChat ID',
+    wechatIdOptional: 'Optional',
+    submitVerification: 'Submit Verification',
+    verificationPending: 'Under Review',
+    verified: 'Verified',
+    verificationSubmitted: 'Verification submitted, under review',
+    verificationAlreadyVerified: 'Your identity has been verified',
+
     // Avatars
     avatarTherapists: 'Avatar Therapists',
     createAvatar: 'Create Avatar',
@@ -477,6 +491,20 @@ export const translations = {
     newPassword: '新密码',
     saveChanges: '保存更改',
     savedSuccessfully: '保存成功',
+
+    // Verification
+    verification: '验证',
+    identityVerification: '身份验证',
+    realName: '实名',
+    realNamePlaceholder: '身份证/护照上的名字',
+    alipayAccount: '支付宝账号',
+    wechatId: '微信号',
+    wechatIdOptional: '选填',
+    submitVerification: '提交验证',
+    verificationPending: '审核中',
+    verified: '已验证',
+    verificationSubmitted: '验证信息已提交，等待审核',
+    verificationAlreadyVerified: '您的身份已验证',
 
     // Avatars
     avatarTherapists: '虚拟咨询师',

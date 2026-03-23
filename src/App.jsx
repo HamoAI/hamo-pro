@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { User, Users, Brain, Settings, Plus, Ticket, Eye, EyeOff, Clock, MessageSquare, LogOut, Trash2, Download, CheckCircle, Calendar, Sparkles, Send, Star, Heart, X, Briefcase, ChevronRight, ChevronDown, ChevronUp, Globe, Upload, RefreshCw, ArrowDown, Edit3, Save, Sun, Moon, Mic, Volume2, Square, Play, Pause, Wallet, Lightbulb, Target } from 'lucide-react';
+import { User, Users, Brain, Settings, Plus, Ticket, Eye, EyeOff, Clock, MessageSquare, LogOut, Trash2, Download, CheckCircle, Calendar, Sparkles, Send, Star, Heart, X, Briefcase, ChevronRight, ChevronDown, ChevronUp, Globe, Upload, RefreshCw, ArrowDown, Edit3, Save, Sun, Moon, Mic, Volume2, Square, Play, Pause, Wallet, Lightbulb, Target, Shield } from 'lucide-react';
 import apiService from './services/api';
 import { translations } from './i18n/translations';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.9.2";
+  const APP_VERSION = "1.9.3";
 
   // Language state - default to browser language or English
   const [language, setLanguage] = useState(() => {
@@ -235,6 +235,10 @@ const HamoPro = () => {
   const [totalCommission, setTotalCommission] = useState(0);
   const [commissionsLoaded, setCommissionsLoaded] = useState(false);
   const [settingsSubTab, setSettingsSubTab] = useState('profile');
+  const [verificationForm, setVerificationForm] = useState({ real_name: '', alipay_account: '', wechat_id: '' });
+  const [verificationSaving, setVerificationSaving] = useState(false);
+  const [verificationStatus, setVerificationStatus] = useState(null);
+  const [verificationLoaded, setVerificationLoaded] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [authForm, setAuthForm] = useState({ email: '', password: '', fullName: '', profession: '' });
   const [authError, setAuthError] = useState('');
@@ -733,6 +737,35 @@ const HamoPro = () => {
       setProfileMessage(t('errorFailedToSaveProfile'));
     } finally {
       setProfileSaving(false);
+    }
+  };
+
+  const loadVerification = async () => {
+    if (verificationLoaded) return;
+    try {
+      const result = await apiService.getVerification();
+      if (result.success) {
+        setVerificationForm({ real_name: result.real_name || '', alipay_account: result.alipay_account || '', wechat_id: result.wechat_id || '' });
+        setVerificationStatus(result.verification_status || null);
+      }
+    } catch (e) { /* ignore */ }
+    setVerificationLoaded(true);
+  };
+
+  const handleSubmitVerification = async () => {
+    if (!verificationForm.real_name.trim() || !verificationForm.alipay_account.trim()) return;
+    setVerificationSaving(true);
+    try {
+      const result = await apiService.submitVerification(verificationForm);
+      if (result.success) {
+        setVerificationStatus('pending');
+      } else {
+        alert(result.error);
+      }
+    } catch (e) {
+      alert('Failed to submit verification');
+    } finally {
+      setVerificationSaving(false);
     }
   };
 
@@ -5013,6 +5046,12 @@ const HamoPro = () => {
               >
                 {t('wallet')}
               </button>
+              <button
+                onClick={() => { setSettingsSubTab('verification'); loadVerification(); }}
+                className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${settingsSubTab === 'verification' ? `${tc('bg-white shadow text-gray-900', 'bg-slate-600 text-white')}` : `${tc('text-gray-500 hover:text-gray-700', 'text-slate-400 hover:text-slate-200')}`}`}
+              >
+                {t('verification')}
+              </button>
             </div>
 
             {/* Profile Tab */}
@@ -5166,6 +5205,85 @@ const HamoPro = () => {
                     </div>
                     );
                   })}
+                </div>
+              )}
+            </div>
+            )}
+
+            {/* Verification Tab */}
+            {settingsSubTab === 'verification' && (
+            <div className={`${tc('bg-white', 'bg-slate-800')} rounded-xl ${tc('shadow-md', 'shadow-lg shadow-black/20')} p-6`}>
+              <div className="flex items-center space-x-2 mb-4">
+                <Shield className={`w-5 h-5 ${tc('text-blue-600', 'text-blue-400')}`} />
+                <h3 className={`text-lg font-semibold ${tc('text-gray-900', 'text-white')}`}>{t('identityVerification')}</h3>
+                {verificationStatus === 'verified' && (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">{t('verified')}</span>
+                )}
+                {verificationStatus === 'pending' && (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700 font-medium">{t('verificationPending')}</span>
+                )}
+              </div>
+
+              {verificationStatus === 'verified' && (
+                <div className={`p-4 rounded-lg ${tc('bg-green-50 border border-green-200', 'bg-green-900/20 border border-green-800')}`}>
+                  <p className={`text-sm ${tc('text-green-700', 'text-green-300')} mb-3`}>{t('verificationAlreadyVerified')}</p>
+                  <div className="space-y-2">
+                    <div><span className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>{t('realName')}</span><p className={`text-sm font-medium ${tc('text-gray-900', 'text-white')}`}>{verificationForm.real_name}</p></div>
+                    <div><span className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>{t('alipayAccount')}</span><p className={`text-sm font-medium ${tc('text-gray-900', 'text-white')}`}>{verificationForm.alipay_account}</p></div>
+                    {verificationForm.wechat_id && <div><span className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>{t('wechatId')}</span><p className={`text-sm font-medium ${tc('text-gray-900', 'text-white')}`}>{verificationForm.wechat_id}</p></div>}
+                  </div>
+                </div>
+              )}
+
+              {verificationStatus === 'pending' && (
+                <div className={`p-4 rounded-lg ${tc('bg-yellow-50 border border-yellow-200', 'bg-yellow-900/20 border border-yellow-800')}`}>
+                  <p className={`text-sm ${tc('text-yellow-700', 'text-yellow-300')} mb-3`}>{t('verificationSubmitted')}</p>
+                  <div className="space-y-2">
+                    <div><span className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>{t('realName')}</span><p className={`text-sm font-medium ${tc('text-gray-900', 'text-white')}`}>{verificationForm.real_name}</p></div>
+                    <div><span className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>{t('alipayAccount')}</span><p className={`text-sm font-medium ${tc('text-gray-900', 'text-white')}`}>{verificationForm.alipay_account}</p></div>
+                    {verificationForm.wechat_id && <div><span className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>{t('wechatId')}</span><p className={`text-sm font-medium ${tc('text-gray-900', 'text-white')}`}>{verificationForm.wechat_id}</p></div>}
+                  </div>
+                </div>
+              )}
+
+              {!verificationStatus && (
+                <div className="space-y-4">
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${tc('text-gray-700', 'text-slate-300')}`}>{t('realName')} *</label>
+                    <input
+                      type="text"
+                      value={verificationForm.real_name}
+                      onChange={(e) => setVerificationForm(prev => ({ ...prev, real_name: e.target.value }))}
+                      placeholder={t('realNamePlaceholder')}
+                      className={`w-full px-3 py-2 border rounded-lg text-sm ${tc('border-gray-300 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                    />
+                  </div>
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${tc('text-gray-700', 'text-slate-300')}`}>{t('alipayAccount')} *</label>
+                    <input
+                      type="text"
+                      value={verificationForm.alipay_account}
+                      onChange={(e) => setVerificationForm(prev => ({ ...prev, alipay_account: e.target.value }))}
+                      className={`w-full px-3 py-2 border rounded-lg text-sm ${tc('border-gray-300 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                    />
+                  </div>
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${tc('text-gray-700', 'text-slate-300')}`}>{t('wechatId')} <span className={`text-xs ${tc('text-gray-400', 'text-slate-500')}`}>({t('wechatIdOptional')})</span></label>
+                    <input
+                      type="text"
+                      value={verificationForm.wechat_id}
+                      onChange={(e) => setVerificationForm(prev => ({ ...prev, wechat_id: e.target.value }))}
+                      className={`w-full px-3 py-2 border rounded-lg text-sm ${tc('border-gray-300 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                    />
+                  </div>
+                  <button
+                    onClick={handleSubmitVerification}
+                    disabled={verificationSaving || !verificationForm.real_name.trim() || !verificationForm.alipay_account.trim()}
+                    className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center justify-center space-x-2"
+                  >
+                    {verificationSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}
+                    <span>{t('submitVerification')}</span>
+                  </button>
                 </div>
               )}
             </div>

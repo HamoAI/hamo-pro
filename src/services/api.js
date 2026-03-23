@@ -235,6 +235,29 @@ class ApiService {
     }
   }
 
+  // Get Pro verification status
+  async getVerification() {
+    try {
+      const response = await this.request('/pro/verification');
+      return { success: true, ...response };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Submit Pro verification info
+  async submitVerification(data) {
+    try {
+      const response = await this.request('/pro/verification', {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+      return { success: true, ...response };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
   // Get commission records for the Pro user
   async getCommissions() {
     try {
