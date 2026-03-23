@@ -258,30 +258,17 @@ class ApiService {
     }
   }
 
-  // Delete Pro account — uses XMLHttpRequest to avoid HTTP/2 stream issues with fetch
-  deleteProAccount(password) {
-    return new Promise((resolve) => {
-      const url = `${this.baseURL}/pro/close-account`;
-      const token = this.getAccessToken();
-      const xhr = new XMLHttpRequest();
-      xhr.open('POST', url, true);
-      xhr.setRequestHeader('Content-Type', 'application/json');
-      if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-      xhr.onload = () => {
-        try {
-          const data = JSON.parse(xhr.responseText);
-          if (xhr.status >= 200 && xhr.status < 300) {
-            resolve({ success: true, ...data });
-          } else {
-            resolve({ success: false, error: data.detail || 'Request failed' });
-          }
-        } catch (e) {
-          resolve({ success: false, error: 'Invalid response' });
-        }
-      };
-      xhr.onerror = () => resolve({ success: false, error: 'Network error' });
-      xhr.send(JSON.stringify({ password }));
-    });
+  // Delete Pro account
+  async deleteProAccount() {
+    try {
+      await this.request('/pro/account', {
+        method: 'DELETE',
+      });
+      this.clearTokens();
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
   }
 
   // Get commission records for the Pro user
