@@ -37,7 +37,7 @@ export const translations = {
     settings: 'Settings',
 
     // Settings Page
-    profileSettings: 'Profile Settings',
+    profileSettings: 'Account',
     nickname: 'Nickname',
     currentPassword: 'Current Password',
     newPassword: 'New Password',
@@ -489,7 +489,7 @@ export const translations = {
     settings: '设置',
 
     // Settings Page
-    profileSettings: '个人设置',
+    profileSettings: '账号信息',
     nickname: '昵称',
     currentPassword: '当前密码',
     newPassword: '新密码',
