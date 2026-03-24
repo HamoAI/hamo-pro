@@ -2727,7 +2727,7 @@ const HamoPro = () => {
                       <div className="w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center">
                         <Brain className="w-3.5 h-3.5 text-white" />
                       </div>
-                      <span className={`text-sm font-semibold ${tc('text-teal-700', 'text-teal-300')}`}>{t('therapeuticApproaches')}</span>
+                      <span className={`text-sm font-semibold ${tc('text-teal-700', 'text-teal-300')}`}>{t('therapeuticApproaches')} <span className="text-red-500">*</span></span>
                       <span className={`text-xs ${tc('text-teal-500', 'text-teal-400')} ml-1`}>{t('selectUpTo3')}</span>
                     </div>
 
@@ -2765,7 +2765,7 @@ const HamoPro = () => {
                       <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
                         <MessageSquare className="w-3.5 h-3.5 text-white" />
                       </div>
-                      <span className={`text-sm font-semibold ${tc('text-purple-700', 'text-purple-300')}`}>{t('about')}</span>
+                      <span className={`text-sm font-semibold ${tc('text-purple-700', 'text-purple-300')}`}>{t('about')} <span className="text-red-500">*</span></span>
                     </div>
 
                     <textarea
@@ -2784,7 +2784,7 @@ const HamoPro = () => {
                       <div className="w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center">
                         <Briefcase className="w-3.5 h-3.5 text-white" />
                       </div>
-                      <span className={`text-sm font-semibold ${tc('text-amber-700', 'text-amber-300')}`}>{t('experience')}</span>
+                      <span className={`text-sm font-semibold ${tc('text-amber-700', 'text-amber-300')}`}>{t('experience')} <span className="text-red-500">*</span></span>
                     </div>
 
                     <div className="flex space-x-4">
