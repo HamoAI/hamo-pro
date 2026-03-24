@@ -5274,7 +5274,8 @@ const HamoPro = () => {
                   <div className="space-y-2">
                     <div><span className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>{t('realName')}</span><p className={`text-sm font-medium ${tc('text-gray-900', 'text-white')}`}>{verificationForm.real_name}</p></div>
                     <div><span className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>{t('alipayAccount')}</span><p className={`text-sm font-medium ${tc('text-gray-900', 'text-white')}`}>{verificationForm.alipay_account}</p></div>
-                    {verificationForm.wechat_id && <div><span className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>{t('wechatId')}</span><p className={`text-sm font-medium ${tc('text-gray-900', 'text-white')}`}>{verificationForm.wechat_id}</p></div>}
+                    <div><span className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>{t('wechatId')}</span><p className={`text-sm font-medium ${tc('text-gray-900', 'text-white')}`}>{verificationForm.wechat_id}</p></div>
+                    {verificationForm.professional_qualification && <div><span className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>{t('professionalQualification')}</span><p className={`text-sm font-medium ${tc('text-gray-900', 'text-white')}`}>{verificationForm.professional_qualification}</p></div>}
                   </div>
                 </div>
               )}
@@ -5285,7 +5286,8 @@ const HamoPro = () => {
                   <div className="space-y-2">
                     <div><span className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>{t('realName')}</span><p className={`text-sm font-medium ${tc('text-gray-900', 'text-white')}`}>{verificationForm.real_name}</p></div>
                     <div><span className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>{t('alipayAccount')}</span><p className={`text-sm font-medium ${tc('text-gray-900', 'text-white')}`}>{verificationForm.alipay_account}</p></div>
-                    {verificationForm.wechat_id && <div><span className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>{t('wechatId')}</span><p className={`text-sm font-medium ${tc('text-gray-900', 'text-white')}`}>{verificationForm.wechat_id}</p></div>}
+                    <div><span className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>{t('wechatId')}</span><p className={`text-sm font-medium ${tc('text-gray-900', 'text-white')}`}>{verificationForm.wechat_id}</p></div>
+                    {verificationForm.professional_qualification && <div><span className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>{t('professionalQualification')}</span><p className={`text-sm font-medium ${tc('text-gray-900', 'text-white')}`}>{verificationForm.professional_qualification}</p></div>}
                   </div>
                 </div>
               )}
@@ -5308,21 +5310,33 @@ const HamoPro = () => {
                       type="text"
                       value={verificationForm.alipay_account}
                       onChange={(e) => setVerificationForm(prev => ({ ...prev, alipay_account: e.target.value }))}
+                      placeholder={t('alipayPlaceholder')}
                       className={`w-full px-3 py-2 border rounded-lg text-sm ${tc('border-gray-300 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} focus:outline-none focus:ring-2 focus:ring-blue-500`}
                     />
                   </div>
                   <div>
-                    <label className={`block text-sm font-medium mb-1 ${tc('text-gray-700', 'text-slate-300')}`}>{t('wechatId')} <span className={`text-xs ${tc('text-gray-400', 'text-slate-500')}`}>({t('wechatIdOptional')})</span></label>
+                    <label className={`block text-sm font-medium mb-1 ${tc('text-gray-700', 'text-slate-300')}`}>{t('wechatId')} *</label>
                     <input
                       type="text"
                       value={verificationForm.wechat_id}
                       onChange={(e) => setVerificationForm(prev => ({ ...prev, wechat_id: e.target.value }))}
+                      placeholder={t('wechatPlaceholder')}
+                      className={`w-full px-3 py-2 border rounded-lg text-sm ${tc('border-gray-300 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                    />
+                  </div>
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${tc('text-gray-700', 'text-slate-300')}`}>{t('professionalQualification')} *</label>
+                    <input
+                      type="text"
+                      value={verificationForm.professional_qualification || ''}
+                      onChange={(e) => setVerificationForm(prev => ({ ...prev, professional_qualification: e.target.value }))}
+                      placeholder={t('professionalQualificationPlaceholder')}
                       className={`w-full px-3 py-2 border rounded-lg text-sm ${tc('border-gray-300 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} focus:outline-none focus:ring-2 focus:ring-blue-500`}
                     />
                   </div>
                   <button
                     onClick={handleSubmitVerification}
-                    disabled={verificationSaving || !verificationForm.real_name.trim() || !verificationForm.alipay_account.trim()}
+                    disabled={verificationSaving || !verificationForm.real_name.trim() || !verificationForm.alipay_account.trim() || !verificationForm.wechat_id.trim() || !(verificationForm.professional_qualification || '').trim()}
                     className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center justify-center space-x-2"
                   >
                     {verificationSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}
