@@ -4,7 +4,7 @@ import apiService from './services/api';
 import { translations } from './i18n/translations';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.9.3";
+  const APP_VERSION = "1.9.4";
 
   // Language state - default to browser language or English
   const [language, setLanguage] = useState(() => {
@@ -239,6 +239,10 @@ const HamoPro = () => {
   const [verificationSaving, setVerificationSaving] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState(null);
   const [verificationLoaded, setVerificationLoaded] = useState(false);
+  const [proInvites, setProInvites] = useState([]);
+  const [proInviteCode, setProInviteCode] = useState(null);
+  const [proInviteLoading, setProInviteLoading] = useState(false);
+  const [proInvitesLoaded, setProInvitesLoaded] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [authForm, setAuthForm] = useState({ email: '', password: '', fullName: '', profession: '' });
   const [authError, setAuthError] = useState('');
@@ -779,6 +783,33 @@ const HamoPro = () => {
       alert('Failed to submit verification');
     } finally {
       setVerificationSaving(false);
+    }
+  };
+
+  const loadProInvites = async () => {
+    if (proInvitesLoaded) return;
+    try {
+      const result = await apiService.getProInvites();
+      if (result.success) setProInvites(result.invites || []);
+    } catch (e) { /* ignore */ }
+    setProInvitesLoaded(true);
+  };
+
+  const handleGenerateProInvite = async () => {
+    setProInviteLoading(true);
+    try {
+      const result = await apiService.generateProInvite();
+      if (result.success) {
+        setProInviteCode(result.invitation_code);
+        setProInvitesLoaded(false);
+        loadProInvites();
+      } else {
+        alert(result.error);
+      }
+    } catch (e) {
+      alert('Failed to generate invite code');
+    } finally {
+      setProInviteLoading(false);
     }
   };
 
@@ -2538,7 +2569,7 @@ const HamoPro = () => {
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className={`text-xl font-semibold ${tc('', 'text-white')}`}>{t('avatarTherapists')}</h2>
-              <button onClick={() => { if (!currentUser?.sex) { alert(t('pleaseSetSexFirst')); setActiveTab('settings'); return; } if (avatars.length >= 3) { alert(t('maxAvatarsReached')); return; } if (!showAvatarForm) { setAvatarForm(prev => ({ ...prev, voiceType: currentUser?.sex === 'male' ? 'standard_male' : 'standard_female' })); } setShowAvatarForm(!showAvatarForm); }} className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-lg"><Plus className="w-5 h-5" /><span>{t('createAvatar')}</span></button>
+              <button onClick={async () => { if (!currentUser?.sex) { alert(t('pleaseSetSexFirst')); setActiveTab('settings'); return; } const quota = await apiService.getAvatarQuota(); if (quota.success && quota.used >= quota.total) { alert(t('avatarQuotaReached')); return; } if (!showAvatarForm) { setAvatarForm(prev => ({ ...prev, voiceType: currentUser?.sex === 'male' ? 'standard_male' : 'standard_female' })); } setShowAvatarForm(!showAvatarForm); }} className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-lg"><Plus className="w-5 h-5" /><span>{t('createAvatar')}</span></button>
             </div>
             {showAvatarForm && (
               <div className={`${tc('bg-white', 'bg-slate-800')} rounded-xl ${tc('shadow-md', 'shadow-lg shadow-black/20')} p-6`}>
@@ -5068,6 +5099,12 @@ const HamoPro = () => {
               >
                 {t('verification')}
               </button>
+              <button
+                onClick={() => { setSettingsSubTab('invite'); loadProInvites(); }}
+                className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${settingsSubTab === 'invite' ? `${tc('bg-white shadow text-gray-900', 'bg-slate-600 text-white')}` : `${tc('text-gray-500 hover:text-gray-700', 'text-slate-400 hover:text-slate-200')}`}`}
+              >
+                {t('inviteTab')}
+              </button>
             </div>
 
             {/* Profile Tab */}
@@ -5342,6 +5379,64 @@ const HamoPro = () => {
                     {verificationSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}
                     <span>{t('submitVerification')}</span>
                   </button>
+                </div>
+              )}
+            </div>
+            )}
+
+            {/* Invite Tab */}
+            {settingsSubTab === 'invite' && (
+            <div className={`${tc('bg-white', 'bg-slate-800')} rounded-xl ${tc('shadow-md', 'shadow-lg shadow-black/20')} p-6`}>
+              <div className="flex items-center space-x-2 mb-2">
+                <Users className={`w-5 h-5 ${tc('text-purple-600', 'text-purple-400')}`} />
+                <h3 className={`text-lg font-semibold ${tc('text-gray-900', 'text-white')}`}>{t('inviteProTitle')}</h3>
+              </div>
+              <p className={`text-sm ${tc('text-gray-500', 'text-slate-400')} mb-4`}>{t('inviteProDesc')}</p>
+
+              {/* Generate / Show invite code */}
+              {proInviteCode ? (
+                <div className={`p-4 rounded-lg ${tc('bg-purple-50 border border-purple-200', 'bg-purple-900/20 border border-purple-800')} mb-4 text-center`}>
+                  <p className={`text-xs ${tc('text-purple-500', 'text-purple-400')} mb-1`}>{t('inviteTab')}</p>
+                  <p className={`text-2xl font-bold font-mono ${tc('text-gray-900', 'text-white')} mb-2`}>{proInviteCode}</p>
+                  <p className={`text-xs ${tc('text-purple-500', 'text-purple-400')}`}>{t('expiresIn')}</p>
+                </div>
+              ) : (
+                <button
+                  onClick={handleGenerateProInvite}
+                  disabled={proInviteLoading}
+                  className="w-full py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center justify-center space-x-2 mb-4"
+                >
+                  {proInviteLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                  <span>{t('generateProInviteCode')}</span>
+                </button>
+              )}
+
+              {/* Invited Pros list */}
+              <h4 className={`text-sm font-medium ${tc('text-gray-700', 'text-slate-300')} mb-3`}>{t('invitedPros')}</h4>
+              {proInvites.length === 0 ? (
+                <p className={`text-sm ${tc('text-gray-400', 'text-slate-500')} italic`}>{t('noInvitesYet')}</p>
+              ) : (
+                <div className="space-y-2">
+                  {proInvites.filter(inv => inv.is_used && inv.invited_pro_name).map((inv, i) => (
+                    <div key={i} className={`flex items-center justify-between p-3 rounded-lg ${tc('bg-gray-50', 'bg-slate-700')}`}>
+                      <div>
+                        <p className={`text-sm font-medium ${tc('text-gray-900', 'text-white')}`}>{inv.invited_pro_name}</p>
+                        {inv.invited_pro_registered_at && (
+                          <p className={`text-xs ${tc('text-gray-400', 'text-slate-500')}`}>
+                            {new Date(inv.invited_pro_registered_at).toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
+                      {inv.invited_pro_verified ? (
+                        <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full flex items-center space-x-1">
+                          <CheckCircle className="w-3 h-3" />
+                          <span>{t('verified')}</span>
+                        </span>
+                      ) : (
+                        <span className={`text-xs px-2 py-1 ${tc('bg-gray-200 text-gray-500', 'bg-slate-600 text-slate-400')} rounded-full`}>{t('notVerified')}</span>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

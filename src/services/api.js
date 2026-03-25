@@ -258,6 +258,36 @@ class ApiService {
     }
   }
 
+  // Pro-invite-Pro: generate invite code
+  async generateProInvite() {
+    try {
+      const response = await this.request('/pro/invitation/generate-pro-invite', { method: 'POST' });
+      return { success: true, ...response };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Pro-invite-Pro: get all invite records
+  async getProInvites() {
+    try {
+      const response = await this.request('/pro/invitation/pro-invites');
+      return { success: true, ...response };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Get avatar creation quota
+  async getAvatarQuota() {
+    try {
+      const response = await this.request('/pro/avatar-quota');
+      return { success: true, ...response };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
   // Delete Pro account
   async deleteProAccount() {
     try {
