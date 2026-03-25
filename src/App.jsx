@@ -787,7 +787,6 @@ const HamoPro = () => {
   };
 
   const loadProInvites = async () => {
-    if (proInvitesLoaded) return;
     try {
       const result = await apiService.getProInvites();
       if (result.success) setProInvites(result.invites || []);
@@ -5432,23 +5431,31 @@ const HamoPro = () => {
                 <p className={`text-sm ${tc('text-gray-400', 'text-slate-500')} italic`}>{t('noInvitesYet')}</p>
               ) : (
                 <div className="space-y-2">
-                  {proInvites.filter(inv => inv.is_used && inv.invited_pro_name).map((inv, i) => (
+                  {proInvites.map((inv, i) => (
                     <div key={i} className={`flex items-center justify-between p-3 rounded-lg ${tc('bg-gray-50', 'bg-slate-700')}`}>
                       <div>
-                        <p className={`text-sm font-medium ${tc('text-gray-900', 'text-white')}`}>{inv.invited_pro_name}</p>
-                        {inv.invited_pro_registered_at && (
+                        <p className={`text-sm font-medium ${tc('text-gray-900', 'text-white')}`}>
+                          {inv.is_used && inv.invited_pro_name ? inv.invited_pro_name : <span className={`italic ${tc('text-gray-400', 'text-slate-500')}`}>{inv.code}</span>}
+                        </p>
+                        {inv.is_used && inv.invited_pro_registered_at ? (
                           <p className={`text-xs ${tc('text-gray-400', 'text-slate-500')}`}>
                             {new Date(inv.invited_pro_registered_at).toLocaleDateString()}
                           </p>
+                        ) : (
+                          <p className={`text-xs ${tc('text-gray-400', 'text-slate-500')}`}>{t('pendingRegistration')}</p>
                         )}
                       </div>
-                      {inv.invited_pro_verified ? (
-                        <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full flex items-center space-x-1">
-                          <CheckCircle className="w-3 h-3" />
-                          <span>{t('verified')}</span>
-                        </span>
+                      {inv.is_used ? (
+                        inv.invited_pro_verified ? (
+                          <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full flex items-center space-x-1">
+                            <CheckCircle className="w-3 h-3" />
+                            <span>{t('verified')}</span>
+                          </span>
+                        ) : (
+                          <span className={`text-xs px-2 py-1 ${tc('bg-gray-200 text-gray-500', 'bg-slate-600 text-slate-400')} rounded-full`}>{t('notVerified')}</span>
+                        )
                       ) : (
-                        <span className={`text-xs px-2 py-1 ${tc('bg-gray-200 text-gray-500', 'bg-slate-600 text-slate-400')} rounded-full`}>{t('notVerified')}</span>
+                        <span className={`text-xs px-2 py-1 ${tc('bg-yellow-100 text-yellow-700', 'bg-yellow-900/30 text-yellow-400')} rounded-full`}>{t('pending')}</span>
                       )}
                     </div>
                   ))}
