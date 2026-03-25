@@ -24,7 +24,7 @@ export const translations = {
     selectProfession: 'Select your profession',
     createAccount: 'Create Account',
     proInviteCodeLabel: 'Invitation Code (optional)',
-    proInviteCodePlaceholder: 'Enter Pro invitation code',
+    proInviteCodePlaceholder: 'Enter code to get an extra avatar slot',
     emailPlaceholder: 'your@email.com',
     namePlaceholder: 'Dr. Jane Smith',
 
@@ -495,7 +495,7 @@ export const translations = {
     selectProfession: '请选择您的职业',
     createAccount: '创建账户',
     proInviteCodeLabel: '邀请码（选填）',
-    proInviteCodePlaceholder: '输入 Pro 邀请码',
+    proInviteCodePlaceholder: '输入Pro邀请码，可多得一个虚拟咨询师名额',
     emailPlaceholder: 'your@email.com',
     namePlaceholder: '张医生',
 
