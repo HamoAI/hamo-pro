@@ -104,19 +104,16 @@ class ApiService {
   }
 
   // Auth APIs
-  async registerPro(fullName, profession, email, password) {
+  async registerPro(fullName, profession, email, password, proInviteCode) {
     try {
       console.log('🔵 Registering Pro:', { email, fullName, profession }); // Debug
-      
+      const body = { full_name: fullName, profession, email, password };
+      if (proInviteCode) body.pro_invite_code = proInviteCode;
+
       const response = await this.request('/auth/registerPro', {
         method: 'POST',
         skipAuth: true,
-        body: JSON.stringify({
-          full_name: fullName,
-          profession: profession,
-          email: email,
-          password: password,
-        }),
+        body: JSON.stringify(body),
       });
 
       console.log('✅ Registration successful:', response); // Debug

@@ -23,6 +23,8 @@ export const translations = {
     profession: 'Profession',
     selectProfession: 'Select your profession',
     createAccount: 'Create Account',
+    proInviteCodeLabel: 'Invitation Code (optional)',
+    proInviteCodePlaceholder: 'Enter Pro invitation code',
     emailPlaceholder: 'your@email.com',
     namePlaceholder: 'Dr. Jane Smith',
 
@@ -492,6 +494,8 @@ export const translations = {
     profession: '职业',
     selectProfession: '请选择您的职业',
     createAccount: '创建账户',
+    proInviteCodeLabel: '邀请码（选填）',
+    proInviteCodePlaceholder: '输入 Pro 邀请码',
     emailPlaceholder: 'your@email.com',
     namePlaceholder: '张医生',
 

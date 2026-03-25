@@ -133,7 +133,6 @@ const HamoPro = () => {
   // Profession options for sign up
   const professionOptions = [
     { value: 'mental_health_professional', label: t('mentalHealthProfessional') },
-    { value: 'astrologer', label: t('astrologer'), disabled: true },
   ];
 
   // Helper function to get profession label
@@ -621,13 +620,14 @@ const HamoPro = () => {
         authForm.fullName,
         authForm.profession,
         authForm.email,
-        authForm.password
+        authForm.password,
+        authForm.proInviteCode || undefined
       );
 
       if (result.success) {
         setCurrentUser(result.user);
         setIsAuthenticated(true);
-        setAuthForm({ email: '', password: '', fullName: '', profession: '' });
+        setAuthForm({ email: '', password: '', fullName: '', profession: '', proInviteCode: '' });
         setAuthError('');
 
         // Load user's avatars and clients (likely empty for new user)
@@ -2262,6 +2262,21 @@ const HamoPro = () => {
                   disabled={authLoading}
                 />
               </div>
+
+              {/* Pro invitation code (optional) */}
+              {authMode === 'signup' && (
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${tc('text-gray-700', 'text-slate-300')}`}>{t('proInviteCodeLabel')}</label>
+                  <input
+                    type="text"
+                    value={authForm.proInviteCode || ''}
+                    onChange={(e) => setAuthForm({ ...authForm, proInviteCode: e.target.value.toUpperCase() })}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${tc('border-gray-300 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white placeholder-slate-500')}`}
+                    placeholder={t('proInviteCodePlaceholder')}
+                    disabled={authLoading}
+                  />
+                </div>
+              )}
 
               {/* Terms agreement checkbox */}
               <label className="flex items-start space-x-2 my-3 cursor-pointer select-none">
