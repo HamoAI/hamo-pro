@@ -83,6 +83,7 @@ export const translations = {
     // Avatars
     avatarTherapists: 'Avatar Therapists',
     createAvatar: 'Create Avatar',
+    avatarDisclaimer: 'The platform assumes AI safety liability; practitioners operating in compliance are exempt from responsibility.',
     editAvatar: 'Edit Avatar',
     avatarName: 'Avatar Name',
     specialty: 'Specialty',
@@ -569,6 +570,7 @@ export const translations = {
     // Avatars
     avatarTherapists: '虚拟咨询师',
     createAvatar: '创建虚拟咨询师',
+    avatarDisclaimer: '平台承担 AI 安全兜底责任，咨询师依法依规操作即可免责。',
     editAvatar: '编辑虚拟咨询师',
     avatarName: '形象名称',
     specialty: '专业领域',

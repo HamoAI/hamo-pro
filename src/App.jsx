@@ -256,6 +256,7 @@ const HamoPro = () => {
   const [avatars, setAvatars] = useState([]);
   const [clients, setClients] = useState([]);
   const [showAvatarForm, setShowAvatarForm] = useState(false);
+  const [avatarDisclaimerChecked, setAvatarDisclaimerChecked] = useState(false);
   const [showClientForm, setShowClientForm] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
   const [conversationsData, setConversationsData] = useState([]);
@@ -2627,7 +2628,7 @@ const HamoPro = () => {
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className={`text-xl font-semibold ${tc('', 'text-white')}`}>{t('avatarTherapists')}</h2>
-              <button onClick={async () => { if (!currentUser?.sex) { alert(t('pleaseSetSexFirst')); setSettingsSubTab('profile'); setActiveTab('settings'); return; } const quota = await apiService.getAvatarQuota(); if (quota.success && quota.used >= quota.total) { alert(t('avatarQuotaReached')); setSettingsSubTab('invite'); setActiveTab('settings'); loadProInvites(); return; } if (!showAvatarForm) { setAvatarForm(prev => ({ ...prev, voiceType: currentUser?.sex === 'male' ? 'standard_male' : 'standard_female' })); } setShowAvatarForm(!showAvatarForm); }} className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-lg"><Plus className="w-5 h-5" /><span>{t('createAvatar')}</span></button>
+              <button onClick={async () => { if (!currentUser?.sex) { alert(t('pleaseSetSexFirst')); setSettingsSubTab('profile'); setActiveTab('settings'); return; } const quota = await apiService.getAvatarQuota(); if (quota.success && quota.used >= quota.total) { alert(t('avatarQuotaReached')); setSettingsSubTab('invite'); setActiveTab('settings'); loadProInvites(); return; } if (!showAvatarForm) { setAvatarForm(prev => ({ ...prev, voiceType: currentUser?.sex === 'male' ? 'standard_male' : 'standard_female' })); setAvatarDisclaimerChecked(false); } setShowAvatarForm(!showAvatarForm); }} className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-lg"><Plus className="w-5 h-5" /><span>{t('createAvatar')}</span></button>
             </div>
             {showAvatarForm && (
               <div className={`${tc('bg-white', 'bg-slate-800')} rounded-xl ${tc('shadow-md', 'shadow-lg shadow-black/20')} p-6`}>
@@ -2902,9 +2903,15 @@ const HamoPro = () => {
 
                 </div>
 
+                {/* Disclaimer checkbox */}
+                <label className={`flex items-start space-x-2 mt-4 cursor-pointer select-none`}>
+                  <input type="checkbox" checked={avatarDisclaimerChecked} onChange={(e) => setAvatarDisclaimerChecked(e.target.checked)} className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-400" />
+                  <span className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>{t('avatarDisclaimer')}</span>
+                </label>
+
                 {/* Action Buttons */}
-                <div className={`flex space-x-3 mt-6 pt-4 border-t ${tc('border-gray-100', 'border-slate-700')}`}>
-                  <button onClick={handleCreateAvatar} className={`flex-1 bg-gradient-to-r ${tc('from-blue-500 to-teal-500', 'from-blue-600 to-cyan-600')} text-white px-6 py-2.5 rounded-lg font-medium hover:from-blue-600 hover:to-teal-600 transition-all shadow-sm`}>{t('createAvatar')}</button>
+                <div className={`flex space-x-3 mt-4 pt-4 border-t ${tc('border-gray-100', 'border-slate-700')}`}>
+                  <button onClick={handleCreateAvatar} disabled={!avatarDisclaimerChecked} className={`flex-1 bg-gradient-to-r ${tc('from-blue-500 to-teal-500', 'from-blue-600 to-cyan-600')} text-white px-6 py-2.5 rounded-lg font-medium hover:from-blue-600 hover:to-teal-600 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed`}>{t('createAvatar')}</button>
                   <button onClick={() => setShowAvatarForm(false)} className={`px-6 py-2.5 ${tc('bg-gray-100 text-gray-600 hover:bg-gray-200', 'bg-slate-700 text-slate-300 hover:bg-slate-600')} rounded-lg font-medium transition-all`}>{t('cancel')}</button>
                 </div>
               </div>
