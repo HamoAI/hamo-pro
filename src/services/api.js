@@ -205,11 +205,11 @@ class ApiService {
   }
 
   // Request password reset code
-  async requestPasswordReset(email) {
+  async requestPasswordReset(email, language = 'en') {
     try {
       const response = await this.request('/auth/requestPasswordReset', {
         method: 'POST',
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, language }),
         skipAuth: true,
       });
       return response;
