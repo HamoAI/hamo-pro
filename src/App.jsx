@@ -690,6 +690,16 @@ const HamoPro = () => {
     setClients([]);
     setActiveTab('avatars');
     setAuthError('');
+    // Reset settings tab cached state
+    setCommissionsData(null);
+    setCommissionsLoaded(false);
+    setVerificationForm({ real_name: '', alipay_account: '', wechat_id: '', professional_qualification: '' });
+    setVerificationStatus(null);
+    setVerificationLoaded(false);
+    setProInvites([]);
+    setProInviteCode('');
+    setProInvitesLoaded(false);
+    setSettingsSubTab('profile');
   };
 
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -704,6 +714,15 @@ const HamoPro = () => {
         setAvatars([]);
         setClients([]);
         setShowDeleteConfirm(false);
+        setCommissionsData(null);
+        setCommissionsLoaded(false);
+        setVerificationForm({ real_name: '', alipay_account: '', wechat_id: '', professional_qualification: '' });
+        setVerificationStatus(null);
+        setVerificationLoaded(false);
+        setProInvites([]);
+        setProInviteCode('');
+        setProInvitesLoaded(false);
+        setSettingsSubTab('profile');
       } else {
         alert(result.error || t('errorFailedToSaveProfile'));
       }
