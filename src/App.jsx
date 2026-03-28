@@ -243,6 +243,7 @@ const HamoPro = () => {
   const [profileMessage, setProfileMessage] = useState('');
   const [commissions, setCommissions] = useState([]);
   const [totalCommission, setTotalCommission] = useState(0);
+  const [showAlgoModal, setShowAlgoModal] = useState(false);
   const [commissionsLoaded, setCommissionsLoaded] = useState(false);
   const [alertDialog, setAlertDialog] = useState(null);
   const [confirmDialogState, setConfirmDialogState] = useState(null);
@@ -2495,6 +2496,114 @@ const HamoPro = () => {
                 })
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Distribution Algorithm Modal */}
+      {showAlgoModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-[60] px-4 bg-black bg-opacity-60" onClick={() => setShowAlgoModal(false)}>
+          <div className={`rounded-2xl shadow-2xl p-6 max-w-sm w-full max-h-[85vh] overflow-y-auto ${tc('bg-white', 'bg-slate-800')}`} onClick={e => e.stopPropagation()}>
+            {/* Header */}
+            <div className="flex items-center justify-between mb-5">
+              <h3 className={`text-base font-bold ${tc('text-gray-900', 'text-white')}`}>
+                {language === 'zh' ? '服务收入分配算法' : 'Service Income Distribution'}
+              </h3>
+              <button onClick={() => setShowAlgoModal(false)} className={`text-lg leading-none ${tc('text-gray-400 hover:text-gray-600', 'text-slate-500 hover:text-slate-300')}`}>✕</button>
+            </div>
+
+            {/* Source */}
+            <div className={`rounded-xl p-3 mb-4 ${tc('bg-blue-50', 'bg-blue-900/20')}`}>
+              <p className={`text-xs font-semibold mb-1 ${tc('text-blue-700', 'text-blue-300')}`}>
+                {language === 'zh' ? '💰 收入来源' : '💰 Income Source'}
+              </p>
+              <p className={`text-xs ${tc('text-blue-600', 'text-blue-300')}`}>
+                {language === 'zh'
+                  ? '来访者每日订阅费的 50% 自动分配给 Avatar'
+                  : "50% of the client's daily subscription fee is distributed to Avatars"}
+              </p>
+            </div>
+
+            {/* Rules */}
+            <p className={`text-xs font-semibold mb-2 ${tc('text-gray-700', 'text-slate-300')}`}>
+              {language === 'zh' ? '📐 分配规则' : '📐 Distribution Rules'}
+            </p>
+            <div className="space-y-2 mb-4">
+              <div className={`rounded-lg p-3 ${tc('bg-gray-50', 'bg-slate-700/50')}`}>
+                <p className={`text-xs font-medium mb-0.5 ${tc('text-gray-800', 'text-white')}`}>
+                  {language === 'zh' ? '① 基础部分（5%）' : '① Base Amount (5%)'}
+                </p>
+                <p className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>
+                  {language === 'zh'
+                    ? '每个连接的 Avatar 固定获得日可分配金额的 5%，无论是否聊天'
+                    : 'Each connected Avatar receives 5% of the daily pool as a fixed base, regardless of usage'}
+                </p>
+              </div>
+              <div className={`rounded-lg p-3 ${tc('bg-gray-50', 'bg-slate-700/50')}`}>
+                <p className={`text-xs font-medium mb-0.5 ${tc('text-gray-800', 'text-white')}`}>
+                  {language === 'zh' ? '② Token 部分（95%）' : '② Token Amount (95%)'}
+                </p>
+                <p className={`text-xs ${tc('text-gray-500', 'text-slate-400')}`}>
+                  {language === 'zh'
+                    ? '剩余金额按当日各 Avatar 实际聊天 Token 消耗占比分配。若当日无消耗，则平均分配'
+                    : 'The remaining pool is split by each Avatar\'s share of chat tokens used that day. If no tokens used, split equally'}
+                </p>
+              </div>
+            </div>
+
+            {/* Example table */}
+            <p className={`text-xs font-semibold mb-2 ${tc('text-gray-700', 'text-slate-300')}`}>
+              {language === 'zh' ? '📊 快速参考' : '📊 Quick Reference'}
+            </p>
+            <div className={`rounded-lg overflow-hidden mb-4 text-xs ${tc('border border-gray-200', 'border border-slate-600')}`}>
+              <table className="w-full">
+                <thead className={`${tc('bg-gray-100 text-gray-600', 'bg-slate-700 text-slate-300')}`}>
+                  <tr>
+                    <th className="text-left px-3 py-2 font-medium">{language === 'zh' ? '套餐' : 'Plan'}</th>
+                    <th className="text-right px-3 py-2 font-medium">{language === 'zh' ? '日可分配' : 'Daily Pool'}</th>
+                    <th className="text-right px-3 py-2 font-medium">{language === 'zh' ? '每Avatar基础' : 'Base/Avatar'}</th>
+                  </tr>
+                </thead>
+                <tbody className={`divide-y ${tc('divide-gray-200 text-gray-700', 'divide-slate-600 text-slate-300')}`}>
+                  <tr>
+                    <td className="px-3 py-2">{language === 'zh' ? '标准版 ¥80/周' : 'Standard ¥80/wk'}</td>
+                    <td className="text-right px-3 py-2">¥5.71</td>
+                    <td className="text-right px-3 py-2">¥0.29</td>
+                  </tr>
+                  <tr>
+                    <td className="px-3 py-2">{language === 'zh' ? '高级版 ¥200/周' : 'Premium ¥200/wk'}</td>
+                    <td className="text-right px-3 py-2">¥14.29</td>
+                    <td className="text-right px-3 py-2">¥0.71</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Weekly overview */}
+            <div className={`rounded-xl p-3 ${tc('bg-purple-50', 'bg-purple-900/20')}`}>
+              <p className={`text-xs font-semibold mb-2 ${tc('text-purple-700', 'text-purple-300')}`}>
+                {language === 'zh' ? '📅 每周收入来源' : '📅 Weekly Income Breakdown'}
+              </p>
+              <div className={`space-y-1 text-xs ${tc('text-purple-600', 'text-purple-300')}`}>
+                <div className="flex justify-between">
+                  <span>{language === 'zh' ? '邀请佣金（一次性）' : 'Referral commission (one-time)'}</span>
+                  <span className="font-medium">10%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>{language === 'zh' ? 'Avatar 服务分配（每日）' : 'Avatar service (daily)'}</span>
+                  <span className="font-medium">50%</span>
+                </div>
+                <div className={`flex justify-between ${tc('text-purple-400', 'text-purple-500')}`}>
+                  <span>{language === 'zh' ? '平台留存' : 'Platform'}</span>
+                  <span>40%</span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowAlgoModal(false)}
+              className="mt-5 w-full py-2 bg-purple-600 text-white text-sm font-medium rounded-xl hover:bg-purple-700"
+            >{language === 'zh' ? '知道了' : 'Got it'}</button>
           </div>
         </div>
       )}
@@ -5404,8 +5513,12 @@ const HamoPro = () => {
                 const serviceRecords = commissions.filter(c => c.commission_type === '虚拟咨询师服务' || c.commission_type_en === 'AI Counselor Service');
                 return (
                   <>
-                    <div className={`p-3 rounded-lg mb-4 text-xs ${tc('bg-blue-50 text-blue-700', 'bg-blue-900/20 text-blue-300')}`}>
-                      {t('serviceIncomeNote')}
+                    <div className={`p-3 rounded-lg mb-4 text-xs flex items-center justify-between ${tc('bg-blue-50 text-blue-700', 'bg-blue-900/20 text-blue-300')}`}>
+                      <span>{t('serviceIncomeNote')}</span>
+                      <button
+                        onClick={() => setShowAlgoModal(true)}
+                        className={`ml-2 flex-shrink-0 text-xs font-medium underline underline-offset-2 ${tc('text-blue-600 hover:text-blue-800', 'text-blue-400 hover:text-blue-200')}`}
+                      >{language === 'zh' ? '分配算法' : 'How it works'}</button>
                     </div>
                     {serviceRecords.length === 0 ? (
                       <p className={`text-sm text-center py-4 ${tc('text-gray-400', 'text-slate-500')}`}>{t('noServiceIncomeRecords')}</p>
