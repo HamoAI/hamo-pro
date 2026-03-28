@@ -95,6 +95,7 @@ export const translations = {
     months: 'months',
     save: 'Save',
     cancel: 'Cancel',
+    ok: 'OK',
     noAvatarsYet: 'No avatars yet. Create your first AI Avatar therapist!',
     avatarNamePlaceholder: 'e.g., Dr. Emily Chen',
     uploadPhoto: 'Upload Photo',
@@ -409,6 +410,10 @@ export const translations = {
     failedToSave: 'Failed to save',
     failedToSaveSupervision: 'Failed to save supervision',
     failedToDeleteSupervision: 'Failed to delete supervision',
+    failedToSubmitVerification: 'Failed to submit verification',
+    failedToGenerateInviteCode: 'Failed to generate invite code',
+    failedToGenerateBatchInvitation: 'Failed to generate batch invitation',
+    failedToUpdate: 'Failed to update',
 
     // Voice Type & Clone
     avatarVoice: 'Avatar Voice',
@@ -589,6 +594,7 @@ export const translations = {
     months: '月',
     save: '保存',
     cancel: '取消',
+    ok: '好的',
     noAvatarsYet: '暂无形象。创建您的第一个 AI 虚拟咨询师！',
     avatarNamePlaceholder: '例如：陈医生',
     uploadPhoto: '上传头像',
@@ -903,6 +909,10 @@ export const translations = {
     failedToSave: '保存失败',
     failedToSaveSupervision: '保存督导失败',
     failedToDeleteSupervision: '删除督导失败',
+    failedToSubmitVerification: '提交认证失败',
+    failedToGenerateInviteCode: '生成邀请码失败',
+    failedToGenerateBatchInvitation: '生成批量邀请失败',
+    failedToUpdate: '更新失败',
 
     // Voice Type & Clone
     avatarVoice: '形象声音',

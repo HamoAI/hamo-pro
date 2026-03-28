@@ -37,6 +37,13 @@ const HamoPro = () => {
   // Theme class helper: returns dark or light class string based on current theme
   const tc = useCallback((light, dark) => isDark ? dark : light, [isDark]);
 
+  // Dialog helpers
+  const showAlert = (message) => setAlertDialog({ message });
+  const showConfirm = (message) => new Promise((resolve) => {
+    confirmResolveRef.current = resolve;
+    setConfirmDialogState({ message });
+  });
+
   // Language toggle component
   const LanguageToggle = ({ className = "" }) => (
     <div className={`flex items-center space-x-2 ${className}`}>
@@ -237,6 +244,9 @@ const HamoPro = () => {
   const [commissions, setCommissions] = useState([]);
   const [totalCommission, setTotalCommission] = useState(0);
   const [commissionsLoaded, setCommissionsLoaded] = useState(false);
+  const [alertDialog, setAlertDialog] = useState(null);
+  const [confirmDialogState, setConfirmDialogState] = useState(null);
+  const confirmResolveRef = useRef(null);
   const [walletSubTab, setWalletSubTab] = useState('service');
   const [settingsSubTab, setSettingsSubTab] = useState('profile');
   const [verificationForm, setVerificationForm] = useState({ real_name: '', alipay_account: '', wechat_id: '' });
@@ -728,10 +738,10 @@ const HamoPro = () => {
         setProInvitesLoaded(false);
         setSettingsSubTab('profile');
       } else {
-        alert(result.error || t('errorFailedToSaveProfile'));
+        showAlert(result.error || t('errorFailedToSaveProfile'));
       }
     } catch (e) {
-      alert(e.message);
+      showAlert(e.message);
     } finally {
       setDeleteLoading(false);
     }
@@ -805,10 +815,10 @@ const HamoPro = () => {
       if (result.success) {
         setVerificationStatus('pending');
       } else {
-        alert(result.error);
+        showAlert(result.error);
       }
     } catch (e) {
-      alert('Failed to submit verification');
+      showAlert(t('failedToSubmitVerification'));
     } finally {
       setVerificationSaving(false);
     }
@@ -825,7 +835,7 @@ const HamoPro = () => {
   const handleGenerateProInvite = async () => {
     // Check if Pro is verified first
     if (verificationStatus !== 'verified') {
-      alert(t('needVerifyBeforeInvite'));
+      showAlert(t('needVerifyBeforeInvite'));
       setSettingsSubTab('verification');
       if (!verificationLoaded) loadVerification();
       return;
@@ -838,10 +848,10 @@ const HamoPro = () => {
         setProInvitesLoaded(false);
         loadProInvites();
       } else {
-        alert(result.error);
+        showAlert(result.error);
       }
     } catch (e) {
-      alert('Failed to generate invite code');
+      showAlert(t('failedToGenerateInviteCode'));
     } finally {
       setProInviteLoading(false);
     }
@@ -852,12 +862,12 @@ const HamoPro = () => {
     if (!file) return;
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
-      alert(t('invalidImageType'));
+      showAlert(t('invalidImageType'));
       e.target.value = '';
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
-      alert(t('imageTooLarge'));
+      showAlert(t('imageTooLarge'));
       e.target.value = '';
       return;
     }
@@ -891,7 +901,7 @@ const HamoPro = () => {
       setIsRecordingVoice(true);
       setAvatarVoiceStatus('recording');
     } catch (err) {
-      alert(t('microphoneAccessDenied'));
+      showAlert(t('microphoneAccessDenied'));
     }
   };
 
@@ -907,12 +917,12 @@ const HamoPro = () => {
     if (!file) return;
     const allowedTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/webm', 'audio/ogg', 'audio/x-wav'];
     if (!allowedTypes.includes(file.type)) {
-      alert(t('invalidAudioType'));
+      showAlert(t('invalidAudioType'));
       e.target.value = '';
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      alert(t('audioTooLarge'));
+      showAlert(t('audioTooLarge'));
       e.target.value = '';
       return;
     }
@@ -921,7 +931,7 @@ const HamoPro = () => {
   };
 
   const handleDeleteVoice = async (avatarId) => {
-    if (!confirm(t('confirmDeleteVoice'))) return;
+    if (!await showConfirm(t('confirmDeleteVoice'))) return;
     const result = await apiService.deleteAvatarVoice(avatarId);
     if (result.success) {
       setAvatarVoiceStatus(null);
@@ -946,7 +956,7 @@ const HamoPro = () => {
       audio.play();
     } else {
       setPlayingAudioId(null);
-      alert(t('audioGenerationFailed'));
+      showAlert(t('audioGenerationFailed'));
     }
   };
 
@@ -966,7 +976,7 @@ const HamoPro = () => {
       audio.play();
     } else {
       setPlayingAudioId(null);
-      alert(t('audioGenerationFailed'));
+      showAlert(t('audioGenerationFailed'));
     }
   };
 
@@ -982,7 +992,7 @@ const HamoPro = () => {
       const result = await apiService.generateMessageAudio(messageId);
       setLoadingAudioId(null);
       if (!result.success) {
-        alert(t('audioGenerationFailed'));
+        showAlert(t('audioGenerationFailed'));
         return;
       }
       audioUrl = result.audioUrl;
@@ -992,7 +1002,7 @@ const HamoPro = () => {
     const audio = new Audio(audioUrl);
     audioRef.current = audio;
     audio.onended = () => setPlayingAudioId(null);
-    audio.onerror = () => { setPlayingAudioId(null); alert(t('audioGenerationFailed')); };
+    audio.onerror = () => { setPlayingAudioId(null); showAlert(t('audioGenerationFailed')); };
     audio.play();
     setPlayingAudioId(messageId);
   };
@@ -1005,17 +1015,17 @@ const HamoPro = () => {
 
     if (!avatarForm.name || !specialty || approaches.length === 0 || !avatarForm.about ||
         (avatarForm.experienceYears === 0 && avatarForm.experienceMonths === 0)) {
-      alert(t('fillAllRequired'));
+      showAlert(t('fillAllRequired'));
       return;
     }
 
     if (approaches.length > 3) {
-      alert(t('max3Approaches'));
+      showAlert(t('max3Approaches'));
       return;
     }
 
     if (avatarForm.about.length > 280) {
-      alert(t('aboutMaxChars'));
+      showAlert(t('aboutMaxChars'));
       return;
     }
 
@@ -1047,7 +1057,7 @@ const HamoPro = () => {
           voiceId = voiceResult.voiceId;
           voiceStatus = 'ready';
         } else {
-          alert(t('voiceCloningFailed') + ': ' + voiceResult.error);
+          showAlert(t('voiceCloningFailed') + ': ' + voiceResult.error);
         }
       }
       setAvatars([...avatars, {
@@ -1140,17 +1150,17 @@ const HamoPro = () => {
 
     if (!avatarForm.name || !specialty || approaches.length === 0 || !avatarForm.about ||
         (avatarForm.experienceYears === 0 && avatarForm.experienceMonths === 0)) {
-      alert(t('fillAllRequired'));
+      showAlert(t('fillAllRequired'));
       return;
     }
 
     if (approaches.length > 3) {
-      alert(t('max3Approaches'));
+      showAlert(t('max3Approaches'));
       return;
     }
 
     if (avatarForm.about.length > 280) {
-      alert(t('aboutMaxChars'));
+      showAlert(t('aboutMaxChars'));
       return;
     }
 
@@ -1182,7 +1192,7 @@ const HamoPro = () => {
           voiceId = voiceResult.voiceId;
           voiceStatus = 'ready';
         } else {
-          alert(t('voiceCloningFailed') + ': ' + voiceResult.error);
+          showAlert(t('voiceCloningFailed') + ': ' + voiceResult.error);
         }
       }
       setAvatars(avatars.map(a => a.id === editingAvatar.id ? {
@@ -1201,7 +1211,7 @@ const HamoPro = () => {
       console.log('✅ Avatar updated:', editingAvatar.id);
     } else {
       console.warn('⚠️ API failed to update avatar:', result.error);
-      alert(t('failedToSave'));
+      showAlert(t('failedToSave'));
       return;
     }
 
@@ -1354,7 +1364,7 @@ const HamoPro = () => {
         console.log('✅ AI Mind created with ID:', result.mind.id);
       } else {
         // Show error message - DO NOT create fake clients
-        alert(`${t('failedCreateMind')}:\n${result.error}\n\n${t('failedCreateMindDetail')}`);
+        showAlert(`${t('failedCreateMind')}:\n${result.error}\n\n${t('failedCreateMindDetail')}`);
         console.error('❌ AI Mind creation failed:', result.error);
       }
 
@@ -1387,11 +1397,11 @@ const HamoPro = () => {
         setShowInvitationCard(client);
       } else {
         // Show error message to user
-        alert(`${t('failedGenerateInvitation')}:\n${result.error}\n\n${t('failedGenerateInvitationDetail')}`);
+        showAlert(`${t('failedGenerateInvitation')}:\n${result.error}\n\n${t('failedGenerateInvitationDetail')}`);
         console.error('❌ Invitation generation failed:', result.error);
       }
     } catch (error) {
-      alert(`${t('failedGenerateInvitation')}:\n${error.message}\n\n${t('failedGenerateInvitationConnection')}`);
+      showAlert(`${t('failedGenerateInvitation')}:\n${error.message}\n\n${t('failedGenerateInvitationConnection')}`);
       console.error('❌ Failed to generate invitation code:', error);
     } finally {
       setInvitationLoading(false);
@@ -1422,11 +1432,11 @@ const HamoPro = () => {
           setBatchDaysLeft(7);
           setShowBatchInvitation(avatar);
         } else {
-          alert(`Failed to generate batch invitation: ${result.error}`);
+          showAlert(`${t('failedToGenerateBatchInvitation')}: ${result.error}`);
         }
       }
     } catch (error) {
-      alert(`Failed: ${error.message}`);
+      showAlert(`${t('failedToGenerateBatchInvitation')}: ${error.message}`);
     } finally {
       setBatchInviteLoading(false);
     }
@@ -1438,7 +1448,7 @@ const HamoPro = () => {
       max_uses: batchMaxUses,
       expires_days: batchExpiresDays,
     });
-    if (!result.success) alert(`Failed to update: ${result.error}`);
+    if (!result.success) showAlert(`${t('failedToUpdate')}: ${result.error}`);
   };
 
   const handleSaveBatchInvitationCard = async () => {
@@ -1678,11 +1688,11 @@ const HamoPro = () => {
         setMindEditMode(false);
         setMindEditData(null);
       } else {
-        alert(result.error || t('failedToSave'));
+        showAlert(result.error || t('failedToSave'));
       }
     } catch (error) {
       console.error('Failed to save AI Mind:', error);
-      alert(t('failedToSave'));
+      showAlert(t('failedToSave'));
     } finally {
       setMindSaving(false);
     }
@@ -2046,7 +2056,7 @@ const HamoPro = () => {
         setSupervisingMessageId(null);
         setSupervisionText('');
       } else {
-        alert(result.error || t('failedToSaveSupervision'));
+        showAlert(result.error || t('failedToSaveSupervision'));
       }
     } catch (error) {
       console.error('Failed to supervise message:', error);
@@ -2056,7 +2066,7 @@ const HamoPro = () => {
   };
 
   const handleDeleteSupervision = async (messageId) => {
-    if (!confirm(t('confirmDelete'))) return;
+    if (!await showConfirm(t('confirmDelete'))) return;
     try {
       const result = await apiService.deleteSupervision(messageId);
       if (result.success) {
@@ -2072,7 +2082,7 @@ const HamoPro = () => {
           }))
         })));
       } else {
-        alert(result.error || t('failedToDeleteSupervision'));
+        showAlert(result.error || t('failedToDeleteSupervision'));
       }
     } catch (error) {
       console.error('Failed to delete supervision:', error);
@@ -2251,7 +2261,7 @@ const HamoPro = () => {
                   <label className={`block text-sm font-medium mb-1 ${tc('text-gray-700', 'text-slate-300')}`}>{t('newPassword')}</label>
                   <input type="password" value={resetNewPassword} onChange={(e) => setResetNewPassword(e.target.value)} className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${tc('border-gray-300 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white placeholder-slate-500')}`} placeholder="••••••••" disabled={resetLoading} />
                 </div>
-                <button onClick={async () => { if (resetCode.length !== 6 || !resetNewPassword.trim()) return; setResetLoading(true); setAuthError(''); const r = await apiService.resetPassword(resetEmail.trim(), resetCode, resetNewPassword); setResetLoading(false); if (r.success) { alert(t('passwordResetSuccess')); setAuthMode('signin'); setResetCode(''); setResetNewPassword(''); setResetEmail(''); } else { setAuthError(r.error || 'Failed'); } }} className="w-full bg-blue-500 text-white py-3 rounded-lg font-medium hover:bg-blue-600 disabled:opacity-50" disabled={resetLoading || resetCode.length !== 6 || !resetNewPassword.trim()}>
+                <button onClick={async () => { if (resetCode.length !== 6 || !resetNewPassword.trim()) return; setResetLoading(true); setAuthError(''); const r = await apiService.resetPassword(resetEmail.trim(), resetCode, resetNewPassword); setResetLoading(false); if (r.success) { showAlert(t('passwordResetSuccess')); setAuthMode('signin'); setResetCode(''); setResetNewPassword(''); setResetEmail(''); } else { setAuthError(r.error || 'Failed'); } }} className="w-full bg-blue-500 text-white py-3 rounded-lg font-medium hover:bg-blue-600 disabled:opacity-50" disabled={resetLoading || resetCode.length !== 6 || !resetNewPassword.trim()}>
                   {resetLoading ? t('processing') : t('confirmResetPassword')}
                 </button>
                 <button onClick={() => { setAuthMode('signin'); setAuthError(''); setResetCode(''); setResetNewPassword(''); }} className={`w-full py-2 text-sm ${tc('text-gray-500', 'text-slate-400')} hover:underline`}>{t('backToSignIn')}</button>
@@ -2489,6 +2499,40 @@ const HamoPro = () => {
         </div>
       )}
 
+      {/* Alert Dialog */}
+      {alertDialog && (
+        <div className="fixed inset-0 flex items-center justify-center z-[60] px-4 bg-black bg-opacity-50">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full">
+            <p className="text-gray-800 text-sm mb-6 whitespace-pre-line">{alertDialog.message}</p>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setAlertDialog(null)}
+                className="px-6 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700"
+              >{t('ok')}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm Dialog */}
+      {confirmDialogState && (
+        <div className="fixed inset-0 flex items-center justify-center z-[60] px-4 bg-black bg-opacity-50">
+          <div className={`rounded-xl shadow-2xl p-6 max-w-sm w-full ${tc('bg-white', 'bg-slate-800')}`}>
+            <p className={`text-sm mb-6 whitespace-pre-line ${tc('text-gray-700', 'text-slate-300')}`}>{confirmDialogState.message}</p>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => { setConfirmDialogState(null); confirmResolveRef.current?.(false); }}
+                className={`flex-1 px-4 py-2 rounded-lg text-sm ${tc('bg-gray-200 text-gray-700 hover:bg-gray-300', 'bg-slate-700 text-slate-300 hover:bg-slate-600')}`}
+              >{t('cancel')}</button>
+              <button
+                onClick={() => { setConfirmDialogState(null); confirmResolveRef.current?.(true); }}
+                className="flex-1 px-4 py-2 rounded-lg bg-purple-600 text-white text-sm font-medium hover:bg-purple-700"
+              >{t('confirm')}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showDeleteConfirm && (
         <div className={`fixed inset-0 flex items-center justify-center z-50 px-4 ${tc('bg-black bg-opacity-50', 'bg-black bg-opacity-70')}`}>
           <div className={`rounded-xl shadow-2xl p-6 max-w-md w-full ${tc('bg-white', 'bg-slate-800')}`}>
@@ -2658,7 +2702,7 @@ const HamoPro = () => {
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className={`text-xl font-semibold ${tc('', 'text-white')}`}>{t('avatarTherapists')}</h2>
-              <button onClick={async () => { if (!currentUser?.sex) { alert(t('pleaseSetSexFirst')); setSettingsSubTab('profile'); setActiveTab('settings'); return; } const quota = await apiService.getAvatarQuota(); if (quota.success && quota.used >= quota.total) { alert(t('avatarQuotaReached')); setSettingsSubTab('invite'); setActiveTab('settings'); loadProInvites(); return; } if (!showAvatarForm) { setAvatarForm(prev => ({ ...prev, voiceType: currentUser?.sex === 'male' ? 'standard_male' : 'standard_female' })); setAvatarDisclaimerChecked(false); } setShowAvatarForm(!showAvatarForm); }} className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-lg"><Plus className="w-5 h-5" /><span>{t('createAvatar')}</span></button>
+              <button onClick={async () => { if (!currentUser?.sex) { showAlert(t('pleaseSetSexFirst')); setSettingsSubTab('profile'); setActiveTab('settings'); return; } const quota = await apiService.getAvatarQuota(); if (quota.success && quota.used >= quota.total) { showAlert(t('avatarQuotaReached')); setSettingsSubTab('invite'); setActiveTab('settings'); loadProInvites(); return; } if (!showAvatarForm) { setAvatarForm(prev => ({ ...prev, voiceType: currentUser?.sex === 'male' ? 'standard_male' : 'standard_female' })); setAvatarDisclaimerChecked(false); } setShowAvatarForm(!showAvatarForm); }} className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-lg"><Plus className="w-5 h-5" /><span>{t('createAvatar')}</span></button>
             </div>
             {showAvatarForm && (
               <div className={`${tc('bg-white', 'bg-slate-800')} rounded-xl ${tc('shadow-md', 'shadow-lg shadow-black/20')} p-6`}>
@@ -5322,11 +5366,11 @@ const HamoPro = () => {
                       }
                     }
                     if (status === 'verified') {
-                      alert(t('withdrawComingSoon'));
+                      showAlert(t('withdrawComingSoon'));
                     } else if (status === 'pending') {
-                      alert(t('withdrawPendingVerification'));
+                      showAlert(t('withdrawPendingVerification'));
                     } else {
-                      alert(t('withdrawRequiresVerification'));
+                      showAlert(t('withdrawRequiresVerification'));
                       setSettingsSubTab('verification');
                     }
                   }}
