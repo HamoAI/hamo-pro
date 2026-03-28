@@ -2578,7 +2578,7 @@ const HamoPro = () => {
                 <p className={`text-sm font-bold mb-3 ${tc('text-gray-900', 'text-white')}`}>{t('bookingDemoContactTitle')}</p>
                 <div className="space-y-2">
                   {[
-                    { label: t('bookingDemoContactName'), value: currentUser?.full_name || (language === 'zh' ? '程朝晖' : 'Chris Cheng') },
+                    { label: t('bookingDemoContactName'), value: verificationForm.real_name || (language === 'zh' ? '程朝晖' : 'Zhaohui Cheng') },
                     { label: t('bookingDemoContactWechat'), value: 'chrischengzh' },
                     { label: t('bookingDemoContactEmail'), value: currentUser?.email || 'chris@hamo.ai' },
                     { label: t('bookingDemoContactQual'), value: language === 'zh' ? '国家二级心理咨询师' : 'Licensed Counselor (Level 2)' },
@@ -5801,7 +5801,7 @@ const HamoPro = () => {
                 <p className="flex items-start flex-wrap gap-x-2">
                   <span>{t('inviteProDesc2')}</span>
                   <button
-                    onClick={() => { setBookingDemoContactOpen(false); setShowBookingDemoModal(true); }}
+                    onClick={() => { setBookingDemoContactOpen(false); loadVerification(); setShowBookingDemoModal(true); }}
                     className={`flex-shrink-0 text-xs font-medium underline underline-offset-2 ${tc('text-purple-600 hover:text-purple-800', 'text-purple-400 hover:text-purple-200')}`}
                   >{t('seeExample')}</button>
                 </p>
