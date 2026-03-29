@@ -3219,7 +3219,7 @@ const HamoPro = () => {
             )}
             {/* Avatar List - Vertical Layout */}
             <div className="space-y-3">
-              {avatars.map(a => (
+              {[...avatars].sort((a, b) => (b.isPublic !== false ? 1 : 0) - (a.isPublic !== false ? 1 : 0)).map(a => (
                 <div
                   key={a.id}
                   onClick={() => setSelectedAvatar(a)}
