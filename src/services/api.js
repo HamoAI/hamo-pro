@@ -3,7 +3,7 @@
 // Production: https://api.hamo.ai/api
 // AWS Deployment with Custom Domain and HTTPS
 
-const API_BASE_URL = 'https://api.hamo.ai/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.hamo.ai/api';
 
 // Token Management
 const TOKEN_KEY = 'hamo_pro_access_token';
@@ -1066,7 +1066,7 @@ class ApiService {
   // Get messages with stress indicators via portal API (includes A/W/E/H/B data)
   async getPortalMessages(mindId) {
     try {
-      const response = await fetch(`https://api.hamo.ai/api/portal/mind/${mindId}/messages`);
+      const response = await fetch(`${this.baseURL}/portal/mind/${mindId}/messages`);
       if (!response.ok) throw new Error('Portal messages not found');
       const data = await response.json();
       return { success: true, sessions: data };

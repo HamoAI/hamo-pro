@@ -1494,7 +1494,7 @@ const HamoPro = () => {
     let avatarImg = null;
     if (avatar.avatarPicture) {
       try {
-        const proxyUrl = `https://api.hamo.ai/api/image-proxy?url=${encodeURIComponent(avatar.avatarPicture)}`;
+        const proxyUrl = `${apiService.baseURL}/image-proxy?url=${encodeURIComponent(avatar.avatarPicture)}`;
         const resp = await fetch(proxyUrl);
         const blob = await resp.blob();
         const bitmapUrl = URL.createObjectURL(blob);
@@ -2113,7 +2113,7 @@ const HamoPro = () => {
     let avatarImg = null;
     if (avatar?.avatarPicture) {
       try {
-        const proxyUrl = `https://api.hamo.ai/api/image-proxy?url=${encodeURIComponent(avatar.avatarPicture)}`;
+        const proxyUrl = `${apiService.baseURL}/image-proxy?url=${encodeURIComponent(avatar.avatarPicture)}`;
         const resp = await fetch(proxyUrl);
         const blob = await resp.blob();
         const bitmapUrl = URL.createObjectURL(blob);
