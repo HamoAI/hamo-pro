@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { User, Users, Brain, Settings, Plus, Ticket, Eye, EyeOff, Clock, MessageSquare, LogOut, Trash2, Download, CheckCircle, Calendar, Sparkles, Send, Star, Heart, X, Briefcase, ChevronRight, ChevronDown, ChevronUp, Globe, Upload, RefreshCw, ArrowDown, Edit3, Save, Sun, Moon, Mic, Volume2, Square, Play, Pause, Wallet, Lightbulb, Target, Shield } from 'lucide-react';
 import apiService from './services/api';
 import { translations } from './i18n/translations';
@@ -583,16 +583,14 @@ const HamoPro = () => {
     }
   }, [selectedClient]);
 
-  // Initial load when dialog opens
+  // Reset UI state when dialog opens (data loading is handled by handleViewChats directly)
   useEffect(() => {
     if (selectedClient) {
-      // Reset states when opening dialog
       lastMessageCountRef.current = 0;
       setHasNewMessages(false);
-      setAutoRefreshEnabled(false); // Default to off
-      refreshConversationsData(false);
+      setAutoRefreshEnabled(false);
     }
-  }, [selectedClient, refreshConversationsData]);
+  }, [selectedClient]);
 
   // Auto-refresh polling (only when enabled)
   useEffect(() => {
@@ -2014,24 +2012,22 @@ const HamoPro = () => {
     }
   }, [selectedClient]);
 
-  // Auto-scroll to bottom only on FIRST load when dialog opens
-  // After that, user can scroll freely without being interrupted by polling updates
-  useEffect(() => {
+  // Auto-scroll to bottom only on FIRST load when dialog opens.
+  // useLayoutEffect fires synchronously after DOM mutations but BEFORE the browser paints,
+  // so the user never briefly sees old content at the top before the scroll takes effect.
+  useLayoutEffect(() => {
     if (selectedClient && !conversationsLoading && conversationsData.length > 0 && !hasScrolledRef.current) {
       // Mark that we've done the initial scroll
       hasScrolledRef.current = true;
       // Set flag to prevent scroll handler from overriding our PSVS selection
       isInitialScrollRef.current = true;
-      // Small delay to ensure DOM is rendered
+      if (chatScrollRef.current) {
+        chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+      }
+      // Clear the flag shortly after, allowing future manual scrolls to work
       setTimeout(() => {
-        if (chatScrollRef.current) {
-          chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
-        }
-        // Clear the flag after scroll completes, allowing future manual scrolls to work
-        setTimeout(() => {
-          isInitialScrollRef.current = false;
-        }, 200);
-      }, 100);
+        isInitialScrollRef.current = false;
+      }, 200);
     }
   }, [selectedClient, conversationsLoading, conversationsData]);
 
