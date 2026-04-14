@@ -118,15 +118,11 @@ class ApiService {
 
       console.log('✅ Registration successful:', response); // Debug
 
-      // Store tokens
-      if (response.access_token) {
-        this.setTokens(response.access_token, response.refresh_token);
-      }
-
+      // PHIPA 6.1.4: Don't auto-login after registration — user must login with MFA
       return {
         success: true,
         user: response.user,
-        accessToken: response.access_token,
+        registeredOnly: true,  // Signal to frontend: show "please login" message
       };
     } catch (error) {
       console.error('❌ Registration failed:', error); // Debug
@@ -143,18 +139,26 @@ class ApiService {
     }
   }
 
-  async loginPro(email, password) {
+  async loginPro(email, password, language = 'en') {
     try {
       const response = await this.request('/auth/loginPro', {
         method: 'POST',
         skipAuth: true,
-        body: JSON.stringify({
-          email: email,
-          password: password,
-        }),
+        headers: { 'X-MFA-Support': 'true' },
+        body: JSON.stringify({ email, password, language }),
       });
 
-      // Store tokens
+      // MFA required — return pending state
+      if (response.mfa_required) {
+        return {
+          success: false,
+          mfaRequired: true,
+          mfaToken: response.mfa_token,
+          message: response.message,
+        };
+      }
+
+      // Direct login — store tokens
       if (response.access_token) {
         this.setTokens(response.access_token, response.refresh_token);
       }
@@ -169,6 +173,48 @@ class ApiService {
         success: false,
         error: error.message,
       };
+    }
+  }
+
+  async verifyMfa(mfaToken, code, trustDevice = true) {
+    try {
+      const response = await this.request('/auth/verify-mfa', {
+        method: 'POST',
+        skipAuth: true,
+        body: JSON.stringify({
+          mfa_token: mfaToken,
+          code: code,
+          trust_device: trustDevice,
+        }),
+      });
+
+      if (response.access_token) {
+        this.setTokens(response.access_token, response.refresh_token);
+      }
+
+      return {
+        success: true,
+        user: response.user,
+        accessToken: response.access_token,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+
+  async resendMfa(mfaToken) {
+    try {
+      const response = await this.request('/auth/resend-mfa', {
+        method: 'POST',
+        skipAuth: true,
+        body: JSON.stringify({ mfa_token: mfaToken, code: '', trust_device: true }),
+      });
+      return { success: true, message: response.message };
+    } catch (error) {
+      return { success: false, error: error.message };
     }
   }
 

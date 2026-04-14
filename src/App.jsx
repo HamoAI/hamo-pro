@@ -4,7 +4,7 @@ import apiService from './services/api';
 import { translations } from './i18n/translations';
 
 const HamoPro = () => {
-  const APP_VERSION = "1.9.7";
+  const APP_VERSION = "1.9.8";
 
   // Language state - default to browser language or English
   const [language, setLanguage] = useState(() => {
@@ -235,7 +235,11 @@ const HamoPro = () => {
   ];
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [authMode, setAuthMode] = useState('signin'); // 'signin' | 'signup' | 'forgot' | 'resetCode'
+  const [authMode, setAuthMode] = useState('signin'); // 'signin' | 'signup' | 'forgot' | 'resetCode' | 'mfa'
+  const [mfaToken, setMfaToken] = useState('');
+  const [mfaCode, setMfaCode] = useState('');
+  const [mfaMessage, setMfaMessage] = useState('');
+  const [mfaResendCooldown, setMfaResendCooldown] = useState(0);
   const [resetEmail, setResetEmail] = useState('');
   const [resetCode, setResetCode] = useState('');
   const [resetNewPassword, setResetNewPassword] = useState('');
@@ -654,13 +658,12 @@ const HamoPro = () => {
       );
 
       if (result.success) {
-        setCurrentUser(result.user);
-        setIsAuthenticated(true);
-        setAuthForm({ email: '', password: '', fullName: '', profession: '', proInviteCode: '' });
+        // PHIPA 6.1.4: Don't auto-login — redirect to login page for MFA
+        setAuthForm({ ...authForm, password: '', fullName: '', profession: '', proInviteCode: '' });
         setAuthError('');
-
-        // Load user's avatars and clients (likely empty for new user)
-        await loadUserData();
+        setAuthMode('signin');
+        // Show success message (will be displayed as a non-error info banner)
+        setAuthError(t('registrationSuccessPleaseLogin'));
       } else {
         setAuthError(mapApiError(result.error) || result.error);
       }
@@ -685,10 +688,26 @@ const HamoPro = () => {
     try {
       const result = await apiService.loginPro(
         authForm.email,
-        authForm.password
+        authForm.password,
+        language
       );
 
-      if (result.success) {
+      if (result.mfaRequired) {
+        // MFA required — switch to MFA code input screen
+        setMfaToken(result.mfaToken);
+        setMfaMessage(result.message);
+        setMfaCode('');
+        setAuthMode('mfa');
+        setAuthError('');
+        // Start resend cooldown (60s)
+        setMfaResendCooldown(60);
+        const timer = setInterval(() => {
+          setMfaResendCooldown(prev => {
+            if (prev <= 1) { clearInterval(timer); return 0; }
+            return prev - 1;
+          });
+        }, 1000);
+      } else if (result.success) {
         setCurrentUser(result.user);
         setIsAuthenticated(true);
         setAuthForm({ email: '', password: '', fullName: '', profession: '' });
@@ -703,6 +722,54 @@ const HamoPro = () => {
       setAuthError(t('errorInvalidCredentials'));
     } finally {
       setAuthLoading(false);
+    }
+  };
+
+  const handleMfaVerify = async () => {
+    if (!mfaCode || mfaCode.length !== 6) {
+      setAuthError(t('mfaEnterCode'));
+      return;
+    }
+    setAuthLoading(true);
+    setAuthError('');
+    try {
+      const result = await apiService.verifyMfa(mfaToken, mfaCode, true);
+      if (result.success) {
+        setCurrentUser(result.user);
+        setIsAuthenticated(true);
+        setAuthForm({ email: '', password: '', fullName: '', profession: '' });
+        setMfaCode('');
+        setMfaToken('');
+        setAuthMode('signin');
+        await loadUserData();
+      } else {
+        setAuthError(result.error || t('mfaInvalidCode'));
+      }
+    } catch (error) {
+      setAuthError(t('mfaInvalidCode'));
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleMfaResend = async () => {
+    if (mfaResendCooldown > 0) return;
+    try {
+      const result = await apiService.resendMfa(mfaToken);
+      if (result.success) {
+        setMfaMessage(t('mfaCodeResent'));
+        setMfaResendCooldown(60);
+        const timer = setInterval(() => {
+          setMfaResendCooldown(prev => {
+            if (prev <= 1) { clearInterval(timer); return 0; }
+            return prev - 1;
+          });
+        }, 1000);
+      } else {
+        setAuthError(result.error);
+      }
+    } catch (error) {
+      setAuthError(t('mfaResendFailed'));
     }
   };
 
@@ -2279,6 +2346,51 @@ const HamoPro = () => {
             </div>
             <h1 className={`text-3xl font-bold text-center mb-2 ${tc('text-gray-900', 'text-white')}`}>{t('appName')}</h1>
             <p className={`text-center mb-8 text-sm ${tc('text-gray-500', 'text-slate-400')}`}>{t('tagline')}</p>
+
+            {/* MFA Verification Screen */}
+            {authMode === 'mfa' && (
+              <div className="space-y-4">
+                <h2 className={`text-xl font-bold ${tc('text-gray-900', 'text-white')}`}>{t('mfaTitle')}</h2>
+                <p className={`text-sm ${tc('text-gray-600', 'text-slate-400')}`}>{mfaMessage || t('mfaDescription')}</p>
+                {authError && <div className={`p-3 rounded-lg ${tc('bg-red-50 border border-red-200', 'bg-red-900/20 border border-red-800')}`}><p className={`text-sm ${tc('text-red-600', 'text-red-400')}`}>{authError}</p></div>}
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${tc('text-gray-700', 'text-slate-300')}`}>{t('mfaCodeLabel')}</label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    value={mfaCode}
+                    onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    onKeyDown={(e) => e.key === 'Enter' && handleMfaVerify()}
+                    placeholder="000000"
+                    className={`w-full px-4 py-3 rounded-lg text-center text-2xl tracking-[0.5em] font-mono ${tc('bg-gray-50 border border-gray-200 text-gray-900', 'bg-slate-700 border border-slate-600 text-white')} focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                    autoFocus
+                  />
+                </div>
+                <button
+                  onClick={handleMfaVerify}
+                  disabled={authLoading || mfaCode.length !== 6}
+                  className="w-full py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 disabled:opacity-50"
+                >
+                  {authLoading ? t('processing') : t('mfaVerify')}
+                </button>
+                <div className="flex justify-between items-center">
+                  <button
+                    onClick={handleMfaResend}
+                    disabled={mfaResendCooldown > 0}
+                    className={`text-sm ${mfaResendCooldown > 0 ? tc('text-gray-400', 'text-slate-500') : 'text-blue-500 hover:text-blue-600'}`}
+                  >
+                    {mfaResendCooldown > 0 ? `${t('mfaResend')} (${mfaResendCooldown}s)` : t('mfaResend')}
+                  </button>
+                  <button
+                    onClick={() => { setAuthMode('signin'); setAuthError(''); setMfaCode(''); }}
+                    className="text-sm text-blue-500 hover:text-blue-600"
+                  >
+                    {t('mfaBackToLogin')}
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Forgot Password Screen */}
             {authMode === 'forgot' && (
