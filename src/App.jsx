@@ -3,6 +3,50 @@ import { User, Users, Brain, Settings, Plus, Ticket, Eye, EyeOff, Clock, Message
 import apiService from './services/api';
 import { translations } from './i18n/translations';
 
+// Render a single line of text where a highlighted URL is drawn larger,
+// bolder, and in a brighter color than the surrounding text.
+// Used for invitation card "Visit c.hamo.ai to register..." lines.
+function drawHighlightedUrlLine(ctx, fullText, url, centerX, y) {
+  const idx = fullText.indexOf(url);
+  if (idx < 0) {
+    // Fallback: just draw the whole line normally
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '13px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(fullText, centerX, y);
+    return;
+  }
+  const before = fullText.slice(0, idx);
+  const after = fullText.slice(idx + url.length);
+  const sideFont = '13px sans-serif';
+  const urlFont = 'bold 18px sans-serif';
+
+  ctx.font = sideFont;
+  const wBefore = ctx.measureText(before).width;
+  const wAfter = ctx.measureText(after).width;
+  ctx.font = urlFont;
+  const wUrl = ctx.measureText(url).width;
+  const total = wBefore + wUrl + wAfter;
+
+  let x = centerX - total / 2;
+  ctx.textAlign = 'left';
+  // Before
+  ctx.font = sideFont;
+  ctx.fillStyle = '#94a3b8';
+  ctx.fillText(before, x, y);
+  x += wBefore;
+  // URL — emphasized
+  ctx.font = urlFont;
+  ctx.fillStyle = '#38BDF8';
+  ctx.fillText(url, x, y);
+  x += wUrl;
+  // After
+  ctx.font = sideFont;
+  ctx.fillStyle = '#94a3b8';
+  ctx.fillText(after, x, y);
+  ctx.textAlign = 'center';
+}
+
 const HamoPro = () => {
   const APP_VERSION = "1.9.8";
 
@@ -1620,24 +1664,22 @@ const HamoPro = () => {
     ctx.font = '13px sans-serif';
     ctx.fillText(t('hamoAiSubtitle'), 200, 205 + oY);
 
-    // Registration instructions (moved above code box)
-    ctx.fillStyle = '#38BDF8';
-    ctx.font = 'bold 13px sans-serif';
-    ctx.fillText(t('registrationInstructions'), 200, 235 + oY);
+    // Registration instructions — split text with c.hamo.ai emphasized
+    drawHighlightedUrlLine(ctx, t('registrationInstructions'), 'c.hamo.ai', 200, 235 + oY);
 
     // Invitation code box
     ctx.fillStyle = '#1e3a5f';
     ctx.beginPath();
-    ctx.roundRect(60, 255 + oY, 280, 60, 12);
+    ctx.roundRect(60, 265 + oY, 280, 60, 12);
     ctx.fill();
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 32px monospace';
-    ctx.fillText(batchInviteCode, 200, 295 + oY);
+    ctx.fillText(batchInviteCode, 200, 305 + oY);
 
     // Validity info
     ctx.fillStyle = '#f59e0b';
     ctx.font = '13px sans-serif';
-    ctx.fillText(`${t('expiryDays')}: ${batchExpiresDays}`, 200, 355 + oY);
+    ctx.fillText(`${t('expiryDays')}: ${batchExpiresDays}`, 200, 365 + oY);
 
     // Download
     const link = document.createElement('a');
@@ -2293,40 +2335,38 @@ const HamoPro = () => {
     ctx.font = '13px sans-serif';
     ctx.fillText(t('hamoAiSubtitle'), 200, 190 + oY);
 
-    // Registration instructions (moved above code box)
-    ctx.fillStyle = '#38BDF8';
-    ctx.font = 'bold 13px sans-serif';
-    ctx.fillText(t('registrationInstructions'), 200, 220 + oY);
+    // Registration instructions — split text with c.hamo.ai emphasized
+    drawHighlightedUrlLine(ctx, t('registrationInstructions'), 'c.hamo.ai', 200, 220 + oY);
 
     // Invitation code box
     ctx.fillStyle = '#1e3a5f';
     ctx.beginPath();
-    ctx.roundRect(50, 240 + oY, 300, 55, 12);
+    ctx.roundRect(50, 250 + oY, 300, 55, 12);
     ctx.fill();
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 28px monospace';
-    ctx.fillText(invitationCode, 200, 277 + oY);
+    ctx.fillText(invitationCode, 200, 287 + oY);
 
     // Validity
     ctx.fillStyle = '#F59E0B';
     ctx.font = '14px sans-serif';
-    ctx.fillText(t('expiresIn'), 200, 325 + oY);
+    ctx.fillText(t('expiresIn'), 200, 335 + oY);
 
     // Divider
     ctx.strokeStyle = '#334155';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(50, 350 + oY);
-    ctx.lineTo(350, 350 + oY);
+    ctx.moveTo(50, 360 + oY);
+    ctx.lineTo(350, 360 + oY);
     ctx.stroke();
 
     // Client info (AI Avatar block removed — already shown at top)
     ctx.fillStyle = '#94a3b8';
     ctx.font = '13px sans-serif';
-    ctx.fillText(t('clientLabel'), 200, 385 + oY);
+    ctx.fillText(t('clientLabel'), 200, 395 + oY);
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 18px sans-serif';
-    ctx.fillText(showInvitationCard.name, 200, 412 + oY);
+    ctx.fillText(showInvitationCard.name, 200, 422 + oY);
 
     // Download
     const link = document.createElement('a');
