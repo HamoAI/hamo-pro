@@ -657,13 +657,12 @@ const HamoPro = () => {
       );
 
       if (result.success) {
-        setCurrentUser(result.user);
-        setIsAuthenticated(true);
-        setAuthForm({ email: '', password: '', fullName: '', profession: '', proInviteCode: '' });
+        // PHIPA 6.1.4: Don't auto-login — redirect to login page for MFA
+        setAuthForm({ ...authForm, password: '', fullName: '', profession: '', proInviteCode: '' });
         setAuthError('');
-
-        // Load user's avatars and clients (likely empty for new user)
-        await loadUserData();
+        setAuthMode('signin');
+        // Show success message (will be displayed as a non-error info banner)
+        setAuthError(t('registrationSuccessPleaseLogin'));
       } else {
         setAuthError(mapApiError(result.error) || result.error);
       }

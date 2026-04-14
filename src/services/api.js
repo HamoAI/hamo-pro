@@ -118,15 +118,11 @@ class ApiService {
 
       console.log('✅ Registration successful:', response); // Debug
 
-      // Store tokens
-      if (response.access_token) {
-        this.setTokens(response.access_token, response.refresh_token);
-      }
-
+      // PHIPA 6.1.4: Don't auto-login after registration — user must login with MFA
       return {
         success: true,
         user: response.user,
-        accessToken: response.access_token,
+        registeredOnly: true,  // Signal to frontend: show "please login" message
       };
     } catch (error) {
       console.error('❌ Registration failed:', error); // Debug
