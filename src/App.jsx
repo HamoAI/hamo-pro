@@ -2200,22 +2200,31 @@ const HamoPro = () => {
   const handleSaveInvitationCard = async () => {
     const avatar = avatars.find(a => String(a.id) === String(showInvitationCard.avatarId) || String(a.id) === String(showInvitationCard.avatar_id));
 
-    // Load avatar image via API proxy (same proven approach as batch invitation)
+    // Load avatar image for canvas drawing
     let avatarImg = null;
     if (avatar?.avatarPicture) {
+      // Try multiple approaches: proxy first, then direct with crossOrigin
+      const loadImg = (url) => new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = url;
+      });
       try {
         const proxyUrl = `${apiService.baseURL}/image-proxy?url=${encodeURIComponent(avatar.avatarPicture)}`;
         const resp = await fetch(proxyUrl);
-        const blob = await resp.blob();
-        const bitmapUrl = URL.createObjectURL(blob);
-        avatarImg = await new Promise((resolve) => {
-          const img = new Image();
-          img.onload = () => resolve(img);
-          img.onerror = () => resolve(null);
-          img.src = bitmapUrl;
-        });
-        URL.revokeObjectURL(bitmapUrl);
-      } catch (e) { /* proxy failed, skip avatar */ }
+        if (resp.ok) {
+          const blob = await resp.blob();
+          const bitmapUrl = URL.createObjectURL(blob);
+          avatarImg = await loadImg(bitmapUrl);
+          URL.revokeObjectURL(bitmapUrl);
+        }
+      } catch (e) { /* proxy failed */ }
+      // Fallback: load directly
+      if (!avatarImg) {
+        avatarImg = await loadImg(avatar.avatarPicture);
+      }
     }
 
     const W = 400;
