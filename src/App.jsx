@@ -4321,9 +4321,9 @@ const HamoPro = () => {
                       <select value={clientForm.relationship_manipulations.attachment_style} onChange={(e) => setClientForm({ ...clientForm, relationship_manipulations: { ...clientForm.relationship_manipulations, attachment_style: e.target.value } })} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`}>
                         <option value="">--</option>
                         <option value="secure">{t('attachmentSecure')}</option>
-                        <option value="anxious">{t('attachmentAnxious')}</option>
-                        <option value="avoidant">{t('attachmentAvoidant')}</option>
-                        <option value="disorganized">{t('attachmentDisorganized')}</option>
+                        <option value="preoccupied">{t('attachmentPreoccupied')}</option>
+                        <option value="dismissive">{t('attachmentDismissive')}</option>
+                        <option value="fearful">{t('attachmentFearful')}</option>
                       </select>
                     </div>
                     <div>
@@ -4688,9 +4688,9 @@ const HamoPro = () => {
                               <select value={mindEditData?.relationship_manipulations?.attachment_style || ''} onChange={(e) => updateMindEditString('relationship_manipulations', 'attachment_style', e.target.value)} className={`w-full px-4 py-2 border ${tc('border-gray-200 bg-white text-gray-900', 'border-slate-600 bg-slate-900 text-white')} rounded-lg`}>
                                 <option value="">--</option>
                                 <option value="secure">{t('attachmentSecure')}</option>
-                                <option value="anxious">{t('attachmentAnxious')}</option>
-                                <option value="avoidant">{t('attachmentAvoidant')}</option>
-                                <option value="disorganized">{t('attachmentDisorganized')}</option>
+                                <option value="preoccupied">{t('attachmentPreoccupied')}</option>
+                                <option value="dismissive">{t('attachmentDismissive')}</option>
+                                <option value="fearful">{t('attachmentFearful')}</option>
                               </select>
                             </div>
                             <div>
