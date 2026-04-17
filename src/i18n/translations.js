@@ -278,6 +278,9 @@ export const translations = {
     attachmentAnxious: 'Anxious',
     attachmentAvoidant: 'Avoidant',
     attachmentDisorganized: 'Disorganized',
+    attachmentPreoccupied: 'Preoccupied',
+    attachmentDismissive: 'Dismissive',
+    attachmentFearful: 'Fearful',
 
     // AI Mind Footer
     connectedOn: 'Connected',
@@ -835,6 +838,9 @@ export const translations = {
     attachmentAnxious: '焦虑型',
     attachmentAvoidant: '回避型',
     attachmentDisorganized: '混乱型',
+    attachmentPreoccupied: '焦虑-矛盾型',
+    attachmentDismissive: '回避-疏离型',
+    attachmentFearful: '恐惧-混乱型',
 
     // AI Mind Footer
     connectedOn: '连接于',
