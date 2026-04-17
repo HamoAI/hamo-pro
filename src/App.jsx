@@ -845,6 +845,19 @@ const HamoPro = () => {
     setSettingsSubTab('profile');
   };
 
+  // Detect "Session expired" API errors (thrown by api.js when refresh fails).
+  // Returns true if it was a session-expired error and handled it.
+  // Caller should `return` after a true result — the user is being signed out.
+  const handleSessionExpired = (errorMessage) => {
+    if (!errorMessage) return false;
+    if (!/session expired/i.test(String(errorMessage))) return false;
+    showAlert(t('sessionExpiredMessage'));
+    // Sign the user out so they re-authenticate. Note: local form state is
+    // intentionally lost — the tokens are dead so nothing could be saved anyway.
+    handleSignOut();
+    return true;
+  };
+
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   const handleSendDeleteCode = async () => {
@@ -1238,16 +1251,10 @@ const HamoPro = () => {
       }]);
       console.log('✅ Avatar created with backend ID:', result.avatar.id);
     } else {
-      console.warn('⚠️ API failed, using local ID:', result.error);
-      setAvatars([...avatars, {
-        id: Date.now(),
-        name: avatarForm.name,
-        specialty: specialty,
-        therapeuticApproaches: approaches,
-        about: avatarForm.about,
-        experienceYears: avatarForm.experienceYears,
-        experienceMonths: avatarForm.experienceMonths,
-      }]);
+      console.error('❌ Avatar create failed:', result.error);
+      if (handleSessionExpired(result.error)) return;
+      showAlert(t('failedToSave') + (result.error ? ': ' + result.error : ''));
+      return; // Don't reset the form — let the user retry with their inputs preserved
     }
 
     setAvatarForm({
@@ -1373,8 +1380,9 @@ const HamoPro = () => {
       } : a));
       console.log('✅ Avatar updated:', editingAvatar.id);
     } else {
-      console.warn('⚠️ API failed to update avatar:', result.error);
-      showAlert(t('failedToSave'));
+      console.error('❌ Avatar update failed:', result.error);
+      if (handleSessionExpired(result.error)) return;
+      showAlert(t('failedToSave') + (result.error ? ': ' + result.error : ''));
       return;
     }
 
@@ -1580,6 +1588,7 @@ const HamoPro = () => {
     if (!result.success) {
       // Revert on failure
       setAvatars(prev => prev.map(a => a.id === avatarId ? { ...a, isPublic: currentIsPublic } : a));
+      if (handleSessionExpired(result.error)) return;
       showAlert(result.error || t('failedToSave'));
     }
   };
@@ -1862,10 +1871,12 @@ const HamoPro = () => {
         setMindEditMode(false);
         setMindEditData(null);
       } else {
+        if (handleSessionExpired(result.error)) return;
         showAlert(result.error || t('failedToSave'));
       }
     } catch (error) {
       console.error('Failed to save AI Mind:', error);
+      if (handleSessionExpired(error?.message)) return;
       showAlert(t('failedToSave'));
     } finally {
       setMindSaving(false);
@@ -2236,6 +2247,7 @@ const HamoPro = () => {
         setSupervisingMessageId(null);
         setSupervisionText('');
       } else {
+        if (handleSessionExpired(result.error)) return;
         showAlert(result.error || t('failedToSaveSupervision'));
       }
     } catch (error) {
