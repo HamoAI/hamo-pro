@@ -3619,21 +3619,29 @@ const HamoPro = () => {
                   </div>
                   {/* Card bottom row: visibility pill (left) + batch invite (right) */}
                   <div className="flex items-center justify-between mt-2">
-                    {/* Public/Private visibility toggle */}
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleToggleAvatarVisibility(a.id, a.isPublic !== false); }}
-                      title={a.isPublic !== false ? t('avatarPublic') : t('avatarPrivate')}
-                      className={`flex items-center space-x-1 text-xs px-2 py-0.5 rounded-full transition-colors ${
-                        a.isPublic !== false
-                          ? tc('bg-green-100 text-green-700 hover:bg-green-200', 'bg-green-900/30 text-green-400 hover:bg-green-900/50')
-                          : tc('bg-gray-100 text-gray-500 hover:bg-gray-200', 'bg-slate-700 text-slate-400 hover:bg-slate-600')
-                      }`}
-                    >
-                      {a.isPublic !== false
-                        ? <><Globe className="w-3 h-3" /><span>{t('avatarPublic')}</span></>
-                        : <><EyeOff className="w-3 h-3" /><span>{t('avatarPrivate')}</span></>
-                      }
-                    </button>
+                    {/* Public/Private + Language pills */}
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleToggleAvatarVisibility(a.id, a.isPublic !== false); }}
+                        title={a.isPublic !== false ? t('avatarPublic') : t('avatarPrivate')}
+                        className={`flex items-center space-x-1 text-xs px-2 py-0.5 rounded-full transition-colors ${
+                          a.isPublic !== false
+                            ? tc('bg-green-100 text-green-700 hover:bg-green-200', 'bg-green-900/30 text-green-400 hover:bg-green-900/50')
+                            : tc('bg-gray-100 text-gray-500 hover:bg-gray-200', 'bg-slate-700 text-slate-400 hover:bg-slate-600')
+                        }`}
+                      >
+                        {a.isPublic !== false
+                          ? <><Globe className="w-3 h-3" /><span>{t('avatarPublic')}</span></>
+                          : <><EyeOff className="w-3 h-3" /><span>{t('avatarPrivate')}</span></>
+                        }
+                      </button>
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full ${tc('bg-blue-100 text-blue-700', 'bg-blue-900/30 text-blue-400')}`}
+                        title={t('avatarLanguageLabel')}
+                      >
+                        {(a.language || 'en') === 'zh' ? '中文' : 'EN'}
+                      </span>
+                    </div>
                     {/* Batch invite */}
                     <button
                       onClick={(e) => { e.stopPropagation(); handleGenerateBatchInvitation(a); }}
@@ -3717,6 +3725,17 @@ const HamoPro = () => {
                         </div>
                       </div>
                     )}
+
+                    {/* Language */}
+                    <div>
+                      <h4 className={`text-sm font-medium ${tc('text-gray-500', 'text-slate-400')} mb-2`}>{t('avatarLanguageLabel')}</h4>
+                      <div className="flex items-center space-x-2">
+                        <Globe className="w-5 h-5 text-blue-500" />
+                        <span className={`${tc('text-gray-800', 'text-white')} font-medium`}>
+                          {(selectedAvatar.language || 'en') === 'zh' ? '中文' : 'English'}
+                        </span>
+                      </div>
+                    </div>
 
                   </div>
 
