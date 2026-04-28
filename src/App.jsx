@@ -2003,6 +2003,10 @@ const HamoPro = () => {
     setPsvsTrajectory([]);
     setExpandedMiniSessions(new Set());
     setShowSupervisionPanel(false);
+    // Always start with the status carousel collapsed — user must tap the
+    // Stress / Energy header bar to expand it.
+    setShowStressDetail(false);
+    setStatusCarouselTab('status');
     setSupervisingMessageId(null);
     setSupervisionText('');
     // Load mental model from localStorage
