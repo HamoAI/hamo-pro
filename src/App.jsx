@@ -6024,6 +6024,11 @@ const HamoPro = () => {
                     <div
                       ref={chatScrollRef}
                       onScroll={handleChatScroll}
+                      onClick={(e) => {
+                        if (showSupervisionPanel && e.target === e.currentTarget) {
+                          setShowSupervisionPanel(false);
+                        }
+                      }}
                       className="p-6 overflow-y-auto h-full"
                     >
                     {conversationsLoading ? (
@@ -6273,9 +6278,16 @@ const HamoPro = () => {
                   {/* ── Supervision Bottom Panel ────────────────────────────── */}
                   {showSupervisionPanel && (
                     <div className={`flex-shrink-0 flex flex-col border-t ${tc('border-gray-200 bg-white', 'border-slate-700 bg-slate-800')}`} style={{ height: '45%' }}>
-                      {/* Drag handle */}
-                      <div className={`flex justify-center pt-2 pb-1 flex-shrink-0 ${tc('bg-gray-50', 'bg-slate-700/40')}`}>
+                      {/* Drag handle + close button */}
+                      <div className={`relative flex justify-center items-center pt-2 pb-1 flex-shrink-0 ${tc('bg-gray-50', 'bg-slate-700/40')}`}>
                         <div className={`w-8 h-1 rounded-full ${tc('bg-gray-300', 'bg-slate-500')}`} />
+                        <button
+                          onClick={() => setShowSupervisionPanel(false)}
+                          className={`absolute right-2 top-1 p-1 rounded-full transition-colors ${tc('text-gray-400 hover:text-gray-700 hover:bg-gray-200', 'text-slate-400 hover:text-white hover:bg-slate-600')}`}
+                          title={t('close')}
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
                       </div>
 
                       {/* Tab bar */}
