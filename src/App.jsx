@@ -68,8 +68,8 @@ function getQuadrantStrategy(t, key) {
     need: t('quadrant' + cap + 'Need'),
     crisis: t('quadrant' + cap + 'Crisis'),
     primaryValue: t('quadrant' + cap + 'PrimaryValue'),
-    strengths: [1, 2, 3, 4].map(n => t(key + 'Strength' + n)).filter(s => s && s !== (key + 'Strength' + n.toString())),
-    challenges: [1, 2, 3].map(n => t(key + 'Challenge' + n)).filter(s => s && s !== (key + 'Challenge' + n.toString())),
+    strengths: [1, 2, 3, 4].map(n => t(key + 'Strength' + n)).filter((s, i) => s && s !== (key + 'Strength' + (i + 1))),
+    challenges: [1, 2, 3].map(n => t(key + 'Challenge' + n)).filter((s, i) => s && s !== (key + 'Challenge' + (i + 1))),
     therapyMethods: ({
       expert:    [t('therapyCBT'), t('therapyREBT'), t('therapySFBT'), t('therapyPsychoeducation')],
       supporter: [t('therapyPersonCentered'), t('therapyCompassionFocused'), t('therapyACT'), t('therapyRelational')],
