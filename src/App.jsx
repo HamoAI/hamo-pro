@@ -5661,6 +5661,17 @@ const HamoPro = () => {
 
                     // ── Strategy Tab Cards ───────────────────────────────────────────
                     const q = getQuadrantStrategy(t, quadKey);
+                    // Pure single-language quadrant label (no mixing en+zh in parens)
+                    const quadDisplayLabel = language === 'zh' ? q.cn : q.label;
+                    // Convert mods coefficient string ("W×1.2, H×1.3") to qualitative names
+                    // ("Withdrawal, Hostility" / "退缩、敌意"). Hides the actual multipliers.
+                    const modIndicatorNames = {
+                      A: t('agency'), W: t('withdrawal'), E: t('extremity'),
+                      H: t('hostility'), B: t('boundary'),
+                    };
+                    const modLetters = [...new Set((q.mods || '').match(/[AWEHB]/g) || [])];
+                    const modJoiner = language === 'zh' ? '、' : ', ';
+                    const modsDisplay = modLetters.map(L => modIndicatorNames[L]).filter(Boolean).join(modJoiner);
                     const stateLabel = energyState === 'neurotic' ? t('neurotic') : energyState === 'negative' ? t('negative') : t('positive');
                     const stateColor = energyState === 'neurotic' ? '#ef4444' : energyState === 'negative' ? '#f59e0b' : '#10b981';
                     const stateBg    = energyState === 'neurotic' ? tc('bg-red-50','bg-red-900/20') : energyState === 'negative' ? tc('bg-amber-50','bg-amber-900/20') : tc('bg-emerald-50','bg-emerald-900/20');
@@ -5671,7 +5682,7 @@ const HamoPro = () => {
                         <div className={cardCls}>
                           <h4 className={cardTitleCls}>{t('quadrantProfile')}</h4>
                           <div className="rounded-lg p-3 mb-3" style={{ backgroundColor: tc(q.bg, q.color + '20'), border: `1px solid ${q.color}40` }}>
-                            <div className="text-base font-bold mb-1" style={{ color: q.color }}>{q.fullLabel}</div>
+                            <div className="text-base font-bold mb-1" style={{ color: q.color }}>{quadDisplayLabel}</div>
                             <div className={`text-[12px] ${tc('text-gray-700', 'text-slate-300')}`}>{t('coreNeeds')}: <span style={{ color: q.color }} className="font-medium">{q.need}</span></div>
                             <div className="flex flex-wrap gap-1 mt-2">
                               {q.strengths.map(s => (
@@ -5707,7 +5718,7 @@ const HamoPro = () => {
                               <span>⚙</span>
                               <div>
                                 <p className={`font-semibold ${tc('text-gray-700', 'text-slate-300')}`}>{t('formulaStressMultipliers')}</p>
-                                <p className={`font-mono text-[11px] ${tc('text-indigo-700', 'text-indigo-300')}`}>{q.mods || t('baseFormulaOnly')}</p>
+                                <p className={`text-[11px] font-medium ${tc('text-indigo-700', 'text-indigo-300')}`}>{modsDisplay || t('baseFormulaOnly')}</p>
                                 <p className={`text-[10px] mt-0.5 ${tc('text-gray-500', 'text-slate-500')}`}>{t('extraSensitive')}</p>
                               </div>
                             </div>
@@ -5726,7 +5737,7 @@ const HamoPro = () => {
                             <div className="flex items-center gap-2 mb-2">
                               <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: stateColor }} />
                               <p className="font-bold text-[12px]" style={{ color: q.color }}>
-                                {q.label} ({q.cn}) — {stateLabel}
+                                {quadDisplayLabel} — {stateLabel}
                               </p>
                             </div>
                             <ol className="space-y-1.5">
