@@ -52,11 +52,37 @@ function drawHighlightedUrlLine(ctx, fullText, url, centerX, y) {
 // Mirrors hamo-portal so visualizations look identical.
 // ============================================================
 const PSVS_QUADRANTS = {
-  expert:    { color: '#3b82f6', label: 'Expert',    cn: '专家型' },
-  leader:    { color: '#ef4444', label: 'Leader',    cn: '领导型' },
-  supporter: { color: '#8b5cf6', label: 'Supporter', cn: '支持型' },
-  dreamer:   { color: '#f59e0b', label: 'Dreamer',   cn: '梦想型' },
+  expert:    { color: '#3b82f6', bg: '#eff6ff', label: 'Expert',    cn: '专家型', mods: 'W×1.2, H×1.3' },
+  leader:    { color: '#ef4444', bg: '#fef2f2', label: 'Leader',    cn: '领导型', mods: 'H×1.2, A×1.2' },
+  supporter: { color: '#8b5cf6', bg: '#f5f3ff', label: 'Supporter', cn: '支持型', mods: 'W×1.3' },
+  dreamer:   { color: '#f59e0b', bg: '#fffbeb', label: 'Dreamer',   cn: '梦想型', mods: 'E×1.2, H×1.2, B×1.2' },
 };
+
+// Build the full quadrant strategy data (translated). Used by Strategy carousel cards.
+function getQuadrantStrategy(t, key) {
+  const base = PSVS_QUADRANTS[key] || PSVS_QUADRANTS.expert;
+  const cap = key.charAt(0).toUpperCase() + key.slice(1);
+  return {
+    ...base,
+    fullLabel: t('quadrant' + cap + 'Label'),
+    need: t('quadrant' + cap + 'Need'),
+    crisis: t('quadrant' + cap + 'Crisis'),
+    primaryValue: t('quadrant' + cap + 'PrimaryValue'),
+    strengths: [1, 2, 3, 4].map(n => t(key + 'Strength' + n)).filter(s => s && s !== (key + 'Strength' + n.toString())),
+    challenges: [1, 2, 3].map(n => t(key + 'Challenge' + n)).filter(s => s && s !== (key + 'Challenge' + n.toString())),
+    therapyMethods: ({
+      expert:    [t('therapyCBT'), t('therapyREBT'), t('therapySFBT'), t('therapyPsychoeducation')],
+      supporter: [t('therapyPersonCentered'), t('therapyCompassionFocused'), t('therapyACT'), t('therapyRelational')],
+      leader:    [t('therapyMotivational'), t('therapySFBT'), t('therapyGoalOriented'), t('therapyStrategic')],
+      dreamer:   [t('therapyNarrative'), t('therapyExistential'), t('therapyCreative'), t('therapyMotivational')],
+    })[key] || [],
+    strategy: {
+      positive: [1, 2, 3].map(n => t(key + 'StratPositive' + n)),
+      negative: [1, 2, 3].map(n => t(key + 'StratNegative' + n)),
+      neurotic: [1, 2, 3].map(n => t(key + 'StratNeurotic' + n)),
+    },
+  };
+}
 
 const psvsEnergyColor = (s) => (s == null ? '#9ca3af' : s < 4 ? '#10b981' : s < 7 ? '#f59e0b' : '#ef4444');
 const psvsEnergyLabel = (state) => state === 'neurotic' ? 'Neurotic' : state === 'negative' ? 'Negative' : state === 'positive' ? 'Positive' : '—';
@@ -5633,6 +5659,152 @@ const HamoPro = () => {
                       </div>
                     );
 
+                    // ── Strategy Tab Cards ───────────────────────────────────────────
+                    const q = getQuadrantStrategy(t, quadKey);
+                    const stateLabel = energyState === 'neurotic' ? t('neurotic') : energyState === 'negative' ? t('negative') : t('positive');
+                    const stateColor = energyState === 'neurotic' ? '#ef4444' : energyState === 'negative' ? '#f59e0b' : '#10b981';
+                    const stateBg    = energyState === 'neurotic' ? tc('bg-red-50','bg-red-900/20') : energyState === 'negative' ? tc('bg-amber-50','bg-amber-900/20') : tc('bg-emerald-50','bg-emerald-900/20');
+                    const activeStrategySteps = q.strategy?.[energyState] || q.strategy?.negative || [];
+                    const strategyCards = (
+                      <>
+                        {/* Strategy Card 1: Quadrant Profile */}
+                        <div className={cardCls}>
+                          <h4 className={cardTitleCls}>{t('quadrantProfile')}</h4>
+                          <div className="rounded-lg p-3 mb-3" style={{ backgroundColor: tc(q.bg, q.color + '20'), border: `1px solid ${q.color}40` }}>
+                            <div className="text-base font-bold mb-1" style={{ color: q.color }}>{q.fullLabel}</div>
+                            <div className={`text-[12px] ${tc('text-gray-700', 'text-slate-300')}`}>{t('coreNeeds')}: <span style={{ color: q.color }} className="font-medium">{q.need}</span></div>
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {q.strengths.map(s => (
+                                <span key={s} className="px-1.5 py-0.5 rounded-full text-[10px] font-medium text-white" style={{ backgroundColor: q.color + 'cc' }}>{s}</span>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="space-y-2 text-[12px]">
+                            <div className={`flex gap-2 p-2 rounded-lg ${tc('bg-amber-50 border border-amber-100', 'bg-amber-900/20 border border-amber-800')}`}>
+                              <span>★</span>
+                              <div>
+                                <p className={`font-semibold ${tc('text-gray-700', 'text-slate-300')}`}>{t('primaryValueFocus')}</p>
+                                <p className={`text-[11px] mt-0.5 ${tc('text-amber-700', 'text-amber-400')}`}>{q.primaryValue}</p>
+                              </div>
+                            </div>
+                            <div className={`p-2 rounded-lg ${tc('bg-gray-50', 'bg-slate-700')}`}>
+                              <p className={`font-semibold mb-1 ${tc('text-gray-700', 'text-slate-300')}`}>{t('psychologicalChallenges')}</p>
+                              <div className="flex flex-wrap gap-1">
+                                {q.challenges.map(c => (
+                                  <span key={c} className={`px-1.5 py-0.5 rounded-full text-[10px] ${tc('bg-red-100 text-red-700', 'bg-red-900/40 text-red-300')}`}>{c}</span>
+                                ))}
+                              </div>
+                            </div>
+                            <div className={`flex gap-2 p-2 rounded-lg ${tc('bg-red-50 border border-red-100', 'bg-red-900/20 border border-red-800')}`}>
+                              <span>⚡</span>
+                              <div>
+                                <p className={`font-semibold ${tc('text-gray-700', 'text-slate-300')}`}>{t('crisisPattern')}</p>
+                                <p className={`font-medium ${tc('text-red-600', 'text-red-400')}`}>{q.crisis}</p>
+                                <p className={`text-[10px] mt-0.5 ${tc('text-gray-500', 'text-slate-500')}`}>{t('whatHappensUnmet')}</p>
+                              </div>
+                            </div>
+                            <div className={`flex gap-2 p-2 rounded-lg ${tc('bg-indigo-50 border border-indigo-100', 'bg-indigo-900/20 border border-indigo-800')}`}>
+                              <span>⚙</span>
+                              <div>
+                                <p className={`font-semibold ${tc('text-gray-700', 'text-slate-300')}`}>{t('formulaStressMultipliers')}</p>
+                                <p className={`font-mono text-[11px] ${tc('text-indigo-700', 'text-indigo-300')}`}>{q.mods || t('baseFormulaOnly')}</p>
+                                <p className={`text-[10px] mt-0.5 ${tc('text-gray-500', 'text-slate-500')}`}>{t('extraSensitive')}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Strategy Card 2: Active Strategy */}
+                        <div className={cardCls}>
+                          <h4 className={cardTitleCls}>{t('aiTherapistGuideStrategy')}</h4>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold border" style={{ color: stateColor, borderColor: stateColor + '70', backgroundColor: stateColor + '15' }}>
+                              {stateLabel} — {t('activeStrategy')}
+                            </span>
+                          </div>
+                          <div className="rounded-lg p-3" style={{ backgroundColor: tc(q.bg, q.color + '15'), border: `2px solid ${q.color}50` }}>
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: stateColor }} />
+                              <p className="font-bold text-[12px]" style={{ color: q.color }}>
+                                {q.label} ({q.cn}) — {stateLabel}
+                              </p>
+                            </div>
+                            <ol className="space-y-1.5">
+                              {activeStrategySteps.map((step, i) => {
+                                const isUrgent = (step || '').startsWith('URGENT') || (step || '').startsWith('紧急');
+                                return (
+                                  <li key={i} className="flex gap-2 text-[12px]">
+                                    <span className="font-bold mt-0.5 shrink-0" style={{ color: q.color }}>{i + 1}.</span>
+                                    <span className={isUrgent ? tc('text-red-700 font-semibold', 'text-red-400 font-semibold') : tc('text-gray-700', 'text-slate-300')}>{step}</span>
+                                  </li>
+                                );
+                              })}
+                            </ol>
+                            <p className={`mt-3 pt-2 border-t text-[10px] ${tc('border-gray-200 text-gray-400', 'border-slate-700 text-slate-500')}`}>
+                              {t('strategyInjectionNote')}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Strategy Card 3: Recommended Therapy Methods + Movement Path */}
+                        <div className={cardCls}>
+                          <h4 className={cardTitleCls}>{t('recommendedTherapyMethods')}</h4>
+                          <div className={`rounded-lg p-3 mb-3 ${tc('bg-slate-50 border border-slate-100', 'bg-slate-700 border border-slate-600')}`}>
+                            <ul className="space-y-1.5">
+                              {q.therapyMethods.map((m, i) => (
+                                <li key={i} className={`flex gap-2 text-[12px] ${tc('text-gray-700', 'text-slate-300')}`}>
+                                  <span className={tc('text-gray-400', 'text-slate-500')}>▸</span>
+                                  <span>{m}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          <h4 className={cardTitleCls}>{t('movementPath')}</h4>
+                          <div className={`rounded-lg p-3 ${tc('bg-emerald-50 border border-emerald-100', 'bg-emerald-900/20 border border-emerald-800')} text-[11px] space-y-1.5`}>
+                            <p className={tc('text-gray-700', 'text-slate-300')}>
+                              <span className={tc('text-red-600 font-semibold', 'text-red-400 font-semibold')}>{t('neuroticMovement')}</span> {t('neuroticMovementDesc')}
+                            </p>
+                            <p className={tc('text-gray-700', 'text-slate-300')}>
+                              <span className={tc('text-amber-600 font-semibold', 'text-amber-400 font-semibold')}>{t('negativeMovement')}</span> {t('negativeMovementDesc')}
+                            </p>
+                            <p className={tc('text-gray-700', 'text-slate-300')}>
+                              <span className={tc('text-emerald-600 font-semibold', 'text-emerald-400 font-semibold')}>{t('positiveMovement')}</span> {t('positiveMovementDesc')}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Strategy Card 4: Strategy by Energy State */}
+                        <div className={cardCls}>
+                          <h4 className={cardTitleCls}>{t('strategyByEnergyState')}</h4>
+                          <div className="space-y-2">
+                            {[
+                              { key: 'positive', labelKey: 'positiveState', color: '#10b981', bg: tc('#f0fdf4', '#0f1f17'), border: '#10b98140' },
+                              { key: 'negative', labelKey: 'negativeState', color: '#f59e0b', bg: tc('#fffbeb', '#2a210e'), border: '#f59e0b40' },
+                              { key: 'neurotic', labelKey: 'neuroticState', color: '#ef4444', bg: tc('#fef2f2', '#2a1414'), border: '#ef444440' },
+                            ].map(({ key, labelKey, color, bg, border }) => {
+                              const isCurrent = energyState === key;
+                              return (
+                                <div key={key} className="rounded-lg p-2.5 text-[11px]"
+                                  style={{ backgroundColor: bg, border: `1px solid ${border}`, ...(isCurrent && { boxShadow: `0 0 0 2px ${color}80` }) }}>
+                                  <p className="font-bold mb-1" style={{ color }}>
+                                    {t(labelKey)}{isCurrent ? ' ' + t('currentIndicator') : ''}
+                                  </p>
+                                  <ul className={`space-y-1 ${tc('text-gray-700', 'text-slate-300')}`}>
+                                    {(q.strategy?.[key] || []).map((step, i) => (
+                                      <li key={i} className="flex gap-1.5">
+                                        <span className="font-bold shrink-0" style={{ color }}>·</span>
+                                        <span>{step}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </>
+                    );
+
                     return (
                       <div className={`flex-shrink-0 ${tc('bg-gray-50', 'bg-slate-900')} ${tc('border-b border-gray-200', 'border-b border-slate-700')}`}>
                         {/* Tab strip */}
@@ -5657,7 +5829,7 @@ const HamoPro = () => {
                         {/* Carousel rail — horizontal scroll-snap */}
                         <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 px-3 py-3" style={{ scrollPaddingLeft: '0.75rem' }}>
                           {statusCarouselTab === 'status'   && statusCards}
-                          {statusCarouselTab === 'strategy' && (<>{placeholderCard(t('phase2Coming'))}</>)}
+                          {statusCarouselTab === 'strategy' && strategyCards}
                           {statusCarouselTab === 'memory'   && (
                             proCanSeeMemory
                               ? placeholderCard(t('phase3Coming'))
