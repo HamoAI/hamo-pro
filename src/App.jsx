@@ -424,6 +424,8 @@ const HamoPro = () => {
   const [newDirectiveText, setNewDirectiveText] = useState('');
   const [newDirectiveType, setNewDirectiveType] = useState('strategy');
   const [stressIndicatorsData, setStressIndicatorsData] = useState(null); // A/W/E/H/B from portal API
+  const [memoryData, setMemoryData] = useState(null); // Memory profile for Memory tab
+  const [memoryLoading, setMemoryLoading] = useState(false);
   const [expandedMiniSessions, setExpandedMiniSessions] = useState(new Set()); // Track which mini sessions are expanded
   const [supervisingMessageId, setSupervisingMessageId] = useState(null); // Which message is being supervised
   const [supervisionText, setSupervisionText] = useState(''); // Input text for supervision
@@ -2007,6 +2009,13 @@ const HamoPro = () => {
     // Stress / Energy header bar to expand it.
     setShowStressDetail(false);
     setStatusCarouselTab('status');
+    // Reset memory data; will be fetched in parallel below.
+    setMemoryData(null);
+    setMemoryLoading(true);
+    apiService.getMindMemory(client.id).then(result => {
+      setMemoryData(result.success ? result.memory : null);
+      setMemoryLoading(false);
+    }).catch(() => setMemoryLoading(false));
     setSupervisingMessageId(null);
     setSupervisionText('');
     // Load mental model from localStorage
@@ -5818,6 +5827,149 @@ const HamoPro = () => {
                       </>
                     );
 
+                    // ── Memory Tab Cards ─────────────────────────────────────────────
+                    const safeStr = (v) => (typeof v === 'string' ? v : (v == null ? '' : ''));
+                    const fmtDate = (s) => {
+                      if (!s) return '';
+                      try { return new Date(s).toLocaleDateString(language === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' }); }
+                      catch { return s; }
+                    };
+                    const memTagList = (items) => {
+                      if (!items || items.length === 0) {
+                        return <p className={`text-[11px] ${tc('text-gray-400', 'text-slate-500')}`}>—</p>;
+                      }
+                      return (
+                        <div className="flex flex-wrap gap-1">
+                          {items.filter(Boolean).map((it, i) => (
+                            <span key={i} className={`px-1.5 py-0.5 rounded-full text-[10px] ${tc('bg-blue-50 text-blue-700', 'bg-blue-900/30 text-blue-300')}`}>{typeof it === 'string' ? it : JSON.stringify(it)}</span>
+                          ))}
+                        </div>
+                      );
+                    };
+                    const memSubsection = (label, body) => (
+                      <div className="mb-2">
+                        <p className={`text-[10px] font-semibold uppercase tracking-wide mb-1 ${tc('text-gray-500', 'text-slate-400')}`}>{label}</p>
+                        {body}
+                      </div>
+                    );
+                    const m = memoryData || {};
+                    const memoryCards = (
+                      <>
+                        {/* Memory Card 1: Session Continuity */}
+                        <div className={cardCls + ' overflow-y-auto max-h-[55vh]'}>
+                          <h4 className={cardTitleCls}>{t('memoryContinuity')}</h4>
+                          {memSubsection(t('memoryOpenThreads'), (() => {
+                            const threads = m.session_continuity?.open_threads || [];
+                            if (threads.length === 0) return <p className={`text-[11px] ${tc('text-gray-400', 'text-slate-500')}`}>—</p>;
+                            return (
+                              <div className="space-y-1.5">
+                                {threads.map((th, i) => (
+                                  <div key={i} className={`p-2 rounded-lg ${tc('bg-gray-50 border border-gray-100', 'bg-slate-700 border border-slate-600')}`}>
+                                    <div className="flex items-center gap-1.5 mb-0.5">
+                                      <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${th.resolved ? tc('bg-green-100 text-green-700','bg-green-900/40 text-green-300') : tc('bg-amber-100 text-amber-700','bg-amber-900/40 text-amber-300')}`}>
+                                        {th.resolved ? t('memoryResolved') : t('memoryUnresolved')}
+                                      </span>
+                                      <span className={`text-[12px] font-medium ${tc('text-gray-700','text-slate-200')}`}>{th.topic}</span>
+                                    </div>
+                                    {th.context && <p className={`text-[10px] mt-0.5 ${tc('text-gray-500','text-slate-400')}`}>{th.context}</p>}
+                                    <p className={`text-[10px] mt-0.5 ${tc('text-gray-400','text-slate-500')}`}>{fmtDate(th.opened_at)}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            );
+                          })())}
+                          {memSubsection(t('memoryLastSession'), (() => {
+                            const summaries = m.session_continuity?.session_summaries || [];
+                            if (summaries.length === 0) return <p className={`text-[11px] ${tc('text-gray-400', 'text-slate-500')}`}>—</p>;
+                            const last = summaries[summaries.length - 1];
+                            return (
+                              <div className={`p-2 rounded-lg ${tc('bg-purple-50 border border-purple-100', 'bg-purple-900/20 border border-purple-800')}`}>
+                                <p className={`text-[10px] mb-1 ${tc('text-purple-600','text-purple-300')}`}>{fmtDate(last.session_date)}</p>
+                                <p className={`text-[12px] ${tc('text-gray-700','text-slate-200')}`}>{last.summary_text}</p>
+                                {last.mood_arc && <p className={`text-[10px] mt-1 italic ${tc('text-gray-500','text-slate-400')}`}>{last.mood_arc}</p>}
+                                {last.primary_themes?.length > 0 && <div className="mt-1.5">{memTagList(last.primary_themes)}</div>}
+                              </div>
+                            );
+                          })())}
+                        </div>
+
+                        {/* Memory Card 2: World Model */}
+                        <div className={cardCls + ' overflow-y-auto max-h-[55vh]'}>
+                          <h4 className={cardTitleCls}>{t('memoryWorldModel')}</h4>
+                          {memSubsection(t('memoryPeople'), (() => {
+                            const people = (m.world_model?.people || []).filter(p => p.name);
+                            if (people.length === 0) return <p className={`text-[11px] ${tc('text-gray-400', 'text-slate-500')}`}>—</p>;
+                            return (
+                              <div className="space-y-1.5">
+                                {people.map((p, i) => (
+                                  <div key={i} className={`p-2 rounded-lg ${tc('bg-gray-50 border border-gray-100', 'bg-slate-700 border border-slate-600')}`}>
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                      <span className={`text-[12px] font-medium ${tc('text-gray-800','text-slate-200')}`}>{p.name}</span>
+                                      <span className={`text-[10px] ${tc('text-gray-400','text-slate-500')}`}>{p.relationship}</span>
+                                      {p.sentiment && (
+                                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${
+                                          p.sentiment === 'positive' ? tc('bg-green-100 text-green-700','bg-green-900/40 text-green-300') :
+                                          p.sentiment === 'negative' ? tc('bg-red-100 text-red-700','bg-red-900/40 text-red-300') :
+                                          p.sentiment === 'mixed'    ? tc('bg-amber-100 text-amber-700','bg-amber-900/40 text-amber-300') :
+                                                                       tc('bg-gray-100 text-gray-500','bg-slate-700 text-slate-400')
+                                        }`}>{p.sentiment}</span>
+                                      )}
+                                    </div>
+                                    {p.description && <p className={`text-[10px] mt-0.5 ${tc('text-gray-500','text-slate-400')}`}>{p.description}</p>}
+                                  </div>
+                                ))}
+                              </div>
+                            );
+                          })())}
+                          {safeStr(m.world_model?.living_situation) && memSubsection(t('memoryLivingSituation'),
+                            <p className={`text-[12px] ${tc('text-gray-700','text-slate-300')}`}>{safeStr(m.world_model.living_situation)}</p>)}
+                          {safeStr(m.world_model?.work_situation) && memSubsection(t('memoryWorkSituation'),
+                            <p className={`text-[12px] ${tc('text-gray-700','text-slate-300')}`}>{safeStr(m.world_model.work_situation)}</p>)}
+                          {safeStr(m.world_model?.life_stage) && memSubsection(t('memoryLifeStage'),
+                            <p className={`text-[12px] ${tc('text-gray-700','text-slate-300')}`}>{safeStr(m.world_model.life_stage)}</p>)}
+                        </div>
+
+                        {/* Memory Card 3: Emotional Intelligence */}
+                        <div className={cardCls + ' overflow-y-auto max-h-[55vh]'}>
+                          <h4 className={cardTitleCls}>{t('memoryEmotionalIntel')}</h4>
+                          {memSubsection(t('memoryTriggers'),       memTagList(m.emotional_intelligence?.known_triggers))}
+                          {memSubsection(t('memorySoothers'),       memTagList(m.emotional_intelligence?.known_soothers))}
+                          {memSubsection(t('memoryCommPrefs'),      memTagList(m.emotional_intelligence?.communication_preferences))}
+                          {memSubsection(t('memoryDefensePatterns'), memTagList(m.emotional_intelligence?.defense_patterns))}
+                        </div>
+
+                        {/* Memory Card 4: Life Narrative */}
+                        <div className={cardCls + ' overflow-y-auto max-h-[55vh]'}>
+                          <h4 className={cardTitleCls}>{t('memoryLifeNarrative')}</h4>
+                          {memSubsection(t('memoryBackgroundFacts'), memTagList(m.life_narrative?.background_facts))}
+                          {memSubsection(t('memoryEpisodes'),        memTagList(m.life_narrative?.disclosed_episodes))}
+                          {memSubsection(t('memoryValues'),          memTagList(m.life_narrative?.core_values))}
+                          {memSubsection(t('memoryHobbies'),         memTagList(m.life_narrative?.hobbies_interests))}
+                        </div>
+
+                        {/* Memory Card 5: Therapeutic Journey */}
+                        <div className={cardCls + ' overflow-y-auto max-h-[55vh]'}>
+                          <h4 className={cardTitleCls}>{t('memoryJourney')}</h4>
+                          {memSubsection(t('memoryThemes'),         memTagList(m.therapeutic_journey?.recurring_themes))}
+                          {memSubsection(t('memoryTechniquesTried'), memTagList(m.therapeutic_journey?.techniques_tried))}
+                          {memSubsection(t('memoryBreakthroughs'), (() => {
+                            const moments = m.therapeutic_journey?.breakthrough_moments || [];
+                            if (moments.length === 0) return <p className={`text-[11px] ${tc('text-gray-400','text-slate-500')}`}>—</p>;
+                            return (
+                              <div className="space-y-1.5">
+                                {moments.map((bm, i) => (
+                                  <div key={i} className={`p-2 rounded-lg ${tc('bg-amber-50 border border-amber-100', 'bg-amber-900/20 border border-amber-800')}`}>
+                                    <p className={`text-[10px] ${tc('text-amber-600','text-amber-300')}`}>{fmtDate(bm.session_date)}</p>
+                                    <p className={`text-[12px] ${tc('text-gray-700','text-slate-200')}`}>{bm.description}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            );
+                          })())}
+                        </div>
+                      </>
+                    );
+
                     return (
                       <div className={`flex-shrink-0 ${tc('bg-gray-50', 'bg-slate-900')} ${tc('border-b border-gray-200', 'border-b border-slate-700')}`}>
                         {/* Tab strip */}
@@ -5843,10 +5995,14 @@ const HamoPro = () => {
                         <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 px-3 py-3" style={{ scrollPaddingLeft: '0.75rem' }}>
                           {statusCarouselTab === 'status'   && statusCards}
                           {statusCarouselTab === 'strategy' && strategyCards}
-                          {statusCarouselTab === 'memory'   && (
-                            proCanSeeMemory
-                              ? placeholderCard(t('phase3Coming'))
-                              : placeholderCard(t('memoryHiddenByClient'))
+                          {statusCarouselTab === 'memory' && (
+                            !proCanSeeMemory
+                              ? placeholderCard(t('memoryHiddenByClient'))
+                              : memoryLoading
+                                  ? placeholderCard(t('memoryLoading') || 'Loading…')
+                                  : memoryData
+                                      ? memoryCards
+                                      : placeholderCard(t('memoryEmpty'))
                           )}
                         </div>
 
