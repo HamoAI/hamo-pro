@@ -966,6 +966,20 @@ class ApiService {
     }
   }
 
+  // Pro fetches the memory profile for one of their client AI Minds.
+  // Returns { success, memory, hidden? } — `hidden=true` when client has set
+  // pro_visible=false (backend returns 403 with that detail).
+  async getMindMemory(mindId) {
+    try {
+      const response = await this.request(`/pro/mind/${mindId}/memory`);
+      return { success: true, memory: response };
+    } catch (error) {
+      const msg = (error?.message || '').toLowerCase();
+      const hidden = msg.includes('hidden') || msg.includes('pro_visible');
+      return { success: false, error: error.message, hidden };
+    }
+  }
+
   async createDirective(mindId, directiveType, text) {
     try {
       const response = await this.request(`/mind/${mindId}/directives`, {
