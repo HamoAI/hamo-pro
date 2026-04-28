@@ -5451,19 +5451,17 @@ const HamoPro = () => {
                               <rect x="120" y="1" width="119" height="119" fill={tc('#fef2f2', '#1f1f2e')} />
                               <rect x="1" y="120" width="119" height="119" fill={tc('#f5f3ff', '#1e1b2e')} />
                               <rect x="120" y="120" width="119" height="119" fill={tc('#fffbeb', '#1f1d2a')} />
-                              <text x="60"  y="20" textAnchor="middle" fontSize="9" fill="#3b82f6" fontWeight="600">EXPERT</text>
-                              <text x="60"  y="30" textAnchor="middle" fontSize="7" fill="#3b82f6">{'专家型'}</text>
-                              <text x="180" y="20" textAnchor="middle" fontSize="9" fill="#ef4444" fontWeight="600">LEADER</text>
-                              <text x="180" y="30" textAnchor="middle" fontSize="7" fill="#ef4444">{'领导型'}</text>
-                              <text x="60"  y="200" textAnchor="middle" fontSize="9" fill="#8b5cf6" fontWeight="600">SUPPORTER</text>
-                              <text x="60"  y="210" textAnchor="middle" fontSize="7" fill="#8b5cf6">{'支持型'}</text>
-                              <text x="180" y="200" textAnchor="middle" fontSize="9" fill="#f59e0b" fontWeight="600">DREAMER</text>
-                              <text x="180" y="210" textAnchor="middle" fontSize="7" fill="#f59e0b">{'梦想型'}</text>
+                              <text x="60"  y="22" textAnchor="middle" fontSize="11" fill="#3b82f6" fontWeight="700">{language === 'zh' ? '专家型' : 'EXPERT'}</text>
+                              <text x="180" y="22" textAnchor="middle" fontSize="11" fill="#ef4444" fontWeight="700">{language === 'zh' ? '领导型' : 'LEADER'}</text>
+                              <text x="60"  y="206" textAnchor="middle" fontSize="11" fill="#8b5cf6" fontWeight="700">{language === 'zh' ? '支持型' : 'SUPPORTER'}</text>
+                              <text x="180" y="206" textAnchor="middle" fontSize="11" fill="#f59e0b" fontWeight="700">{language === 'zh' ? '梦想型' : 'DREAMER'}</text>
                               <line x1="120" y1="5" x2="120" y2="235" stroke={tc('#d1d5db', '#475569')} strokeWidth="1" strokeDasharray="3,3" />
                               <line x1="5" y1="120" x2="235" y2="120" stroke={tc('#d1d5db', '#475569')} strokeWidth="1" strokeDasharray="3,3" />
-                              <text x="120" y="238" textAnchor="middle" fontSize="7" fill={tc('#6b7280', '#94a3b8')}>{'← Introvert | Extrovert →'}</text>
-                              <text x="3" y="123" fontSize="7" fill={tc('#6b7280', '#94a3b8')}>Emo</text>
-                              <text x="3" y="20" fontSize="7" fill={tc('#6b7280', '#94a3b8')}>Rat</text>
+                              {/* Axis labels — top: rational, bottom: emotional, left: introvert, right: extrovert */}
+                              <text x="120" y="10" textAnchor="middle" fontSize="8" fontWeight="600" fill={tc('#6b7280', '#94a3b8')}>{language === 'zh' ? '理性' : 'RATIONAL'}</text>
+                              <text x="120" y="237" textAnchor="middle" fontSize="8" fontWeight="600" fill={tc('#6b7280', '#94a3b8')}>{language === 'zh' ? '感性' : 'EMOTIONAL'}</text>
+                              <text x="2" y="123" textAnchor="start" fontSize="8" fontWeight="600" fill={tc('#6b7280', '#94a3b8')}>{language === 'zh' ? '内向' : 'INTRO'}</text>
+                              <text x="238" y="123" textAnchor="end" fontSize="8" fontWeight="600" fill={tc('#6b7280', '#94a3b8')}>{language === 'zh' ? '外向' : 'EXTRO'}</text>
                               <circle cx="120" cy="120" r="35" fill={tc('#f0fdf4', '#0f1f17')} stroke="#10b981" strokeWidth="1" strokeDasharray="4,3" opacity="0.6" />
                               <circle cx="120" cy="120" r="65" fill="none" stroke="#f59e0b" strokeWidth="1" strokeDasharray="4,3" opacity="0.5" />
                               <circle cx="120" cy="120" r="90" fill="none" stroke="#ef4444" strokeWidth="1" strokeDasharray="4,3" opacity="0.4" />
@@ -5489,7 +5487,7 @@ const HamoPro = () => {
                                 <span><span style={{ color: '#f59e0b' }}>●</span> {t('midModerate')}</span>
                                 <span><span style={{ color: '#ef4444' }}>●</span> {t('outerHighStress')}</span>
                               </div>
-                              <div style={{ color: quadInfo.color }} className="font-semibold">● {quadInfo.label} ({quadInfo.cn})</div>
+                              <div style={{ color: quadInfo.color }} className="font-semibold">● {language === 'zh' ? quadInfo.cn : quadInfo.label}</div>
                             </div>
                             <div className={`mt-3 grid grid-cols-2 gap-2 w-full text-[11px] ${tc('text-gray-700', 'text-slate-300')}`}>
                               <div className={`${tc('bg-gray-50', 'bg-slate-700')} rounded-lg p-2`}>
@@ -5530,7 +5528,7 @@ const HamoPro = () => {
                               : energyState === 'negative' ? tc('bg-amber-50 border border-amber-200 text-amber-700', 'bg-amber-900/20 border border-amber-800 text-amber-400')
                               : tc('bg-emerald-50 border border-emerald-200 text-emerald-700', 'bg-emerald-900/20 border border-emerald-800 text-emerald-400')
                             }`}>
-                              <p className="text-base font-bold">{psvsEnergyLabel(energyState)}</p>
+                              <p className="text-base font-bold">{energyState === 'neurotic' ? t('neurotic') : energyState === 'negative' ? t('negative') : t('positive')}</p>
                               <p className="text-xs opacity-80">{energyState === 'positive' ? t('zoneHomeostatic') : energyState === 'negative' ? t('zoneNegative') : t('zoneNeurotic')}</p>
                             </div>
                             <div className="w-full mt-3 space-y-2 text-[12px]">
