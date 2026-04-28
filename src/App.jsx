@@ -2143,12 +2143,17 @@ const HamoPro = () => {
         );
         setConversationsData(conversationsWithMessages);
 
-        // Auto-expand only the latest mini session
+        // Auto-expand only the latest mini session.
+        // Backend sorts sessions newest-first → the first visible conv is the newest;
+        // its last mini-session group is the most recent one. The display reverses
+        // (oldest top, newest bottom), so this expanded group sits at the bottom and
+        // the auto-scroll lands the viewport on it.
         let latestMiniSessionId = null;
         for (const conv of conversationsWithMessages) {
           if (conv.miniSessionGroups && conv.miniSessionGroups.length > 0 && conv.proVisible !== false) {
             const lastGroup = conv.miniSessionGroups[conv.miniSessionGroups.length - 1];
             latestMiniSessionId = lastGroup.miniSessionId;
+            break;  // newest visible conv only — don't keep overwriting
           }
         }
         if (latestMiniSessionId) {
