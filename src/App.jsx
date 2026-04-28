@@ -47,6 +47,54 @@ function drawHighlightedUrlLine(ctx, fullText, url, centerX, y) {
   ctx.textAlign = 'center';
 }
 
+// ============================================================
+// PSVS HELPERS — energy / quadrant colors used by the Status carousel.
+// Mirrors hamo-portal so visualizations look identical.
+// ============================================================
+const PSVS_QUADRANTS = {
+  expert:    { color: '#3b82f6', label: 'Expert',    cn: '专家型' },
+  leader:    { color: '#ef4444', label: 'Leader',    cn: '领导型' },
+  supporter: { color: '#8b5cf6', label: 'Supporter', cn: '支持型' },
+  dreamer:   { color: '#f59e0b', label: 'Dreamer',   cn: '梦想型' },
+};
+
+const psvsEnergyColor = (s) => (s == null ? '#9ca3af' : s < 4 ? '#10b981' : s < 7 ? '#f59e0b' : '#ef4444');
+const psvsEnergyLabel = (state) => state === 'neurotic' ? 'Neurotic' : state === 'negative' ? 'Negative' : state === 'positive' ? 'Positive' : '—';
+
+// Convert (rational_emotional, intro_extro, stress_level) → SVG (x,y) on a 240px canvas.
+// Polar: angle from re/ie axes, radius from stress_level.
+function psvsToXY(re, ie, sl) {
+  const stressToRadius = (s) => {
+    s = Math.max(0, Math.min(10, s || 0));
+    if (s < 4) return (s / 4) * 35;
+    if (s < 7) return 35 + ((s - 4) / 3) * 30;
+    return 65 + ((s - 7) / 3) * 25;
+  };
+  const dx = ie || 0;
+  const dy = -(re || 0);
+  const m = Math.sqrt(dx * dx + dy * dy);
+  const r = stressToRadius(sl);
+  if (m < 0.001) return { x: 120, y: 120 };
+  return { x: 120 + (dx / m) * r, y: 120 + (dy / m) * r };
+}
+
+// Linear-regression slope of an array (used for trajectory direction).
+function linearSlope(arr) {
+  if (!arr || arr.length < 2) return null;
+  const n = arr.length;
+  const meanX = (n - 1) / 2;
+  const meanY = arr.reduce((a, b) => a + b, 0) / n;
+  let num = 0, den = 0;
+  for (let i = 0; i < n; i++) { num += (i - meanX) * (arr[i] - meanY); den += (i - meanX) ** 2; }
+  return den === 0 ? 0 : num / den;
+}
+
+function stdDev(arr) {
+  if (!arr || arr.length < 2) return null;
+  const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
+  return Math.sqrt(arr.reduce((s, v) => s + (v - mean) ** 2, 0) / arr.length);
+}
+
 const HamoPro = () => {
   const APP_VERSION = "1.9.8";
 
@@ -344,6 +392,7 @@ const HamoPro = () => {
   const [hasNewMessages, setHasNewMessages] = useState(false); // Show "new messages" indicator
   const lastMessageCountRef = useRef(0); // Track message count for detecting new messages
   const [showStressDetail, setShowStressDetail] = useState(false); // Toggle stress detail panel
+  const [statusCarouselTab, setStatusCarouselTab] = useState('status'); // 'status' | 'strategy' | 'memory'
   const [directives, setDirectives] = useState([]); // Supervision directives for selected client
   const [showDirectives, setShowDirectives] = useState(false); // Toggle directives panel (legacy, kept for compat)
   const [newDirectiveText, setNewDirectiveText] = useState('');
@@ -5313,183 +5362,311 @@ const HamoPro = () => {
                     </div>
                   </div>
 
-                  {/* Stress Detail Panel - Expandable */}
+                  {/* Status Carousel — replaces the previous single-page stress detail.
+                      3 tabs (Status / Strategy / Memory), each with horizontally
+                      scroll-snapping cards. Pure CSS scroll-snap, no extra deps. */}
                   {showStressDetail && (() => {
-                    // Use PSVS trajectory from API (consistent with Portal)
-                    // Fallback to message psvs_snapshots if trajectory not available
-                    let stressDataPoints = [];
-                    if (psvsTrajectory && psvsTrajectory.length > 0) {
-                      stressDataPoints = psvsTrajectory.map(t => ({
-                        stress: t.stress_level,
-                        energy: t.energy_state,
-                        timestamp: t.timestamp,
-                      }));
-                    } else if (conversationsData && conversationsData.length > 0) {
-                      conversationsData.forEach(conv => {
-                        if (conv.messages) {
-                          conv.messages.forEach(msg => {
-                            if (msg.role === 'user' && msg.psvs_snapshot && msg.psvs_snapshot.stress_level !== undefined) {
-                              stressDataPoints.push({
-                                stress: msg.psvs_snapshot.stress_level,
-                                energy: msg.psvs_snapshot.energy_state,
-                                timestamp: msg.timestamp,
-                              });
-                            }
-                          });
-                        }
-                      });
-                    }
+                    const traj = (psvsTrajectory && psvsTrajectory.length > 0) ? psvsTrajectory : [];
+                    const last10Stress = traj.slice(-10).map(p => p.stress_level).filter(v => v != null);
+                    const slope = linearSlope(last10Stress);
+                    const variance = stdDev(last10Stress);
+                    const trajectoryDisplay = (() => {
+                      if (slope === null) return { label: '— ' + t('noData'), color: tc('text-gray-400', 'text-slate-500') };
+                      if (slope > 0.5)   return { label: '↑↑ ' + t('trajRisingFast'), color: 'text-red-500' };
+                      if (slope > 0.15)  return { label: '↑ ' + t('trajRising'),     color: 'text-amber-500' };
+                      if (slope > -0.15) return { label: '→ ' + t('trajStable'),     color: 'text-emerald-500' };
+                      if (slope > -0.5)  return { label: '↓ ' + t('trajFalling'),    color: 'text-emerald-500' };
+                      return { label: '↓↓ ' + t('trajFallingFast'), color: 'text-emerald-600' };
+                    })();
+                    const varianceDisplay = (() => {
+                      if (variance === null) return { label: '— ' + t('noData'), color: tc('text-gray-400', 'text-slate-500') };
+                      if (variance < 0.8) return { label: t('varianceLow'),      color: 'text-emerald-500' };
+                      if (variance < 1.8) return { label: t('varianceModerate'), color: 'text-amber-500' };
+                      return { label: t('varianceHigh'), color: 'text-red-500' };
+                    })();
 
-                    // Get last 50 data points for chart
-                    const chartData = stressDataPoints.slice(-50);
-                    const latestPoint = stressDataPoints[stressDataPoints.length - 1];
+                    const pos = currentPsvs || {};
+                    const stress = pos.stress_level;
+                    const energyState = pos.energy_state || 'positive';
+                    const quadKey = (pos.quadrant || 'expert').toLowerCase();
+                    const quadInfo = PSVS_QUADRANTS[quadKey] || PSVS_QUADRANTS.expert;
+                    const dotEnergy = psvsEnergyColor(stress);
+                    const trailPoints = traj.slice(-15).map(p => psvsToXY(
+                      p.rational_emotional ?? pos.rational_emotional ?? 0,
+                      p.intro_extro ?? pos.intro_extro ?? 0,
+                      p.stress_level ?? stress ?? 0,
+                    ));
+                    const { x: cx, y: cy } = psvsToXY(pos.rational_emotional ?? 0, pos.intro_extro ?? 0, stress ?? 0);
 
-                    // Calculate stats
-                    const stressValues = chartData.map(d => d.stress);
-                    const peakStress = stressValues.length > 0 ? Math.max(...stressValues) : 0;
-                    const minStressVal = stressValues.length > 0 ? Math.min(...stressValues) : 0;
-                    const avgStress = stressValues.length > 0 ? stressValues.reduce((a, b) => a + b, 0) / stressValues.length : 0;
+                    // Hide Memory tab if any session is hidden from Pro (privacy guarantee)
+                    const proCanSeeMemory = !(conversationsData || []).some(c => c.proVisible === false);
 
-                    // SVG chart dimensions
-                    const svgW = 340, svgH = 140, padL = 30, padR = 10, padT = 15, padB = 25;
-                    const plotW = svgW - padL - padR, plotH = svgH - padT - padB;
-
-                    // Build SVG path for stress line
-                    const getX = (i) => padL + (chartData.length > 1 ? (i / (chartData.length - 1)) * plotW : plotW / 2);
-                    const getY = (val) => padT + plotH - (val / 10) * plotH;
-
-                    const linePath = chartData.map((d, i) => `${i === 0 ? 'M' : 'L'}${getX(i).toFixed(1)},${getY(d.stress).toFixed(1)}`).join(' ');
-
-                    // Color for each dot
-                    const dotColor = (val) => val >= 7 ? '#ef4444' : val >= 4 ? '#f59e0b' : '#22c55e';
-
-                    // A/W/E/H/B indicator config - use data from portal API (stressIndicatorsData)
                     const ind = stressIndicatorsData || {};
                     const indicators = [
-                      { key: 'A', label: t('agency'), letter: 'A', color: '#10b981', effect: `\u2193 ${t('reducesStress')}`, val: ind.A },
-                      { key: 'W', label: t('withdrawal'), letter: 'W', color: '#ef4444', effect: `\u2191 ${t('raisesStress')}`, val: ind.W },
-                      { key: 'E', label: t('extremity'), letter: 'E', color: '#f97316', effect: `\u2191\u2191 ${t('raisesStress')}`, val: ind.E },
-                      { key: 'H', label: t('hostility'), letter: 'H', color: '#dc2626', effect: `\u2191\u2191\u2191 ${t('stronglyRaises')}`, val: ind.H },
-                      { key: 'B', label: t('boundary'), letter: 'B', color: '#06b6d4', effect: `\u2193\u2193 ${t('reducesStress')}`, val: ind.B },
+                      { key: 'A', label: t('agency'),     color: '#10b981', effect: '↓ ' + t('reducesStress'),     val: ind.A, positive: true  },
+                      { key: 'W', label: t('withdrawal'), color: '#ef4444', effect: '↑ ' + t('raisesStress'),      val: ind.W, positive: false },
+                      { key: 'E', label: t('extremity'),  color: '#f97316', effect: '↑↑ ' + t('raisesStress'),    val: ind.E, positive: false },
+                      { key: 'H', label: t('hostility'),  color: '#dc2626', effect: '↑↑↑ ' + t('stronglyRaises'), val: ind.H, positive: false },
+                      { key: 'B', label: t('boundary'),   color: '#06b6d4', effect: '↓↓ ' + t('reducesStress'),   val: ind.B, positive: true  },
                     ];
 
-                    const hasAWEHB = stressIndicatorsData !== null;
+                    const cardCls = `snap-start shrink-0 w-[85vw] max-w-[360px] rounded-xl p-4 ${tc('bg-white border border-gray-200', 'bg-slate-800 border border-slate-700')} shadow-sm`;
+                    const cardTitleCls = `text-[11px] font-bold uppercase tracking-wide ${tc('text-gray-600', 'text-slate-400')} mb-3`;
 
-                    return (
-                      <div className={`${tc('bg-white', 'bg-slate-800')} ${tc('border-b', 'border-b border-slate-700')} px-4 py-3 max-h-[50vh] overflow-y-auto`}>
-                        {/* Stress Level History Chart */}
-                        <div className="mb-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className={`text-xs font-bold ${tc('text-gray-700', 'text-slate-300')} uppercase`}>{t('stressLevelHistory')}</h4>
-                            <div className="flex items-center space-x-3 text-[10px]">
-                              <span className="flex items-center"><span className="w-2 h-2 rounded-full bg-green-500 mr-1"></span>&lt;4 {t('positive')}</span>
-                              <span className="flex items-center"><span className="w-2 h-2 rounded-full bg-yellow-500 mr-1"></span>4-7 {t('negative')}</span>
-                              <span className="flex items-center"><span className="w-2 h-2 rounded-full bg-red-500 mr-1"></span>&gt;7 {t('neurotic')}</span>
+                    // ── Status Tab Cards ─────────────────────────────────────────────
+                    const statusCards = (
+                      <>
+                        {/* Card 1: PSVS Space Position */}
+                        <div className={cardCls}>
+                          <h4 className={cardTitleCls}>{t('cardPsvsPosition')}</h4>
+                          <div className="flex flex-col items-center">
+                            <svg width="240" height="240" viewBox="0 0 240 240" className={`rounded-lg ${tc('bg-white border border-gray-200', 'bg-slate-900 border border-slate-700')}`}>
+                              <rect x="1" y="1" width="119" height="119" fill={tc('#eff6ff', '#1e293b')} />
+                              <rect x="120" y="1" width="119" height="119" fill={tc('#fef2f2', '#1f1f2e')} />
+                              <rect x="1" y="120" width="119" height="119" fill={tc('#f5f3ff', '#1e1b2e')} />
+                              <rect x="120" y="120" width="119" height="119" fill={tc('#fffbeb', '#1f1d2a')} />
+                              <text x="60"  y="20" textAnchor="middle" fontSize="9" fill="#3b82f6" fontWeight="600">EXPERT</text>
+                              <text x="60"  y="30" textAnchor="middle" fontSize="7" fill="#3b82f6">{'专家型'}</text>
+                              <text x="180" y="20" textAnchor="middle" fontSize="9" fill="#ef4444" fontWeight="600">LEADER</text>
+                              <text x="180" y="30" textAnchor="middle" fontSize="7" fill="#ef4444">{'领导型'}</text>
+                              <text x="60"  y="200" textAnchor="middle" fontSize="9" fill="#8b5cf6" fontWeight="600">SUPPORTER</text>
+                              <text x="60"  y="210" textAnchor="middle" fontSize="7" fill="#8b5cf6">{'支持型'}</text>
+                              <text x="180" y="200" textAnchor="middle" fontSize="9" fill="#f59e0b" fontWeight="600">DREAMER</text>
+                              <text x="180" y="210" textAnchor="middle" fontSize="7" fill="#f59e0b">{'梦想型'}</text>
+                              <line x1="120" y1="5" x2="120" y2="235" stroke={tc('#d1d5db', '#475569')} strokeWidth="1" strokeDasharray="3,3" />
+                              <line x1="5" y1="120" x2="235" y2="120" stroke={tc('#d1d5db', '#475569')} strokeWidth="1" strokeDasharray="3,3" />
+                              <text x="120" y="238" textAnchor="middle" fontSize="7" fill={tc('#6b7280', '#94a3b8')}>{'← Introvert | Extrovert →'}</text>
+                              <text x="3" y="123" fontSize="7" fill={tc('#6b7280', '#94a3b8')}>Emo</text>
+                              <text x="3" y="20" fontSize="7" fill={tc('#6b7280', '#94a3b8')}>Rat</text>
+                              <circle cx="120" cy="120" r="35" fill={tc('#f0fdf4', '#0f1f17')} stroke="#10b981" strokeWidth="1" strokeDasharray="4,3" opacity="0.6" />
+                              <circle cx="120" cy="120" r="65" fill="none" stroke="#f59e0b" strokeWidth="1" strokeDasharray="4,3" opacity="0.5" />
+                              <circle cx="120" cy="120" r="90" fill="none" stroke="#ef4444" strokeWidth="1" strokeDasharray="4,3" opacity="0.4" />
+                              {trailPoints.length > 1 && trailPoints.map((pt, i) => {
+                                if (i === 0) return null;
+                                const prev = trailPoints[i - 1];
+                                const opacity = 0.08 + (i / trailPoints.length) * 0.35;
+                                return <line key={i} x1={prev.x} y1={prev.y} x2={pt.x} y2={pt.y} stroke={quadInfo.color} strokeWidth="1.5" opacity={opacity} />;
+                              })}
+                              {trailPoints.slice(0, -1).map((pt, i) => {
+                                const tp = traj.slice(-15)[i];
+                                const tpEnergy = psvsEnergyColor(tp?.stress_level);
+                                const opacity = 0.12 + (i / trailPoints.length) * 0.3;
+                                return <circle key={'t' + i} cx={pt.x} cy={pt.y} r="3.5" fill={tpEnergy} stroke="white" strokeWidth="1" opacity={opacity} />;
+                              })}
+                              <circle cx={cx} cy={cy} r="12" fill={dotEnergy} opacity="0.2" />
+                              <circle cx={cx} cy={cy} r="7" fill={quadInfo.color} stroke={dotEnergy} strokeWidth="2.5" />
+                              <circle cx="120" cy="120" r="3" fill="#9ca3af" />
+                            </svg>
+                            <div className={`mt-2 text-[11px] text-center space-y-1 ${tc('text-gray-500', 'text-slate-400')}`}>
+                              <div className="flex flex-wrap justify-center gap-x-2 gap-y-0.5">
+                                <span><span style={{ color: '#10b981' }}>●</span> {t('innerLowStress')}</span>
+                                <span><span style={{ color: '#f59e0b' }}>●</span> {t('midModerate')}</span>
+                                <span><span style={{ color: '#ef4444' }}>●</span> {t('outerHighStress')}</span>
+                              </div>
+                              <div style={{ color: quadInfo.color }} className="font-semibold">● {quadInfo.label} ({quadInfo.cn})</div>
+                            </div>
+                            <div className={`mt-3 grid grid-cols-2 gap-2 w-full text-[11px] ${tc('text-gray-700', 'text-slate-300')}`}>
+                              <div className={`${tc('bg-gray-50', 'bg-slate-700')} rounded-lg p-2`}>
+                                <p className={tc('text-gray-500', 'text-slate-400')}>{t('axisRatEmo')}</p>
+                                <p className="font-mono font-semibold">{(pos.rational_emotional ?? 0).toFixed(2)}</p>
+                              </div>
+                              <div className={`${tc('bg-gray-50', 'bg-slate-700')} rounded-lg p-2`}>
+                                <p className={tc('text-gray-500', 'text-slate-400')}>{t('axisIntroExtro')}</p>
+                                <p className="font-mono font-semibold">{(pos.intro_extro ?? 0).toFixed(2)}</p>
+                              </div>
                             </div>
                           </div>
-
-                          {chartData.length > 0 ? (
-                            <svg viewBox={`0 0 ${svgW} ${svgH}`} className="w-full" style={{ maxHeight: '160px' }}>
-                              {/* Background zones */}
-                              <rect x={padL} y={padT} width={plotW} height={plotH * 0.3} fill="#fef2f2" opacity="0.5" />
-                              <rect x={padL} y={padT + plotH * 0.3} width={plotW} height={plotH * 0.3} fill="#fefce8" opacity="0.5" />
-                              <rect x={padL} y={padT + plotH * 0.6} width={plotW} height={plotH * 0.4} fill="#f0fdf4" opacity="0.5" />
-
-                              {/* Grid lines */}
-                              <line x1={padL} y1={getY(10)} x2={padL + plotW} y2={getY(10)} stroke="#e5e7eb" strokeWidth="0.5" />
-                              <line x1={padL} y1={getY(7)} x2={padL + plotW} y2={getY(7)} stroke="#ef4444" strokeWidth="0.5" strokeDasharray="4,3" opacity="0.5" />
-                              <line x1={padL} y1={getY(4)} x2={padL + plotW} y2={getY(4)} stroke="#3b82f6" strokeWidth="0.5" strokeDasharray="4,3" opacity="0.5" />
-                              <line x1={padL} y1={getY(0)} x2={padL + plotW} y2={getY(0)} stroke="#e5e7eb" strokeWidth="0.5" />
-
-                              {/* Y axis labels */}
-                              <text x={padL - 4} y={getY(10) + 3} textAnchor="end" fontSize="8" fill="#9ca3af">10</text>
-                              <text x={padL - 4} y={getY(7) + 3} textAnchor="end" fontSize="8" fill="#ef4444">7</text>
-                              <text x={padL - 4} y={getY(4) + 3} textAnchor="end" fontSize="8" fill="#3b82f6">4</text>
-                              <text x={padL - 4} y={getY(0) + 3} textAnchor="end" fontSize="8" fill="#9ca3af">0</text>
-
-                              {/* Line path */}
-                              <path d={linePath} fill="none" stroke="#3b82f6" strokeWidth="1.5" />
-
-                              {/* Data dots */}
-                              {chartData.map((d, i) => (
-                                <circle key={i} cx={getX(i)} cy={getY(d.stress)} r="2.5" fill={dotColor(d.stress)} stroke="white" strokeWidth="0.5" />
-                              ))}
-
-                              {/* X axis labels */}
-                              <text x={padL} y={svgH - 4} fontSize="8" fill="#9ca3af">{`\u2190 ${t('earlier')}`}</text>
-                              <text x={padL + plotW / 2} y={svgH - 4} textAnchor="middle" fontSize="8" fill="#9ca3af">
-                                {chartData.length} {t('miniSessionMessages')}
-                              </text>
-                              <text x={padL + plotW} y={svgH - 4} textAnchor="end" fontSize="8" fill="#9ca3af">{`${t('latest')} \u2192`}</text>
-                            </svg>
-                          ) : (
-                            <div className={`text-center py-4 ${tc('text-gray-400', 'text-slate-500')} text-sm`}>
-                              {t('noStressData')}
-                            </div>
-                          )}
-
-                          {/* Stats row */}
-                          {chartData.length > 0 && (
-                            <div className="grid grid-cols-4 gap-2 mt-2">
-                              <div className={`${tc('bg-gray-50', 'bg-slate-700')} rounded-lg p-2 text-center`}>
-                                <p className={`text-[10px] ${tc('text-gray-500', 'text-slate-400')}`}>{t('dataPoints')}</p>
-                                <p className={`text-sm font-bold ${tc('text-gray-700', 'text-slate-300')}`}>{chartData.length}</p>
-                              </div>
-                              <div className={`${tc('bg-gray-50', 'bg-slate-700')} rounded-lg p-2 text-center`}>
-                                <p className={`text-[10px] ${tc('text-gray-500', 'text-slate-400')}`}>{t('peakStress')}</p>
-                                <p className="text-sm font-bold text-red-500">{peakStress.toFixed(1)}</p>
-                              </div>
-                              <div className={`${tc('bg-gray-50', 'bg-slate-700')} rounded-lg p-2 text-center`}>
-                                <p className={`text-[10px] ${tc('text-gray-500', 'text-slate-400')}`}>{t('minStress')}</p>
-                                <p className="text-sm font-bold text-green-500">{minStressVal.toFixed(1)}</p>
-                              </div>
-                              <div className={`${tc('bg-gray-50', 'bg-slate-700')} rounded-lg p-2 text-center`}>
-                                <p className={`text-[10px] ${tc('text-gray-500', 'text-slate-400')}`}>{t('average')}</p>
-                                <p className="text-sm font-bold text-blue-500">{avgStress.toFixed(1)}</p>
-                              </div>
-                            </div>
-                          )}
                         </div>
 
-                        {/* Stress Indicators (A/W/E/H/B) */}
-                        <div className={`border-t ${tc('', 'border-slate-700')} pt-3`}>
-                          <h4 className={`text-xs font-bold ${tc('text-gray-700', 'text-slate-300')} uppercase mb-1`}>{t('stressIndicators')}</h4>
-                          <p className={`text-[10px] ${tc('text-gray-400', 'text-slate-500')} mb-3`}>
-                            {hasAWEHB
-                              ? `${t('fromLatestMsg')} — Gemini AI (0-3)`
-                              : t('noIndicatorData')}
-                          </p>
+                        {/* Card 2: Energy Level & Energy State */}
+                        <div className={cardCls}>
+                          <h4 className={cardTitleCls}>{t('cardEnergyLevelState')}</h4>
+                          <div className="flex flex-col items-center">
+                            <svg width="160" height="92" viewBox="0 0 140 80">
+                              <path d="M 16 70 A 54 54 0 0 1 124 70" fill="none" stroke={tc('#e5e7eb', '#334155')} strokeWidth="12" strokeLinecap="round" />
+                              {stress != null && (() => {
+                                const pct = Math.min(stress / 10, 1);
+                                const c = Math.PI * 54;
+                                return <path d="M 16 70 A 54 54 0 0 1 124 70" fill="none" stroke={dotEnergy} strokeWidth="12" strokeLinecap="round" strokeDasharray={`${c * pct} ${c * (1 - pct)}`} />;
+                              })()}
+                              <line x1={70 + 54 * Math.cos(Math.PI * 0.6)} y1={70 - 54 * Math.sin(Math.PI * 0.6)} x2={70 + 42 * Math.cos(Math.PI * 0.6)} y2={70 - 42 * Math.sin(Math.PI * 0.6)} stroke="#10b981" strokeWidth="2" />
+                              <line x1={70 + 54 * Math.cos(Math.PI * 0.3)} y1={70 - 54 * Math.sin(Math.PI * 0.3)} x2={70 + 42 * Math.cos(Math.PI * 0.3)} y2={70 - 42 * Math.sin(Math.PI * 0.3)} stroke="#f59e0b" strokeWidth="2" />
+                              <text x="70" y="62" textAnchor="middle" fontSize="22" fontWeight="700" fill={dotEnergy}>{stress != null ? stress.toFixed(1) : '--'}</text>
+                              <text x="70" y="76" textAnchor="middle" fontSize="9" fill={tc('#6b7280', '#94a3b8')}>/10</text>
+                            </svg>
+                            <div className="flex text-[11px] gap-3 -mt-1">
+                              <span className="text-emerald-600">● &lt;4 {t('positive')}</span>
+                              <span className="text-amber-600">● 4-7 {t('negative')}</span>
+                              <span className="text-red-600">● &gt;7 {t('neurotic')}</span>
+                            </div>
+                            <div className={`w-full mt-3 rounded-lg p-3 ${
+                              energyState === 'neurotic' ? tc('bg-red-50 border border-red-200 text-red-700', 'bg-red-900/20 border border-red-800 text-red-400')
+                              : energyState === 'negative' ? tc('bg-amber-50 border border-amber-200 text-amber-700', 'bg-amber-900/20 border border-amber-800 text-amber-400')
+                              : tc('bg-emerald-50 border border-emerald-200 text-emerald-700', 'bg-emerald-900/20 border border-emerald-800 text-emerald-400')
+                            }`}>
+                              <p className="text-base font-bold">{psvsEnergyLabel(energyState)}</p>
+                              <p className="text-xs opacity-80">{energyState === 'positive' ? t('zoneHomeostatic') : energyState === 'negative' ? t('zoneNegative') : t('zoneNeurotic')}</p>
+                            </div>
+                            <div className="w-full mt-3 space-y-2 text-[12px]">
+                              <div className={`flex justify-between items-center pb-2 border-b ${tc('border-gray-100', 'border-slate-700')}`}>
+                                <div>
+                                  <p className={tc('text-gray-500', 'text-slate-400')}>{t('energyTrajectory')}</p>
+                                  <p className={`text-[10px] ${tc('text-gray-400', 'text-slate-500')}`}>{traj.length < 2 ? '' : `${Math.min(traj.length, 10)} ${t('messagesLabel')}`}</p>
+                                </div>
+                                <span className={`font-semibold ${trajectoryDisplay.color}`}>{trajectoryDisplay.label}</span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <div>
+                                  <p className={tc('text-gray-500', 'text-slate-400')}>{t('energyVariance')}</p>
+                                  <p className={`text-[10px] ${tc('text-gray-400', 'text-slate-500')}`}>{variance != null ? `σ = ${variance.toFixed(2)}` : ''}</p>
+                                </div>
+                                <span className={`font-semibold ${varianceDisplay.color}`}>{varianceDisplay.label}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
 
+                        {/* Card 3: Energy Indicators (A/W/E/H/B) */}
+                        <div className={cardCls}>
+                          <h4 className={cardTitleCls}>{t('cardEnergyIndicators')}</h4>
+                          <p className={`text-[10px] ${tc('text-gray-400', 'text-slate-500')} mb-3`}>
+                            {stressIndicatorsData ? t('fromLatestMsg') + ' — Gemini AI (0-3)' : t('noIndicatorData')}
+                          </p>
                           <div className="space-y-2.5">
                             {indicators.map(item => {
                               const val = item.val ?? 0;
                               const pct = Math.min((val / 3) * 100, 100);
-                              const isPositive = item.key === 'A' || item.key === 'B';
                               return (
                                 <div key={item.key} className="flex items-center gap-2">
-                                  <span className="text-xs font-bold w-4" style={{ color: item.color }}>{item.letter}</span>
-                                  <span className={`text-xs ${tc('text-gray-500', 'text-slate-400')} w-20 truncate`}>{item.label}</span>
-                                  <div className={`flex-1 h-2.5 ${tc('bg-gray-100', 'bg-slate-700')} rounded-full overflow-hidden`}>
-                                    <div
-                                      className="h-full rounded-full transition-all"
-                                      style={{ width: `${pct}%`, backgroundColor: val === 0 ? '#d1d5db' : item.color }}
-                                    />
+                                  <span className="text-xs font-bold w-4" style={{ color: item.color }}>{item.key}</span>
+                                  <span className={`text-[10px] ${tc('text-gray-500', 'text-slate-400')} w-16 truncate`}>{item.label}</span>
+                                  <div className={`flex-1 h-2 ${tc('bg-gray-100', 'bg-slate-700')} rounded-full overflow-hidden`}>
+                                    <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: val === 0 ? '#d1d5db' : item.color }} />
                                   </div>
-                                  <span className="w-8 text-right font-mono text-xs font-semibold"
-                                    style={{ color: val === 0 ? '#9ca3af' : item.color }}>
-                                    {val.toFixed(1)}
-                                  </span>
-                                  <span className={`text-[10px] w-16 truncate ${isPositive ? 'text-emerald-600' : 'text-red-500'}`}>
-                                    {item.effect}
-                                  </span>
+                                  <span className="w-7 text-right font-mono text-[11px] font-semibold" style={{ color: val === 0 ? '#9ca3af' : item.color }}>{val.toFixed(1)}</span>
+                                  <span className={`text-[10px] w-14 truncate ${item.positive ? 'text-emerald-600' : 'text-red-500'}`}>{item.effect}</span>
                                 </div>
                               );
                             })}
                           </div>
+                          <div className={`mt-3 rounded-lg p-2 text-[10px] ${tc('bg-gray-50 text-gray-500', 'bg-slate-700 text-slate-400')}`}>
+                            <p className={`font-semibold ${tc('text-gray-700', 'text-slate-300')} mb-0.5`}>{t('howGeminiExtracts')}</p>
+                            <p className="leading-relaxed">{t('geminiExtractsDesc')}</p>
+                          </div>
+                        </div>
+
+                        {/* Card 4: Energy Trajectory & Variance (chart) */}
+                        <div className={cardCls}>
+                          <h4 className={cardTitleCls}>{t('cardTrajectoryVariance')}</h4>
+                          {(() => {
+                            const latestConv = (conversationsData || []).find(c => c.miniSessionGroups && c.miniSessionGroups.length > 0 && c.proVisible !== false);
+                            const latestGroup = latestConv?.miniSessionGroups?.[latestConv.miniSessionGroups.length - 1];
+                            const sessionPoints = (latestGroup?.messages || [])
+                              .filter(m => m.role === 'user' && m.psvs_snapshot && m.psvs_snapshot.stress_level != null)
+                              .map(m => m.psvs_snapshot.stress_level);
+                            const last3 = traj.slice(-50).map(p => p.stress_level).filter(v => v != null);
+                            const renderMiniChart = (points, height = 70) => {
+                              if (points.length < 2) {
+                                return <div style={{ height }} className={`flex items-center justify-center text-[11px] ${tc('text-gray-400', 'text-slate-500')}`}>{t('needTwoPlusMessages')}</div>;
+                              }
+                              const W = 280, H = height, p = { l: 22, r: 4, t: 6, b: 14 };
+                              const iw = W - p.l - p.r;
+                              const ih = H - p.t - p.b;
+                              const xs = (i) => p.l + (i / Math.max(points.length - 1, 1)) * iw;
+                              const ys = (v) => p.t + ih - (v / 10) * ih;
+                              const path = points.map((v, i) => `${i === 0 ? 'M' : 'L'} ${xs(i)} ${ys(v)}`).join(' ');
+                              const y4 = ys(4), y7 = ys(7);
+                              return (
+                                <svg viewBox={`0 0 ${W} ${H}`} className="w-full" preserveAspectRatio="none" style={{ height }}>
+                                  <rect x={p.l} y={ys(10)} width={iw} height={Math.max(0, y7 - ys(10))} fill={tc('#fef2f2', '#3f1f1f')} opacity="0.7" />
+                                  <rect x={p.l} y={y7} width={iw} height={Math.max(0, y4 - y7)} fill={tc('#fffbeb', '#3a2f1a')} opacity="0.7" />
+                                  <rect x={p.l} y={y4} width={iw} height={Math.max(0, ys(0) - y4)} fill={tc('#f0fdf4', '#1a2f25')} opacity="0.7" />
+                                  <line x1={p.l} y1={y4} x2={W - p.r} y2={y4} stroke="#10b981" strokeWidth="1" strokeDasharray="3,3" />
+                                  <line x1={p.l} y1={y7} x2={W - p.r} y2={y7} stroke="#f59e0b" strokeWidth="1" strokeDasharray="3,3" />
+                                  <text x={p.l - 3} y={ys(10) + 3} textAnchor="end" fontSize="7" fill={tc('#6b7280', '#94a3b8')}>10</text>
+                                  <text x={p.l - 3} y={y7 + 3} textAnchor="end" fontSize="7" fill="#f59e0b">7</text>
+                                  <text x={p.l - 3} y={y4 + 3} textAnchor="end" fontSize="7" fill="#10b981">4</text>
+                                  <text x={p.l - 3} y={ys(0) + 3} textAnchor="end" fontSize="7" fill={tc('#6b7280', '#94a3b8')}>0</text>
+                                  <path d={path} fill="none" stroke="#6366f1" strokeWidth="1.5" strokeLinejoin="round" />
+                                  {points.map((v, i) => (
+                                    <circle key={i} cx={xs(i)} cy={ys(v)} r="2.5" fill={psvsEnergyColor(v)} stroke="white" strokeWidth="0.7" />
+                                  ))}
+                                </svg>
+                              );
+                            };
+                            return (
+                              <div className="space-y-3">
+                                <div>
+                                  <div className="flex justify-between items-center mb-1">
+                                    <p className={`text-[10px] uppercase tracking-wide font-semibold ${tc('text-gray-500', 'text-slate-400')}`}>{t('thisSession')}</p>
+                                    <p className={`text-[10px] ${tc('text-gray-400', 'text-slate-500')}`}>{sessionPoints.length} {t('turnsLabel')}</p>
+                                  </div>
+                                  {renderMiniChart(sessionPoints, 70)}
+                                </div>
+                                <div className={`pt-2 border-t ${tc('border-gray-100', 'border-slate-700')}`}>
+                                  <div className="flex justify-between items-center mb-1">
+                                    <p className={`text-[10px] uppercase tracking-wide font-semibold ${tc('text-gray-500', 'text-slate-400')}`}>{t('last3Sessions')}</p>
+                                    <p className={`text-[10px] ${tc('text-gray-400', 'text-slate-500')}`}>{last3.length} {t('messagesLabel')}</p>
+                                  </div>
+                                  {renderMiniChart(last3, 70)}
+                                  <div className="grid grid-cols-2 gap-2 mt-2">
+                                    <div className={`rounded-lg p-2 ${tc('bg-gray-50', 'bg-slate-700')}`}>
+                                      <p className={`text-[10px] ${tc('text-gray-500', 'text-slate-400')}`}>{t('energyTrajectory')}</p>
+                                      <p className={`text-xs font-semibold ${trajectoryDisplay.color}`}>{trajectoryDisplay.label}</p>
+                                    </div>
+                                    <div className={`rounded-lg p-2 ${tc('bg-gray-50', 'bg-slate-700')}`}>
+                                      <p className={`text-[10px] ${tc('text-gray-500', 'text-slate-400')}`}>{t('energyVariance')}</p>
+                                      <p className={`text-xs font-semibold ${varianceDisplay.color}`}>{varianceDisplay.label}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </>
+                    );
+
+                    const placeholderCard = (text) => (
+                      <div className={cardCls + ' flex items-center justify-center min-h-[200px]'}>
+                        <p className={`text-sm ${tc('text-gray-400', 'text-slate-500')} text-center`}>{text}</p>
+                      </div>
+                    );
+
+                    return (
+                      <div className={`flex-shrink-0 ${tc('bg-gray-50', 'bg-slate-900')} ${tc('border-b border-gray-200', 'border-b border-slate-700')}`}>
+                        {/* Tab strip */}
+                        <div className={`flex ${tc('bg-white border-b border-gray-200', 'bg-slate-800 border-b border-slate-700')}`}>
+                          {[
+                            { key: 'status',   label: t('carouselStatus') },
+                            { key: 'strategy', label: t('carouselStrategy') },
+                            { key: 'memory',   label: t('carouselMemory') },
+                          ].map(tab => (
+                            <button
+                              key={tab.key}
+                              onClick={() => setStatusCarouselTab(tab.key)}
+                              className={`flex-1 py-2.5 text-xs font-medium transition-colors border-b-2 ${
+                                statusCarouselTab === tab.key
+                                  ? tc('text-blue-600 border-blue-500', 'text-blue-400 border-blue-400')
+                                  : tc('text-gray-500 border-transparent hover:text-gray-700', 'text-slate-400 border-transparent hover:text-slate-200')
+                              }`}
+                            >{tab.label}</button>
+                          ))}
+                        </div>
+
+                        {/* Carousel rail — horizontal scroll-snap */}
+                        <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 px-3 py-3" style={{ scrollPaddingLeft: '0.75rem' }}>
+                          {statusCarouselTab === 'status'   && statusCards}
+                          {statusCarouselTab === 'strategy' && (<>{placeholderCard(t('phase2Coming'))}</>)}
+                          {statusCarouselTab === 'memory'   && (
+                            proCanSeeMemory
+                              ? placeholderCard(t('phase3Coming'))
+                              : placeholderCard(t('memoryHiddenByClient'))
+                          )}
                         </div>
 
                         {/* Tap to close hint */}
-                        <p className={`text-[10px] ${tc('text-gray-400', 'text-slate-500')} text-center mt-3 cursor-pointer`} onClick={() => setShowStressDetail(false)}>
+                        <p className={`text-[10px] ${tc('text-gray-400', 'text-slate-500')} text-center pb-2 cursor-pointer`} onClick={() => setShowStressDetail(false)}>
                           {t('tapToClose')}
                         </p>
                       </div>
