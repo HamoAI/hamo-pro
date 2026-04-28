@@ -6278,12 +6278,13 @@ const HamoPro = () => {
                   {/* ── Supervision Bottom Panel ────────────────────────────── */}
                   {showSupervisionPanel && (
                     <div className={`flex-shrink-0 flex flex-col border-t ${tc('border-gray-200 bg-white', 'border-slate-700 bg-slate-800')}`} style={{ height: '45%' }}>
-                      {/* Drag handle + close button */}
-                      <div className={`relative flex justify-center items-center pt-2 pb-1 flex-shrink-0 ${tc('bg-gray-50', 'bg-slate-700/40')}`}>
+                      {/* Header: drag handle + close button */}
+                      <div className={`relative flex justify-center items-center py-2.5 flex-shrink-0 ${tc('bg-gray-50', 'bg-slate-700/40')}`}>
                         <div className={`w-8 h-1 rounded-full ${tc('bg-gray-300', 'bg-slate-500')}`} />
                         <button
                           onClick={() => setShowSupervisionPanel(false)}
-                          className={`absolute right-2 top-1 p-1 rounded-full transition-colors ${tc('text-gray-400 hover:text-gray-700 hover:bg-gray-200', 'text-slate-400 hover:text-white hover:bg-slate-600')}`}
+                          className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full transition-colors ${tc('text-gray-500 hover:text-gray-900 hover:bg-gray-200', 'text-slate-300 hover:text-white hover:bg-slate-600')}`}
+                          aria-label={t('close')}
                           title={t('close')}
                         >
                           <X className="w-4 h-4" />
