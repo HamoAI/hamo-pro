@@ -2750,8 +2750,20 @@ const HamoPro = () => {
               </button>
             </div>}
 
-            <div className={`text-center mt-6 text-xs ${tc('text-gray-400', 'text-slate-500')}`}>
-              {t('version')} {APP_VERSION}
+            <div className="relative mt-6">
+              <p className={`text-center text-xs ${tc('text-gray-400', 'text-slate-500')}`}>
+                {t('version')} {APP_VERSION}
+              </p>
+              <div
+                className="absolute right-0 top-1/2 -translate-y-1/2 inline-flex items-center gap-1 px-1.5 py-1 bg-blue-600 text-white rounded shadow-sm"
+                title="PHIPA Compliant"
+              >
+                <div className="text-[7.5px] font-bold leading-[1.1] tracking-wider">
+                  <div>PHIPA</div>
+                  <div>COMPLIANT</div>
+                </div>
+                <CheckCircle className="w-3 h-3 text-emerald-400" strokeWidth={2.5} />
+              </div>
             </div>
           </div>
         </div>
