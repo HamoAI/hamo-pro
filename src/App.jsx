@@ -2754,8 +2754,11 @@ const HamoPro = () => {
               <p className={`text-center text-xs ${tc('text-gray-400', 'text-slate-500')}`}>
                 {t('version')} {APP_VERSION}
               </p>
-              <div
-                className="absolute right-0 top-1/2 -translate-y-1/2 inline-flex items-center gap-1 px-1.5 py-1 bg-blue-600 text-white rounded shadow-sm"
+              <a
+                href="https://hamo.ai/blog/hamo-ai-achieves-phipa-compliance/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="absolute right-0 top-1/2 -translate-y-1/2 inline-flex items-center gap-1 px-1.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded shadow-sm transition-colors"
                 title="PHIPA Compliant"
               >
                 <div className="text-[7.5px] font-bold leading-[1.1] tracking-wider">
@@ -2763,7 +2766,7 @@ const HamoPro = () => {
                   <div>COMPLIANT</div>
                 </div>
                 <CheckCircle className="w-3 h-3 text-emerald-400" strokeWidth={2.5} />
-              </div>
+              </a>
             </div>
           </div>
         </div>
