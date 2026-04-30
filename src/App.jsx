@@ -625,12 +625,17 @@ const HamoPro = () => {
           stress_level: pos.stress_level,
           energy_state: pos.energy_state,
           distance_from_center: pos.distance_from_center || pos.distance,
+          intro_extro: pos.intro_extro,
+          rational_emotional: pos.rational_emotional,
+          quadrant: pos.quadrant,
           messageId: prev?.messageId || null // Preserve messageId if set
         }));
         // Update trajectory history for chart
         if (psvsResult.psvs.recent_trajectory) {
           setPsvsTrajectory(psvsResult.psvs.recent_trajectory);
         }
+        // Refresh latest A/W/E/H/B from the dedicated PSVS endpoint
+        setStressIndicatorsData(psvsResult.psvs.recent_indicators ?? null);
       }
 
       // Fetch updated sessions
@@ -2026,30 +2031,18 @@ const HamoPro = () => {
     } catch { setClientMentalModel({ attachmentStyle: '', coreIssue: '', stage: '', currentFocus: '' }); }
 
     try {
-      // Fetch sessions, PSVS profile, portal messages, and directives in parallel
-      const [sessionsResult, psvsResult, portalResult, directivesResult] = await Promise.all([
+      // Fetch sessions, PSVS profile, and directives in parallel.
+      // PSVS profile now embeds recent_indicators directly — no separate
+      // portal-messages call needed (and Pro users can't hit /portal/* anyway).
+      const [sessionsResult, psvsResult, directivesResult] = await Promise.all([
         apiService.getSessions(client.id),
         apiService.getPsvsProfile(client.id),
-        apiService.getPortalMessages(client.id),
         apiService.getDirectives(client.id)
       ]);
 
       // Load directives
       if (directivesResult.success) {
         setDirectives(directivesResult.directives);
-      }
-
-      // Extract last A/W/E/H/B indicators from portal messages
-      if (portalResult.success && portalResult.sessions) {
-        let lastIndicators = null;
-        const sessions = Array.isArray(portalResult.sessions) ? portalResult.sessions : [];
-        for (const session of sessions) {
-          const userMsgs = (session.messages || []).filter(m => m.role === 'user' && m.stress_indicators);
-          if (userMsgs.length > 0) {
-            lastIndicators = userMsgs[userMsgs.length - 1].stress_indicators;
-          }
-        }
-        setStressIndicatorsData(lastIndicators);
       }
 
       // Set PSVS from the dedicated API (always available regardless of pro_visible)
@@ -2059,12 +2052,18 @@ const HamoPro = () => {
           stress_level: pos.stress_level,
           energy_state: pos.energy_state,
           distance_from_center: pos.distance_from_center || pos.distance,
+          intro_extro: pos.intro_extro,
+          rational_emotional: pos.rational_emotional,
+          quadrant: pos.quadrant,
           messageId: null
         });
         // Store trajectory history for chart
         if (psvsResult.psvs.recent_trajectory) {
           setPsvsTrajectory(psvsResult.psvs.recent_trajectory);
         }
+        // Latest A/W/E/H/B from the most recent user message — the backend
+        // walks sessions and surfaces it as a top-level field on the response.
+        setStressIndicatorsData(psvsResult.psvs.recent_indicators ?? null);
       }
 
       if (sessionsResult.success && sessionsResult.sessions.length > 0) {
