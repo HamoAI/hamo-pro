@@ -194,27 +194,28 @@ const HamoPro = () => {
 
   // Theme toggle component
   const ThemeToggle = ({ className = "" }) => (
-    <div className={`flex items-center space-x-2 ${className}`}>
-      {isDark ? <Moon className={`w-4 h-4 ${tc('text-gray-500', 'text-slate-400')}`} /> : <Sun className={`w-4 h-4 ${tc('text-gray-500', 'text-amber-500')}`} />}
+    <div className={`flex items-center ${className}`}>
       <div className={`flex rounded-lg p-0.5 ${tc('bg-gray-100', 'bg-slate-700')}`}>
         <button
           onClick={() => setTheme('light')}
-          className={`px-2 py-1 text-xs rounded-md transition-colors ${
+          className={`flex items-center gap-1 px-2 py-1 text-xs rounded-md transition-colors ${
             theme === 'light'
               ? tc('bg-white text-amber-600 shadow-sm font-medium', 'bg-slate-600 text-amber-400 shadow-sm font-medium')
               : tc('text-gray-500 hover:text-gray-700', 'text-slate-400 hover:text-slate-300')
           }`}
         >
+          <Sun className="w-3.5 h-3.5" />
           {t('lightMode')}
         </button>
         <button
           onClick={() => setTheme('dark')}
-          className={`px-2 py-1 text-xs rounded-md transition-colors ${
+          className={`flex items-center gap-1 px-2 py-1 text-xs rounded-md transition-colors ${
             theme === 'dark'
               ? tc('bg-white text-blue-600 shadow-sm font-medium', 'bg-slate-600 text-blue-400 shadow-sm font-medium')
               : tc('text-gray-500 hover:text-gray-700', 'text-slate-400 hover:text-slate-300')
           }`}
         >
+          <Moon className="w-3.5 h-3.5" />
           {t('darkMode')}
         </button>
       </div>
